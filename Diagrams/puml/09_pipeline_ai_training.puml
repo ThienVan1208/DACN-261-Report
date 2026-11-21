@@ -35,8 +35,8 @@ skinparam NoteBorderColor #D97706
 top to bottom direction
 
 package "Tầng 1: Nền tảng mô phỏng & Thầy dạy cổ điển" #F1F5F9 {
-  [Pure C# Core Engine\n(Headless NullGameEventListener)] as Core
-  [MinimaxSearch + Alpha-Beta + PVS\n(MinimaxEvaluator, Depth 1..6)] as Minimax
+  [Core Engine tách đồ họa\n(Headless NullGameEventListener)] as Core
+  [MinimaxSearch + Alpha-Beta + Killer/History\n(MinimaxEvaluator, Zobrist TT, Depth 1..6)] as Minimax
   Core --> Minimax
 }
 
@@ -51,9 +51,9 @@ package "Tầng 2: Học bắt chước và Học tăng cường (Unity ML-Agent
 
 package "Tầng 3: Mạng đánh giá nhẹ & Đồng huấn luyện (NNUE + Hybrid)" #ECFDF5 {
   [NNUEBootstrapper\n(Sinh Multi-Generation Replay Buffer .jsonl)] as NNUEData
-  [PyTorch NNUE / Residual NNUE Trainer\n(Input 654f -> Export .bytes)] as NNUETrain
+  [PyTorch NNUE / Residual NNUE Trainer\n(654->128->64->1 -> Export .bytes)] as NNUETrain
   [NNUEFastEvaluator (SIMD Sparse Columns)\n+ ZobristHash Transposition Table] as NNUEEval
-  [HybridAgentBotController\n(PVS + Soft Policy LMR + NNUE Leaf)] as Hybrid
+  [NeuralMinimaxBotController (Policy + MinimaxEval)\n& HybridAgentBotController (Soft LMR + NNUE)] as Hybrid
   PPO --> NNUEData : sinh ván đấu sát thực chiến
   NNUEData --> NNUETrain
   NNUETrain --> NNUEEval

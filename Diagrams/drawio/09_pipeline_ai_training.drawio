@@ -5,10 +5,10 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="a1" value="Pure C# Core Engine&#10;(Headless &gt;10k FPS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="a1" value="Core Engine tách đồ họa&#10;(Headless NullGameEventListener)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="60" y="60" width="210" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="a2" value="Minimax Alpha-Beta + PVS&#10;(Teacher Depth 4)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="a2" value="Minimax Alpha-Beta + Killer/History&#10;(Teacher Depth 4)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="330" y="60" width="230" height="70" as="geometry" />
         </mxCell>
         <mxCell id="a3" value="BC &amp; DAgger Dataset&#10;(BehaviourClone / DaggerBootstrapper)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
@@ -20,7 +20,7 @@
         <mxCell id="a5" value="NNUE &amp; Residual NNUE&#10;Multi-Gen Replay Buffer (.jsonl)&#10;-&gt; NNUEFastEvaluator (.bytes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="330" y="190" width="230" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="a6" value="HybridAgentBotController&#10;(Policy Priors + PVS/LMR +&#10;NNUE Tactical Leaf)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="a6" value="HybridAgentBotController&#10;(Policy Priors + Soft LMR +&#10;NNUE Tactical / Residual)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="60" y="190" width="210" height="90" as="geometry" />
         </mxCell>
         <mxCell id="a7" value="LLM Evolution (FunSearch B1 V2)&#10;Gemini -&gt; 4-Gate Verify -&gt;&#10;LLMEvolvedModuleBank (8 Gates)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">

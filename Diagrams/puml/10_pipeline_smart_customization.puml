@@ -37,13 +37,13 @@ top to bottom direction
 actor "Người chơi" as User
 
 package "Unity Client (Convergence Chess - Unity 6 URP)" #EFF6FF {
-  [SCCanvasUI\n(Chọn ảnh 2D, Nam/Nữ, Thanh trượt BlendShape,\n7 kiểu tóc 3D, Màu tóc RGB & Normal Strength)] as SCUI
-  [SCCharacterCreator\n(Gửi HTTP ảnh + Áp 25 BlendShapes,\nTexture da/Normal + Tóc MPFB v2)] as SCCreator
+  [SCCanvasUI\n(Chọn ảnh 2D, Nam/Nữ, TexNet/HRN,\n7 kiểu tóc 3D, Màu tóc RGB & Normal Strength)] as SCUI
+  [SCCharacterCreator\n(Gọi ProcessStartInfo infer_onnx.py\n+ Auto-Reload JSON + Áp BlendShapes/Tóc)] as SCCreator
   [MPFB v2 SkinnedMeshRenderer\n+ PBR Eyes (ClearCoat Catchlight)\n+ 6 Hair Cards FBX (Barycentric Scalp)] as Mesh3D
 }
 
-package "Python FastAPI Microservice Backend (GPU RTX 4050 FP16)" #ECFDF5 {
-  [FastAPI Endpoint\n(/reconstruct)] as API
+package "Python Local Inference CLI (infer_onnx.py - GPU RTX 4050)" #ECFDF5 {
+  [CLI Entrypoint\n(infer_onnx.py: image, gender, backend)] as CLI
   package "Nhánh 1: Giải hình học khuôn mặt (Method B1 v2)" #F8FAFC {
     [MediaPipe Face Mesh\n(478 Landmarks 2D)] as MP
     [ONNX B1 v2 Regressor\n(12,000 mẫu/giới, 25 kênh trực giao,\nValMAE ~ 0.062)] as ONNX
@@ -51,13 +51,13 @@ package "Python FastAPI Microservice Backend (GPU RTX 4050 FP16)" #ECFDF5 {
     MP --> ONNX
     ONNX --> BVLS
   }
-  package "Nhánh 2: Khử bóng & Chiếu Texture UV" #F8FAFC {
-    [IC-Light Studio Delighting\n(iclight_sd15_fc, 15 steps DPMSolver++, ~1.8s)] as ICLight
-    [PyTorch3D Barycentric Back-Projection\n(Camera Space -> MakeHuman UV)] as Py3D
+  package "Nhánh 2: Chiếu Texture UV & Khử bóng đối xứng" #F8FAFC {
+    [PyTorch3D Barycentric Back-Projection\n(MeInGame, Camera Space -> MakeHuman UV)] as Py3D
+    [Bilateral Symmetry Delighting (Lab)\n+ Khử bóng lệch & tóc mái che trán] as Delight
     [Eye Aperture Masking\n+ Dental Enamel Spectral Filter] as Mask
-    [Multi-Band Pyramid & Hermite Blending\n+ HRN Normal Map (Sobel)] as Blend
-    ICLight --> Py3D
-    Py3D --> Mask
+    [Multi-Band Laplacian Pyramid & Hermite\n+ HRN Normal Map (Sobel 80/55)] as Blend
+    Py3D --> Delight
+    Delight --> Mask
     Mask --> Blend
   }
   [Trích xuất màu mống mắt (Min Lum 0.38)\n& màu viền tóc trán] as ColorExt
@@ -65,13 +65,13 @@ package "Python FastAPI Microservice Backend (GPU RTX 4050 FP16)" #ECFDF5 {
 
 User --> SCUI : Tải ảnh chân dung 2D
 SCUI --> SCCreator
-SCCreator --> API : HTTP POST (Ảnh chân dung + Gender)
-API --> MP
-API --> ICLight
-API --> ColorExt
-BVLS --> API : 25 trọng số BlendShapes
-Blend --> API : sc_blended_skin.png + sc_normal_skin.png
-ColorExt --> API : iris_rgb + hair_rgb
-API --> SCCreator : sc_result.json + Textures
+SCCreator --> CLI : ProcessStartInfo CLI (Ảnh + Gender + Mode)
+CLI --> MP
+CLI --> Py3D
+CLI --> ColorExt
+BVLS --> CLI : 25 trọng số BlendShapes
+Blend --> CLI : sc_blended_skin.png + sc_normal_skin.png
+ColorExt --> CLI : iris_rgb + hair_rgb
+CLI --> SCCreator : Ghi ổ đĩa sc_result.json + PNG
 SCCreator --> Mesh3D : Cập nhật thời gian thực
 @enduml

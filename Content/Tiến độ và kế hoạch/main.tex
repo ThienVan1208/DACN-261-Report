@@ -17,39 +17,39 @@
     \bottomrule
     \endfoot
 
-    Tuần 1 & Dựng bản mẫu bàn cờ $6 \times 6$, AP, di chuyển, hợp thể, sinh vật cản ngẫu nhiên và kiểm tra nước đi. & Hoàn thiện nhân C\# thuần: \texttt{GameState}, \texttt{MoveValidator}, \texttt{PassiveFlags} (9-bit), sinh $1$--$2$ vật cản trung tuyến, Surge Phase. & Hoàn thành \\
+    Tuần 1 & Dựng bản mẫu bàn cờ $6 \times 6$, AP, di chuyển, hợp thể, sinh vật cản ngẫu nhiên và kiểm tra nước đi. & Hoàn thiện lõi Core Domain: \texttt{GameState}, \texttt{MoveValidator}, \texttt{GameEventHandler}, \texttt{PassiveFlags} (9-bit), sinh $1$--$2$ vật cản trung tuyến, Surge Phase. & Hoàn thành \\
     \midrule
     Tuần 2 & Tách cấu hình, PvP Offline, highlight/rung/zoom camera và Minimax Alpha-Beta cơ bản. & Hoàn thiện \texttt{GameConfig} ScriptableObject, \texttt{PvPOffModeBootstrapper}, \texttt{BoardRotator}, \texttt{CamShaked}/\texttt{ZoomCam}, \texttt{MinimaxSearch}. & Hoàn thành \\
     \midrule
-    Tuần 3 & Squad Builder $10$ Slots, điều kiện kết thúc, mô phỏng hàng loạt tìm lỗi kẹt cờ, khảo sát Photon. & Hoàn thiện \texttt{UIPopupSquadBuilder}, \texttt{SquadValidator}, \texttt{SaveLoadManager}, tích hợp Photon Fusion 2. & Hoàn thành \\
+    Tuần 3 & Squad Builder theo ngân sách Slot Points, điều kiện kết thúc, mô phỏng hàng loạt tìm lỗi kẹt cờ, khảo sát Photon. & Hoàn thiện \texttt{UIPopupSquadBuilder} (cấu hình $12$ Slots trong \texttt{GameConfig.asset}), \texttt{SquadValidator}, \texttt{SaveLoadManager}, tích hợp Photon Fusion 2. & Hoàn thành \\
     \midrule
-    Tuần 4 & Kết nối mạng 2 máy (region, phòng, đồng bộ đội hình, timer) và bắt đầu huấn luyện ML-Agents. & Hiện thực \texttt{OnlineSessionManager}, \texttt{OnlineDataBroadcastNetwork}, \texttt{OnlineTurnTimer}, \texttt{AgentBotController} + BC/PPO. & Hoàn thành \\
+    Tuần 4 & Kết nối mạng 2 máy (region, phòng, đồng bộ đội hình, timer) và bắt đầu huấn luyện ML-Agents. & Hiện thực \texttt{OnlineSessionManager} (\texttt{GameMode.Shared}), \texttt{OnlineDataBroadcastNetwork}, \texttt{OnlineTurnTimer}, \texttt{AgentBotController} + BC/PPO. & Hoàn thành \\
     \midrule
-    Tuần 5 & Thay mô hình 3D Trung cổ, dựng Scene benchmark đối kháng AI, sửa lỗi đồng bộ Ready/Tên Online. & Tích hợp 6 quân cờ 3D Medieval, hoàn thiện \texttt{BenchmarkBootstrapper} + \texttt{FileBenchmarkRecorder}, sửa đồng bộ tên/Ready. & Hoàn thành \\
+    Tuần 5 & Thay mô hình 3D Trung cổ, dựng Scene benchmark đối kháng AI, sửa lỗi đồng bộ Ready/Tên Online. & Tích hợp 6 quân cờ 3D Medieval, hoàn thiện \texttt{BenchmarkBootstrapper} + \texttt{BenchmarkGameEventManager} + \texttt{FileBenchmarkRecorder}, sửa đồng bộ tên/Ready. & Hoàn thành \\
     \midrule
     Tuần 6 & Thử nghiệm AI Hybrid (ML + Minimax), animation Idle/Move/Attack, dựng lại UI Main Menu/Lobby/HUD. & Hiện thực \texttt{HybridAgentBotController}, \texttt{NeuralMinimaxBotController}, FSM quân cờ và bộ giao diện UGUI qua \texttt{UIMapper}. & Hoàn thành \\
     \midrule
-    Tuần 7 & Animation GetHit/Death, VFX đòn đánh, zoom camera khi ăn quân, nâng cấp bàn cờ 3D. & Hoàn thiện 5 trạng thái \texttt{PieceView}, chuẩn hóa \texttt{PieceAnimationRelay}, nâng cấp bàn cờ 3D và \texttt{PieceGhostTrail}. & Hoàn thành \\
+    Tuần 7 & Animation GetHit/Death, VFX đòn đánh, zoom camera khi ăn quân, nâng cấp bàn cờ 3D. & Hoàn thiện 5 lớp nền trạng thái \texttt{PieceView}, chuẩn hóa \texttt{PieceAnimationRelay}, nâng cấp bàn cờ 3D và \texttt{PieceGhostTrail}. & Hoàn thành \\
     \midrule
     Tuần 8 & Hệ thống âm thanh SFX/BGM, cân chỉnh Skybox/ánh sáng và khởi động nghiên cứu SC (Nam/Nữ). & Hiện thực \texttt{AudioManager}, Skybox/lighting URP, chuẩn bị base mesh Nam/Nữ trên MPFB v2 (Blender 4.2). & Hoàn thành \\
     \midrule
-    Tuần 9 & Thử nghiệm nắn hình học 3D từ ảnh 2D, xử lý màu da/UV và xem trước trong Unity. & Xây dựng pipeline Python FastAPI + \texttt{SCCharacterCreator}, kiểm chứng loại bỏ hướng Z-MediaPipe và \texttt{sc\_texnet}. & Hoàn thành \\
+    Tuần 9 & Thử nghiệm nắn hình học 3D từ ảnh 2D, xử lý màu da/UV và xem trước trong Unity. & Xây dựng pipeline Python CLI (\texttt{infer\_onnx.py}) + Unity \texttt{SCCharacterCreator} (\texttt{ProcessStartInfo}), kiểm chứng loại bỏ hướng Z-MediaPipe và \texttt{sc\_texnet}. & Hoàn thành \\
     \midrule
-    Tuần 10 & Đưa giao diện SC vào game kèm thanh trượt thủ công và nghiên cứu khử bóng Texture (delighting). & Hiện thực \texttt{SCCanvasUI}, \texttt{SCBlendShapeRow}, tích hợp IC-Light FP16 ($\sim 1.8$s) và Method B1 v2 ($25$ kênh trực giao). & Hoàn thành \\
+    Tuần 10 & Đưa giao diện SC vào game kèm thanh trượt thủ công và nghiên cứu khử bóng Texture (delighting). & Hiện thực \texttt{SCCanvasUI}, \texttt{SCBlendShapeRow}, Method B1 v2 ($25$ kênh trực giao), thử nghiệm IC-Light (đóng băng) và chốt Bilateral Symmetry Delighting. & Hoàn thành \\
     \midrule
-    Tuần 11 & Làm mượt biên cổ (seam blending), hạn chế méo UV và kiểm tra chuyển đổi Nam -- Nữ. & Hoàn thiện chiếu Barycentric PyTorch3D, Hermite $64$px, HRN Normal Map, mắt PBR Catchlight và \textbf{bổ sung 6 kiểu tóc 3D MPFB v2}. & Mở rộng vượt kế hoạch \\
+    Tuần 11 & Làm mượt biên cổ (seam blending), hạn chế méo UV và kiểm tra chuyển đổi Nam -- Nữ. & Hoàn thiện chiếu Barycentric PyTorch3D (MeInGame), Multi-Band Pyramid + Hermite $64$px, HRN Normal Map, mắt PBR Catchlight và \textbf{bổ sung 6 kiểu tóc 3D MPFB v2}. & Mở rộng vượt kế hoạch \\
     \midrule
     Tuần 12 & Mở rộng tự đấu AI, kiểm tra ổn định mạng (desync/lag); \textit{thêm tìm trận tự động, đấu hạng, Elo}. & Hoàn thiện \textbf{NNUE, Residual NNUE ($51\%$ thắng D4), ObservationEncoderV2 ($654$f) và LLM Evolved Module Bank}; chạy benchmark $10$ probes mạng. Hạng mục Matchmaking/Elo dời sang DATN. & Mở rộng AI; dời Elo sang DATN \\
     \midrule
     Tuần 13 & Mô phỏng cân bằng đi trước/đi sau, rà soát tình huống biên AP/Hợp thể, VFX; \textit{bảng xếp hạng, bạn bè}. & Xử lý race condition Attack/Move, kiểm thử hàng trăm ván tự đấu AI; hoàn thiện bộ VFX sấm sét/va chạm. Hạng mục Bảng xếp hạng và Bạn bè dời sang DATN. & Hoàn thành Core/AI; dời Social sang DATN \\
     \midrule
-    Tuần 14 & Ghép luồng cài đặt, thử nghiệm lưu dữ liệu, đo hiệu năng khung hình và bộ nhớ. & Hoàn thiện \texttt{UIPopupSettings}, \texttt{SaveLoadManager} (\texttt{SquadSLO}, \texttt{GeneralSettingsSLO}), kiểm tra tốc độ suy nghĩ AI ($<70$ ms). & Hoàn thành cơ bản \\
+    Tuần 14 & Ghép luồng cài đặt, thử nghiệm lưu dữ liệu, đo hiệu năng khung hình và bộ nhớ. & Hoàn thiện khung \texttt{UIPopupSettings} + tab General (\texttt{GeneralSettingsSLO}), \texttt{SaveLoadManager} (\texttt{SquadSLO}), kiểm tra tốc độ suy nghĩ AI ($<70$ ms). Tab âm thanh/đồ họa chuyển sang DATN. & Hoàn thành cơ bản \\
     \midrule
     Tuần 15 & Chơi thử tìm lỗi góc chết, tổng hợp danh sách lỗi và dựng bản cài đặt mẫu PC. & Tổng hợp danh sách lỗi/hạn chế cho Giai đoạn 2, hoàn thiện tài liệu kiến trúc và báo cáo tổng kết Giai đoạn 1 (DACN). & Hoàn thành \\
 \end{longtable}
 
 \subsection{Tổng kết đóng góp của từng thành viên trong giai đoạn 1}
-Bảng \ref{tab:member_contrib} ghi nhận đóng góp thực tế của hai thành viên căn cứ theo lịch sử commit Git (tổng cộng hơn $260$ commit tính đến tháng 11/2026).
+Bảng \ref{tab:member_contrib} ghi nhận đóng góp thực tế của hai thành viên căn cứ theo lịch sử commit Git (tổng cộng $266$ commit trên toàn bộ các nhánh tính đến tháng 11/2026).
 
 \begin{table}[H]
     \centering
@@ -59,7 +59,7 @@ Bảng \ref{tab:member_contrib} ghi nhận đóng góp thực tế của hai th�
         \toprule
         \textbf{Thành viên} & \textbf{Các hạng mục kỹ thuật chủ trì và hoàn thành} & \textbf{Tỷ trọng} \\
         \midrule
-        Thành viên 1 (Chủ trì Core, AI và SC) & Kiến trúc Hexagonal và \texttt{ArenaServiceLocator}; toàn bộ Core Domain (\texttt{GameState}, \texttt{MoveValidator}, \texttt{MatchManager}, \texttt{PassiveFlags}); toàn bộ hệ sinh thái AI (Minimax/PVS/Zobrist, BC/DAgger, PPO Self-Play, \texttt{ObservationEncoderV2}, NNUE/Residual NNUE, Hybrid Bot, LLM FunSearch); toàn bộ pipeline Smart Customization (Method B1 v2, IC-Light, PyTorch3D, HRN, 3D Hair, PBR Eyes); \texttt{PieceAnimationRelay} và hệ thống Benchmark tự động. & 50\% \\
+        Thành viên 1 (Chủ trì Core, AI và SC) & Kiến trúc Hexagonal và \texttt{ArenaServiceLocator}; toàn bộ Core Domain (\texttt{GameState}, \texttt{MoveValidator}, \texttt{GameEventHandler}, \texttt{MatchManager}, \texttt{PassiveFlags}); toàn bộ hệ sinh thái AI (Minimax/Alpha-Beta/Zobrist/Killer-History, BC/DAgger, PPO Self-Play, \texttt{ObservationEncoderV2}, NNUE/Residual NNUE, NeuralMinimax, Hybrid Bot, LLM FunSearch); toàn bộ pipeline Smart Customization (Method B1 v2, MeInGame Barycentric PyTorch3D, Bilateral Symmetry Delighting, HRN, 3D Hair, PBR Eyes); \texttt{PieceAnimationRelay} và hệ thống Benchmark tự động. & 50\% \\
         \midrule
         Thành viên 2 -- Đăng (Chủ trì Multiplayer và View Layer) & Khảo sát và triển khai Multiplayer trên Photon Fusion (\texttt{OnlineSessionManager}, \texttt{OnlineDataBroadcastNetwork}, 9 \texttt{BroadcastDataHandler}, \texttt{NetworkController}, \texttt{OnlineLocalMoveSender}, \texttt{OnlineTurnTimer}, đo benchmark NetworkObject vs Reliable Data); PvP Offline (\texttt{BoardRotator}); tầng View (\texttt{BoardView}, \texttt{TileView}, \texttt{PieceView} 3D, \texttt{VisualQueueManager}); toàn bộ hệ thống UI (\texttt{UIManager}, \texttt{UIMapper}, \texttt{UIPopupSquadBuilder}, \texttt{UIPopupLobby}, \texttt{UIInGameHUD}); tích hợp VFX/SFX và Skybox. & 50\% \\
         \bottomrule
@@ -67,14 +67,14 @@ Bảng \ref{tab:member_contrib} ghi nhận đóng góp thực tế của hai th�
 \end{table}
 
 \subsection{Đánh giá chung và các hạn chế còn tồn tại}
-Kết thúc Giai đoạn 1 (DACN), nhóm đã chứng minh trọn vẹn tính khả thi kỹ thuật của cả bốn mảng phức tạp nhất: lõi cờ chiến thuật $6 \times 6$ tách rời hoàn toàn khỏi Unity, AI lai \texttt{Residual NNUE} vượt trội Heuristic Depth 4 ở thời gian phản hồi $66$ ms, giao thức mạng nhị phân 4-byte trên Photon Fusion tiết kiệm $78.1\%$ băng thông và pipeline tạo khuôn mặt/tóc 3D từ ảnh chân dung chạy thực tế trên GPU tầm trung.
+Kết thúc Giai đoạn 1 (DACN), nhóm đã chứng minh trọn vẹn tính khả thi kỹ thuật của cả bốn mảng phức tạp nhất: lõi cờ chiến thuật $6 \times 6$ tách rời đồ họa, AI lai \texttt{Residual NNUE} vượt trội Heuristic Depth 4 ở thời gian phản hồi $66$ ms, giao thức mạng nhị phân 4-byte trên Photon Fusion tiết kiệm $78.1\%$ băng thông và pipeline tạo khuôn mặt/tóc 3D từ ảnh chân dung chạy thực tế trên GPU tầm trung.
 
 Tuy nhiên, do phạm vi DACN tập trung vào khảo sát, kiến trúc và nguyên mẫu, sản phẩm hiện vẫn còn năm hạn chế chính cần giải quyết triệt để ở Giai đoạn 2:
 \begin{enumerate}
-    \item \textbf{Chưa hoàn thiện xử lý sự cố mạng và tài khoản người chơi:} Hệ thống Multiplayer hiện chưa có cơ chế tự động kết nối lại (Reconnect) sau khi đứt mạng giữa trận, chưa xử lý triệt để mọi tình huống hết giờ/rời phòng đột ngột và chưa tích hợp xác thực tài khoản (Google/Facebook) hay cơ sở dữ liệu đám mây.
-    \item \textbf{Chưa có hệ thống cạnh tranh xã hội:} Các tính năng ghép trận tự động (Matchmaking), tính điểm xếp hạng Elo, bảng xếp hạng toàn cục (Leaderboard) và danh sách bạn bè mới dừng ở mức thiết kế kế hoạch.
-    \item \textbf{Triển khai Smart Customization còn phụ thuộc môi trường Python cục bộ:} Backend FastAPI hiện chạy trên máy trạm phát triển có GPU RTX 4050; cần phương án đóng gói dịch vụ hoặc triển khai máy chủ suy luận (hoặc rút gọn ONNX chạy trực tiếp trên thiết bị) khi phát hành cho người dùng cuối.
-    \item \textbf{Chưa cài đặt quy tắc hòa lặp thế cờ 3 lần (Threefold Repetition):} Hiện chỉ mới giới hạn hòa theo \texttt{MaxTurns = 60} và giới hạn lượt Pass.
+    \item \textbf{Chưa hoàn thiện xử lý sự cố mạng, luồng hết giờ/đầu hàng và tài khoản người chơi:} Hệ thống Multiplayer hiện chưa có cơ chế tự động kết nối lại (Reconnect) sau khi đứt mạng giữa trận; các sự kiện hết giờ (\texttt{OnlineTurnTimer.OnTimerExpired}), đầu hàng (\texttt{MSG\_SURRENDER}) và hết thời gian chờ ngắt kết nối mới dừng ở mức khung giao thức/sự kiện chưa nối mạch hoàn chỉnh tới \texttt{MatchManager} và UI; chưa tích hợp xác thực tài khoản (Google/Facebook) hay cơ sở dữ liệu đám mây.
+    \item \textbf{Chưa có hệ thống cạnh tranh xã hội và hoàn thiện HUD phụ trợ:} Các tính năng ghép trận tự động (Matchmaking), tính điểm xếp hạng Elo, bảng xếp hạng toàn cục (Leaderboard), danh sách bạn bè, lớp phủ khán giả \texttt{UISpectatorOverlay}, tab cài đặt âm thanh/đồ họa trong \texttt{UIPopupSettings} và hiệu ứng hình ảnh riêng cho \texttt{PawnPromotionEvent}/\texttt{SurgeActivatedEvent} trong \texttt{VisualQueueManager} cần được hoàn thiện ở Giai đoạn 2.
+    \item \textbf{Triển khai Smart Customization còn phụ thuộc tiến trình Python cục bộ:} \texttt{SCCharacterCreator} hiện gọi trực tiếp tiến trình CLI \texttt{infer\_onnx.py} trên máy trạm phát triển có GPU RTX 4050; cần phương án đóng gói thành dịch vụ API (FastAPI/Docker GPU Cloud) hoặc rút gọn chạy trực tiếp khi phát hành cho người dùng cuối.
+    \item \textbf{Chưa cài đặt quy tắc hòa lặp thế cờ 3 lần (Threefold Repetition) và cần rà soát lỗi biên nhỏ trong Core:} Hiện chỉ mới giới hạn hòa theo \texttt{TurnCount >= MaxTurns} ($60$ ply) và giới hạn lượt Pass; đồng thời cần vá lỗi hoán đổi tra cứu chi phí AP giữa \texttt{Bishop}/\texttt{Rook} ở nhánh trượt trong \texttt{MoveValidator.cs} trước khi cân bằng lại cấu hình AP riêng cho hai quân này.
     \item \textbf{Chưa tiến hành tối ưu hiệu năng sâu và kiểm thử người dùng quy mô lớn:} Chưa tối ưu Draw Calls/GPU Instancing, chưa có hướng dẫn tân thủ tương tác (Interactive Tutorial) cho luật hợp thể + Surge và chưa thu thập dữ liệu khảo sát trải nghiệm từ người chơi thực tế.
 \end{enumerate}
 

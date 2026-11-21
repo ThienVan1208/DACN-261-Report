@@ -41,21 +41,21 @@ actor "Bot AI\n(Minimax/RL/NNUE/LLM)" as Bot
 
 rectangle "Hệ thống game Convergence Chess (Giai đoạn 1 - DACN)" {
   package "Chuẩn bị và cấu hình" {
-    usecase "UC01: Xây dựng và lưu đội hình\n(Squad Builder - 10 Slot Points)" as UC1
-    usecase "UC02: Cài đặt âm thanh và hệ thống\n(SaveLoad Settings)" as UC2
-    usecase "UC03: Tùy biến nhân vật 3D từ ảnh\n(Smart Customization)" as UC3
+    usecase "UC01: Xây dựng và lưu đội hình\n(Squad Builder - 12 Slot Points)" as UC1
+    usecase "UC02: Cài đặt tên người chơi & hệ thống\n(UIPopupSettings / SaveLoad)" as UC2
+    usecase "UC03: Tùy biến nhân vật 3D từ ảnh\n(Smart Customization - CLI)" as UC3
   }
   package "Quản lý phòng Online" {
     usecase "UC04: Chọn khu vực máy chủ\n(Photon Region)" as UC4
-    usecase "UC05: Tạo / Tham gia phòng chơi\n(Lobby Session)" as UC5
+    usecase "UC05: Tạo / Tham gia phòng chơi\n(Photon GameMode.Shared)" as UC5
     usecase "UC06: Chọn vai trò (Trắng/Đen/Khán giả)\nvà đồng bộ Sẵn sàng" as UC6
   }
   package "Thi đấu chiến thuật 6x6" {
     usecase "UC07: Đấu PvE với Bot AI" as UC7
     usecase "UC08: Đấu PvP Offline (Hotseat)" as UC8
     usecase "UC09: Đấu PvP Online (Photon Fusion)" as UC9
-    usecase "UC10: Di chuyển, Tấn công, Hợp thể\nvà Surge Phase" as UC10
-    usecase "UC11: Bỏ lượt (Pass) / Đầu hàng" as UC11
+    usecase "UC10: Di chuyển, Tấn công, Hợp thể\n(Merge) và Surge Phase" as UC10
+    usecase "UC11: Bỏ lượt (Pass Turn)\n& Khung đầu hàng (GĐ2)" as UC11
     usecase "UC12: Quan sát trận đấu trực tiếp" as UC12
   }
 }

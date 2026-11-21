@@ -43,13 +43,13 @@ Toàn bộ các phép đo AI được chạy tự động bằng bộ công cụ
 Từ Bảng \ref{tab:ai_benchmark_full} và Hình \ref{fig:chart_ai_bench}, nhóm rút ra bốn kết luận khoa học quan trọng làm cơ sở cho Giai đoạn 2:
 \begin{enumerate}
     \item \textbf{Giới hạn của mạng Policy 1-ply thuần túy:} Dù PPO Self-Play áp đảo bản BC khởi tạo ($87.0\%$ so với $8.0\%$) và phản hồi rất nhanh ($\approx 16$--$21$ ms/nước), mạng không có tìm kiếm cây vẫn dễ mắc lỗi chiến thuật ngắn hạn (blunder) trước cây tìm kiếm Minimax do luật hợp thể và Surge tạo ra chuỗi ăn quân nhiều bước. Khi bổ sung Reward Shaping (\texttt{heu\_v12p1}), tỷ lệ thắng trước HeuristicBot Depth 2 tăng vọt từ $15.0\%$ lên $47.0\%$ (vượt tỷ lệ thua $26.75\%$).
-    \item \textbf{Sức mạnh vượt trội của kiến trúc lai tìm kiếm + học sâu:} Khi kết hợp đánh giá học máy vào cây tìm kiếm (\texttt{NeuralMinimaxBotController}), Bot áp đảo cả HeuristicBot Depth 2 ($52\%$ thắng -- $12\%$ thua) lẫn Depth 3 ($51\%$ thắng -- $25\%$ thua) và nhỉnh hơn Depth 4 ($37\%$ -- $33\%$) chỉ với $38$ ms/nước đi.
+    \item \textbf{Sức mạnh vượt trội của kiến trúc lai tìm kiếm + học sâu:} Khi kết hợp xác suất ưu tiên nước đi từ mạng Policy với cây tìm kiếm cổ điển (\texttt{NeuralMinimaxBotController}), Bot áp đảo cả HeuristicBot Depth 2 ($52\%$ thắng -- $12\%$ thua) lẫn Depth 3 ($51\%$ thắng -- $25\%$ thua) và nhỉnh hơn Depth 4 ($37\%$ -- $33\%$) chỉ với $38$ ms/nước đi.
     \item \textbf{Đột phá của Residual NNUE:} So với bản NNUE thường cùng thế hệ dữ liệu Gen 7 (\texttt{NNUE\_enc\_g7}: $23\%$ thắng, $238$ ms/nước), bản \textbf{Residual NNUE (\texttt{NNUERes\_g7})} nâng tỷ lệ thắng trước HeuristicBot Depth 4 lên tới \textbf{51.00\%} (chỉ thua $21.00\%$) đồng thời giảm thời gian suy nghĩ xuống còn \textbf{66 ms/nước} (nhanh hơn $3.6$ lần nhờ cắt tỉa Alpha-Beta hiệu quả hơn khi thứ tự đánh giá nút lá chính xác hơn).
     \item \textbf{Tiến bộ rõ rệt qua vòng lặp đồng huấn luyện đa thế hệ:} Phiên bản \texttt{Hybrid Gen7} đánh bại \texttt{Hybrid Gen3} với tỷ số $33\%$ thắng -- $20\%$ thua ($47\%$ hòa), khẳng định tính đúng đắn của vòng lặp sinh dữ liệu đa thế hệ (\texttt{Multi-generation Replay Buffer}).
 \end{enumerate}
 
 \subsection{Đánh giá thực nghiệm hệ thống Multiplayer (Photon Fusion)}
-Hình \ref{fig:chart_net_bench} trực quan hóa sự đánh đổi giữa băng thông và độ trễ từ phép đo 10 lần thăm dò trên Photon Fusion. Giao thức nhị phân tùy biến \texttt{OnlineDataBroadcastNetwork} trên kênh \texttt{Fusion Reliable Data} cắt giảm \textbf{78.1\%} tổng lưu lượng truyền tải (chỉ $70$ bytes so với $320$ bytes của \texttt{NetworkObject}) trong khi giữ được $100\%$ sự độc lập với Core Domain. Các kịch bản kiểm thử đồng bộ giữa 2 máy khách và Khán giả (Spectator) đã xác nhận đồng bộ chính xác tên người chơi, danh sách slot, đội hình $10$ Slot Points, trạng thái sẵn sàng, hạt giống vật cản trung tuyến và luồng nước đi 4 bytes.
+Hình \ref{fig:chart_net_bench} trực quan hóa sự đánh đổi giữa băng thông và độ trễ từ phép đo 10 lần thăm dò trên Photon Fusion. Giao thức nhị phân tùy biến \texttt{OnlineDataBroadcastNetwork} trên kênh \texttt{Fusion Reliable Data} cắt giảm \textbf{78.1\%} tổng lưu lượng truyền tải (chỉ $70$ bytes so với $320$ bytes của \texttt{NetworkObject}) trong khi giữ tách biệt hoàn toàn với Core Domain. Các kịch bản kiểm thử đồng bộ giữa 2 máy khách và Khán giả (Spectator) đã xác nhận đồng bộ chính xác tên người chơi, danh sách slot, đội hình (\texttt{SquadData}), trạng thái sẵn sàng, hạt giống vật cản trung tuyến và luồng nước đi 4 bytes.
 
 \begin{figure}[H]
     \centering
@@ -62,7 +62,7 @@ Hình \ref{fig:chart_net_bench} trực quan hóa sự đánh đổi giữa băng
 Trên phần cứng máy trạm GPU NVIDIA GeForce RTX 4050 Laptop (VRAM 6 GB), pipeline Smart Customization đã đạt được các cột mốc kiểm chứng thực tế:
 \begin{itemize}
     \item \textbf{Độ chính xác hình học (Method B1 v2):} Sau khi tinh gọn về $25$ kênh hình thái trực giao và thu hẹp biến thiên góc chụp khi sinh $24{,}000$ mẫu Render-to-MediaPipe ($12{,}000$ Nam, $12{,}000$ Nữ), sai số tuyệt đối trung bình trên tập kiểm định \texttt{ValMAE(active)} sau $80$ epochs giảm từ $0.0749$ (v1) xuống còn \textbf{0.0621} (Nam) và \textbf{0.0616} (Nữ).
-    \item \textbf{Chất lượng bề mặt da, khử bóng và độ trễ:} Mô hình khuếch tán \textbf{IC-Light} hoàn tất khử bóng studio trong khoảng \textbf{1.8 giây} ở FP16. Kết hợp chiếu Barycentric PyTorch3D, mặt nạ khoét mắt, lọc quang phổ men răng và hòa trộn biên Hermite $64$ pixel giúp loại bỏ hoàn toàn viền cắt dán gò má/cổ và tránh hiện tượng mờ tượng sáp.
+    \item \textbf{Chất lượng bề mặt da, khử bóng đối xứng và độ trễ:} Kết hợp chiếu Barycentric PyTorch3D kiểu MeInGame \cite{meingame}, khử bóng đối xứng hai bên trong không gian Lab (Bilateral Symmetry Delighting), mặt nạ khoét mắt, lọc quang phổ men răng và hòa trộn Multi-Band Laplacian Pyramid / cửa sổ Hermite $64$ pixel giúp loại bỏ viền cắt dán gò má/cổ và tránh hiện tượng mờ tượng sáp; tổng thời gian suy luận toàn trình ghi nhận trong \texttt{sc\_result.json} ở chế độ \texttt{texnet} đạt khoảng \textbf{5.9 giây} trên GPU cục bộ.
     \item \textbf{Hiệu quả trực quan 3D trong Unity 6 URP:} Hệ thống 6 kiểu tóc MPFB v2 khớp chuẩn da đầu bằng tọa độ Barycentric, vật liệu mắt PBR có đốm sáng giác mạc (\texttt{\_ClearCoatMask = 1.0}) và bản đồ pháp tuyến HRN có thể tinh chỉnh thời gian thực trong giao diện Unity như minh họa tại Hình \ref{fig:sc_results}.
 \end{itemize}
 
@@ -89,22 +89,23 @@ Trên phần cứng máy trạm GPU NVIDIA GeForce RTX 4050 Laptop (VRAM 6 GB), 
     \label{fig:sc_results}
 \end{figure}
 
-\begin{notebox}{Các hướng tiếp cận thất bại (Dead-ends) đã kiểm chứng và loại bỏ trong giai đoạn 1}
-Một giá trị thực nghiệm quan trọng của giai đoạn DACN là xác nhận sớm các phương án không khả thi để tránh lãng phí thời gian ở giai đoạn DATN:
+\begin{notebox}{Các hướng tiếp cận đã kiểm chứng loại bỏ hoặc tạm đóng băng trong giai đoạn 1}
+Một giá trị thực nghiệm quan trọng của giai đoạn DACN là xác nhận sớm các phương án kém hiệu quả hoặc đánh đổi cao để tránh lãng phí thời gian ở giai đoạn DATN:
 \begin{enumerate}
     \item \textbf{Dùng trực tiếp tọa độ chiều sâu $Z$ của MediaPipe:} Gây sai số RMSE tới $0.1415$ IOD (gấp $2.5$ lần trục $X$), buộc phải chuyển sang Method B1 v2 Render-to-MediaPipe.
-    \item \textbf{Huấn luyện mạng \texttt{sc\_texnet} trên dữ liệu tổng hợp:} Gây loang màu hồng nhân tạo quanh miệng và bệt da như tượng sáp; đã thay hoàn toàn bằng IC-Light + chiếu Barycentric trực tiếp.
+    \item \textbf{Huấn luyện mạng \texttt{sc\_texnet} trên dữ liệu tổng hợp:} Gây loang màu hồng nhân tạo quanh miệng và bệt da như tượng sáp; đã loại bỏ khỏi luồng chạy chính.
+    \item \textbf{Khử bóng khuếch tán bằng IC-Light \cite{iclight} (\texttt{stage3\_hd\_engine.py}):} Dù khử bóng tốt (~$1.8$ giây ở FP16 riêng bước khuếch tán), mô hình khuếch tán phụ thuộc trọng số nặng và có nguy cơ biến đổi nét chân dung gốc, do đó đã được comment đóng băng và thay bằng chiếu Barycentric PyTorch3D + Bilateral Symmetry Delighting thuần giải phẫu trên \texttt{HEAD}.
     \item \textbf{Remap Normal Map RGB trực tiếp từ FLAME sang MPFB v2:} Gây đảo trục tiếp tuyến $(N_x, N_y)$ do đảo UV MakeHuman xoay $90^\circ$; đã khắc phục bằng cách remap bản đồ độ cao vô hướng trước rồi mới tính Sobel trên canvas UV MakeHuman.
     \item \textbf{Dùng \texttt{SkinnedMeshRenderer} hoặc offset tọa độ cứng cho tóc OBJ:} Gây lệch trục bindpose làm tóc rơi xuống chân hoặc chìm sâu 4--5 cm trong hộp sọ; đã chuẩn hóa bằng \texttt{HumanService.add\_mhclo\_asset()} kết hợp \texttt{MeshFilter}/\texttt{MeshRenderer}.
 \end{enumerate}
 \end{notebox}
 
 \subsection{Kết quả giao diện nguyên mẫu các màn hình trò chơi}
-Bên cạnh các kết quả định lượng AI, mạng và Smart Customization, nguyên mẫu chơi thử đã kết nối hoàn chỉnh các màn hình điều hướng chính trong Unity 6. Các khung hình dưới đây đánh dấu chính xác 4 góc chụp giao diện thực tế từ bản dựng hiện tại để nhóm bổ sung ảnh chụp màn hình mới nhất trước khi in nộp:
+Bên cạnh các kết quả định lượng AI, mạng và Smart Customization, nguyên mẫu chơi thử đã kết nối hoàn chỉnh các màn hình điều hướng chính trong Unity 6. Các khung hình dưới đây đánh dấu chính xác 3 góc chụp giao diện thực tế từ bản dựng hiện tại để nhóm bổ sung ảnh chụp màn hình mới nhất trước khi in nộp:
 
 \begin{figure}[H]
     \centering
-    \screenshotplaceholder{Content/Thực nghiệm và đánh giá/images/ui\_mainmenu\_squad.png}{Chụp ảnh màn hình Main Menu và giao diện Squad Builder (UIPopupSquadBuilder) đang kéo thả quân cờ trong ngân sách 10 Slot Points.}
+    \screenshotplaceholder{Content/Thực nghiệm và đánh giá/images/ui\_mainmenu\_squad.png}{Chụp ảnh màn hình Main Menu và giao diện Squad Builder (UIPopupSquadBuilder) đang kéo thả quân cờ trong ngân sách 12 Slot Points.}
     \caption{Giao diện Main Menu và màn hình thiết lập đội hình Squad Builder}
     \label{fig:ui_squad_placeholder}
 \end{figure}

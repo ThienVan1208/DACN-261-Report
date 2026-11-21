@@ -5,25 +5,25 @@ Phân hệ nhiều người chơi được xây dựng nhằm hỗ trợ hai ch�
 \subsubsection{Chế độ PvP Offline (Hotseat)}
 Trong chế độ chơi hai người trên cùng một thiết bị (\texttt{PvPOffModeBootstrapper}), hệ thống đấu nối hai bộ điều khiển người chơi cục bộ vào \texttt{MatchManager} kết hợp hai cơ chế hỗ trợ:
 \begin{itemize}
-    \item \textbf{Nạp đội hình độc lập qua \texttt{ISquadProvider}:} Sử dụng \texttt{Player1SquadProvider} và \texttt{Player2SquadProvider} (hoặc đội hình thiết lập trực tiếp từ \texttt{UIPopupSquadBuilder}) để gán đúng bộ quân cờ $10$ Slot Points cho từng phe trước khi phát sự kiện \texttt{MatchInitEvent}.
+    \item \textbf{Nạp đội hình độc lập qua \texttt{ISquadProvider}:} Sử dụng \texttt{Player1SquadProvider} và \texttt{Player2SquadProvider} (hoặc đội hình thiết lập trực tiếp từ \texttt{UIPopupSquadBuilder}) để gán đúng bộ quân cờ theo ngân sách cấu hình (\texttt{MaxSlotsInSquad = 12}) cho từng phe trước khi phát sự kiện \texttt{MatchInitEvent}.
     \item \textbf{Xoay góc nhìn bàn cờ tự động (\texttt{BoardRotator}):} Lắng nghe sự kiện chuyển lượt và tạo nút diễn hoạt \texttt{BoardRotatedVisualNode} trong hàng đợi hình ảnh để xoay mượt bàn cờ $180^\circ$ về đúng phía người chơi đang tới lượt, ngăn chặn thao tác nhầm góc nhìn.
 \end{itemize}
 
 \subsubsection{Kiến trúc phòng chơi và quản lý phiên trực tuyến (\texttt{OnlineSessionManager})}
-Chế độ PvP Online được điều phối tập trung bởi lớp \texttt{OnlineSessionManager} (cài đặt \texttt{INetworkRunnerCallbacks} của Photon Fusion và \texttt{IGameEventListener}). Các cơ chế cốt lõi đã hiện thực trong giai đoạn 1 gồm:
+Chế độ PvP Online được điều phối tập trung bởi lớp \texttt{OnlineSessionManager} (cài đặt \texttt{INetworkRunnerCallbacks} của Photon Fusion 2 \cite{photon_fusion} ở chế độ \texttt{GameMode.Shared}, trong đó máy chủ phòng là Shared Mode Master Client). Các cơ chế cốt lõi đã hiện thực trong giai đoạn 1 gồm:
 \begin{itemize}
     \item \textbf{Lựa chọn khu vực máy chủ (Region Selection):} Lưu lựa chọn khu vực Photon Cloud của người dùng qua \texttt{PlayerPrefs} (\texttt{PREF\_REGION}) nhằm giảm độ trễ kết nối theo vị trí địa lý.
     \item \textbf{Quản lý phòng và phân vai 3 vị trí:} Duy trì danh sách trạng thái gồm \texttt{\_whitePlayer} (Player 1), \texttt{\_blackPlayer} (Player 2), \texttt{\_hostPlayer} và danh sách khán giả \texttt{\_spectators}. Người chơi trong phòng có thể gửi yêu cầu đổi slot (\texttt{MSG\_REQUEST\_SLOT\_CHANGE}), đồng bộ tên hiển thị (\texttt{\_playerNames}) và đồng bộ đội hình cục bộ (\texttt{\_whiteSquad}, \texttt{\_blackSquad}) kèm cờ sẵn sàng (\texttt{\_isWhiteReady}, \texttt{\_isBlackReady}).
-    \item \textbf{Khởi tạo trận đấu tất định (\texttt{MatchInitData}):} Khi cả hai người chơi chính đều ở trạng thái sẵn sàng, Host sinh hạt giống trận đấu \texttt{\_matchSeed} cùng mảng vị trí vật cản \texttt{\_synchronizedObstacles} (trên vùng trung tuyến hàng 2--3) và phát tán đồng thời gói tin \texttt{MSG\_MATCH\_INIT} chứa toàn bộ dữ liệu khởi tạo cho tất cả thành viên (bao gồm cả Khán giả) trước khi chuyển sang \texttt{PvPOnlScene}.
-    \item \textbf{Đấu nối vai trò theo ngữ cảnh (\texttt{PvPOnlModeBootstrapper}):} Khi vào trận, Bootstrapper tự động kiểm tra vai trò của máy cục bộ:
+    \item \textbf{Khởi tạo trận đấu tất định (\texttt{MatchInitData}):} Khi cả hai người chơi chính đều ở trạng thái sẵn sàng, Host sinh hạt giống trận đấu \texttt{\_matchSeed} cùng mảng vị trí vật cản \texttt{\_synchronizedObstacles} (trên vùng trung tuyến hàng 2--3) và phát tán đồng thời gói tin \texttt{MSG\_MATCH\_INIT} chứa toàn bộ dữ liệu khởi tạo cho tất cả thành viên (bao gồm cả Khán giả); cả Host lẫn Client kích hoạt chuyển cảnh sang \texttt{PvPOnlScene} ngay khi nhận dữ liệu này.
+    \item \textbf{Đấu nối vai trò theo ngữ cảnh (\texttt{PvPOnlModeBootstrapper}):} Khi vào trận, Bootstrapper tự động kiểm tra vai trò của máy cục bộ và xoay góc nhìn camera tương ứng:
     \begin{itemize}
-        \item Nếu là Trắng (hoặc Đen): gắn \texttt{OnlineLocalMoveSender} (bọc \texttt{RaycastController}) cho phe mình để vừa thực thi cục bộ vừa gửi gói nước đi ra mạng; gắn \texttt{NetworkController} cho phe đối thủ để chờ gói nước đi từ mạng; đồng thời khởi chạy \texttt{OnlineTurnTimer} giới hạn thời gian mỗi lượt.
-        \item Nếu là Khán giả: gắn hai \texttt{NetworkController} (hoặc \texttt{SpectatorPassiveProvider}) và bật lớp phủ \texttt{UISpectatorOverlay}, vô hiệu hóa hoàn toàn tương tác chọn quân để bảo đảm tính toàn vẹn ván đấu.
+        \item Nếu là Trắng (hoặc Đen): gắn \texttt{OnlineLocalMoveSender} (bọc \texttt{RaycastController}) cho phe mình để vừa thực thi cục bộ vừa gửi gói nước đi ra mạng qua \texttt{OnlineSessionManager.SendMove}; gắn \texttt{NetworkController} cho phe đối thủ để chờ gói nước đi từ mạng; đồng thời khởi chạy \texttt{OnlineTurnTimer} đếm ngược 60 giây mỗi lượt (phần xử lý tự động hết giờ \texttt{OnTimerExpired} được quy hoạch nối mạch ở Giai đoạn 2).
+        \item Nếu là Khán giả: gắn hai \texttt{NetworkController} cho cả Trắng và Đen và vô hiệu hóa \texttt{RaycastController} để bảo đảm tính toàn vẹn ván đấu (các lớp \texttt{SpectatorPassiveProvider} và \texttt{UISpectatorOverlay} đã được định nghĩa sẵn cho phần mở rộng HUD khán giả ở Giai đoạn 2).
     \end{itemize}
 \end{itemize}
 
 \subsubsection{Giao thức truyền dữ liệu nhị phân tùy biến (\texttt{OnlineDataBroadcastNetwork})}
-Thay vì đồng bộ từng \texttt{GameObject} quân cờ qua hệ thống \texttt{NetworkTransform}/\texttt{RPC} vốn gây phụ thuộc chéo vào kiến trúc MVC và tốn nhiều băng thông thừa, nhóm tách riêng một tầng truyền tải nhị phân gọn nhẹ trong \texttt{OnlineDataBroadcastNetwork} vận hành trên kênh tin cậy \texttt{SendReliableDataToPlayer} của Photon Fusion.
+Thay vì đồng bộ từng \texttt{GameObject} quân cờ qua hệ thống \texttt{NetworkTransform}/\texttt{RPC} vốn gây phụ thuộc chéo vào kiến trúc trình diễn và tốn nhiều băng thông thừa, nhóm tách riêng một tầng truyền tải nhị phân gọn nhẹ trong \texttt{OnlineDataBroadcastNetwork} vận hành trên kênh tin cậy \texttt{SendReliableDataToPlayer} của Photon Fusion.
 
 Mỗi gói tin đều mang một byte định danh đầu tiên (\texttt{BroadcastDataIdentifierByte}) kèm khóa tuần tự \texttt{ReliableKey} chống trùng lặp/mất thứ tự, sau đó được bộ định tuyến \texttt{CreateBroadcastDataHandler} giải mã bằng đúng lớp con kế thừa \texttt{BroadcastDataHandler} như Bảng \ref{tab:network_protocol}.
 
@@ -37,20 +37,20 @@ Mỗi gói tin đều mang một byte định danh đầu tiên (\texttt{Broadca
         \textbf{ID} & \textbf{Mã bản tin (\texttt{byte[0]})} & \textbf{Lớp xử lý tương ứng} & \textbf{Cấu trúc payload và chức năng} \\
         \midrule
         1 & \texttt{MSG\_SLOTS\_UPDATE} & \texttt{BroadcastSlotsUpdate...} & Danh sách \texttt{PlayerRef} của Trắng, Đen, Khán giả và trạng thái Ready từ Host. \\
-        2 & \texttt{MSG\_START\_MATCH} & \texttt{OnlineSessionManager} & Tín hiệu bắt đầu chuyển cảnh vào trận đấu. \\
+        2 & \texttt{MSG\_START\_MATCH} & \textit{Dự phòng (chưa dùng)} & Định danh giữ chỗ trong enum; luồng hiện tại chuyển cảnh trực tiếp qua \texttt{MSG\_MATCH\_INIT}. \\
         3 & \texttt{MSG\_READY\_UPDATE} & \texttt{BroadcastReadyUpdate...} & Trạng thái sẵn sàng (\texttt{bool}) kèm dữ liệu đội hình \texttt{SquadData}. \\
-        4 & \texttt{MSG\_MATCH\_INIT} & \texttt{BroadcastMatchInit...} & Hạt giống \texttt{MatchSeed}, đội hình Trắng/Đen và mảng vật cản trung tuyến. \\
+        4 & \texttt{MSG\_MATCH\_INIT} & \texttt{BroadcastMatchInit...} & Hạt giống \texttt{MatchSeed}, đội hình Trắng/Đen, mảng vật cản và kích hoạt tải \texttt{PvPOnlScene}. \\
         5 & \texttt{MSG\_MOVE} & \texttt{BroadcastMoveDataHandler} & Gói cố định \textbf{4 bytes}: \texttt{[5, FromTile, ToTile, PlayerId]}. \\
-        6 & \texttt{MSG\_SURRENDER} & \texttt{BroadcastSurrender...} & Gói cố định \textbf{2 bytes}: \texttt{[6, ResigningPlayerId]}. \\
+        6 & \texttt{MSG\_SURRENDER} & \texttt{BroadcastSurrender...} & Gói cố định \textbf{2 bytes}: \texttt{[6, ResigningPlayerId]} (đã có tầng truyền/nhận, chờ nối nút UI và dispatch \texttt{GameOverEvent} ở Giai đoạn 2). \\
         7 & \texttt{MSG\_REQUEST\_SLOT\_CHANGE} & \texttt{BroadcastRequestSlotChange...} & Yêu cầu của Client chuyển sang vị trí Trắng, Đen hoặc Khán giả. \\
         8 & \texttt{MSG\_MAP\_PLAYER\_NAME} & \texttt{BroadcastMapPlayerName...} & Ánh xạ \texttt{PlayerRef.RawEncoded} sang chuỗi tên hiển thị người chơi. \\
-        9 & \texttt{MSG\_SQUAD\_UPDATE} & \texttt{BroadcastSquadUpdate...} & Cập nhật đội hình $10$ Slot Points của từng người chơi ngay trong Lobby. \\
+        9 & \texttt{MSG\_SQUAD\_UPDATE} & \texttt{BroadcastSquadUpdate...} & Cập nhật đội hình (\texttt{SquadData}) của từng người chơi ngay trong Lobby. \\
         10 & \texttt{MSG\_REQUEST\_SLOT\_SYNC} & \texttt{BroadcastRequestSlotSync...} & Yêu cầu Host gửi lại trạng thái phòng hiện hành khi Client mới kết nối. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-Ở đầu nhận trong trận đấu, \texttt{NetworkController} đăng ký sự kiện \texttt{OnRemoteMoveReceived}. Khi \texttt{MatchManager} gọi \texttt{RequestActionAsync}, \texttt{NetworkController} trả về một \texttt{UniTask<MoveCommand>} đang chờ từ \texttt{UniTaskCompletionSource}; ngay khi gói 4 bytes \texttt{MSG\_MOVE} hợp lệ của đúng phe đối thủ đến nơi, \texttt{HandleRemoteMove} hoàn tất \texttt{Task} và trao thẳng \texttt{MoveCommand} cho Core Engine.
+Ở đầu nhận trong trận đấu, \texttt{NetworkController} (kế thừa \texttt{NetworkBehaviour} nhưng không dùng đồng bộ thuộc tính hay RPC trên quân cờ) đăng ký sự kiện \texttt{OnRemoteMoveReceived}. Khi \texttt{MatchManager} gọi \texttt{RequestActionAsync}, \texttt{NetworkController} trả về một \texttt{UniTask<MoveCommand>} đang chờ từ \texttt{UniTaskCompletionSource}; ngay khi gói 4 bytes \texttt{MSG\_MOVE} hợp lệ của đúng phe đối thủ đến nơi, \texttt{HandleRemoteMove} hoàn tất \texttt{Task} và trao thẳng \texttt{MoveCommand} cho Core Engine.
 
 \subsubsection{So sánh kiến trúc và đánh giá thực nghiệm: Fusion Network Object vs Fusion Reliable Data}
 Để kiểm chứng cơ sở khoa học cho quyết định chọn giao thức luồng dữ liệu tin cậy thay cho đồng bộ đối tượng mạng truyền thống, nhóm thực hiện phân tích đối chiếu theo 4 tiêu chí kiến trúc (Bảng \ref{tab:fusion_compare}) và chạy thực nghiệm đo lường trực tiếp trên Photon Fusion với 10 lần thăm dò (probe) liên tiếp.
@@ -63,9 +63,9 @@ Mỗi gói tin đều mang một byte định danh đầu tiên (\texttt{Broadca
         \toprule
         \textbf{Tiêu chí đánh giá} & \textbf{Fusion Network Object (RPC / State Sync)} & \textbf{Fusion Reliable Data (Custom Binary Stream)} \\
         \midrule
-        Phương thức đồng bộ & Đồng bộ trạng thái từng \texttt{GameObject} liên tục theo tick thời gian thực. & Chỉ truyền nhận gói tin nhị phân gọn nhẹ tại thời điểm phát sinh sự kiện (chọn slot, đi cờ, đầu hàng). \\
+        Phương thức đồng bộ & Đồng bộ trạng thái từng \texttt{GameObject} liên tục theo tick thời gian thực. & Chỉ truyền nhận gói tin nhị phân gọn nhẹ tại thời điểm phát sinh sự kiện (chọn slot, đi cờ). \\
         Băng thông tiêu thụ & Cao; mỗi gói tin phải kèm header định tuyến RPC và định danh \texttt{NetworkObject} để tới đúng đối tượng đích. & Rất thấp; chỉ chứa đúng dữ liệu cần thiết (ví dụ 4 bytes cho một nước đi hoàn chỉnh). \\
-        Mức độ phụ thuộc kiến trúc (Coupling) & Cao; buộc phải gắn \texttt{NetworkObject}/\texttt{NetworkBehaviour} sâu vào tầng trình diễn và phá vỡ cấu trúc Core thuần C\#. & Tách rời hoàn toàn (Decoupled) khỏi Core và View; chỉ giao tiếp qua duy nhất giao diện \texttt{IMoveInputProvider}. \\
+        Mức độ phụ thuộc kiến trúc (Coupling) & Cao; buộc phải gắn \texttt{NetworkObject}/\texttt{NetworkBehaviour} lên toàn bộ quân cờ và phá vỡ cấu trúc tách biệt Core/View. & Thấp; các quân cờ và \texttt{GameState} hoàn toàn tách rời mạng, chỉ nối biên với Core qua giao diện \texttt{IMoveInputProvider}. \\
         Đặc tính độ trễ và ứng dụng phù hợp & Tốc độ truyền phản hồi nhanh; tối ưu cho game hành động thời gian thực (FPS, RTS). & Độ trễ RTT lớn hơn do cơ chế đảm bảo tin cậy phân mảnh của Fusion; rất phù hợp với game chiến thuật theo lượt. \\
         \bottomrule
     \end{tabularx}
@@ -92,16 +92,16 @@ Kết quả đo đạc thực nghiệm qua 10 lần thăm dò (Hình \ref{fig:be
     \begin{subfigure}[b]{0.47\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Content/Multiplayer/networkobjectbench.png}
-        \caption{Log đo lường phương pháp Fusion Network Object}
+        \caption{Bảng log CSV phương pháp Fusion Network Object}
         \label{fig:bench_netobj}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.47\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Content/Multiplayer/reliabledatabench.png}
-        \caption{Log đo lường phương pháp Fusion Reliable Data}
+        \caption{Bảng log CSV phương pháp Fusion Reliable Data}
         \label{fig:bench_reliable}
     \end{subfigure}
-    \caption{Kết quả đo kiểm băng thông và RTT trực tiếp trên Unity Console của hai cơ chế Photon Fusion}
+    \caption{Kết quả đo kiểm băng thông và RTT trích từ tệp log CSV thực nghiệm của hai cơ chế Photon Fusion}
     \label{fig:fusion_console_bench}
 \end{figure}

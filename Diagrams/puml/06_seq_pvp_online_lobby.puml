@@ -42,13 +42,13 @@ participant "OnlineSessionManager\n(Client)" as SessC
 actor "Client (Player 2)" as Client
 
 Host -> UI : Chọn Region + Bấm Create Room
-UI -> SessH : StartSession(GameMode.Host/Shared, RoomID)
+UI -> SessH : CreateRoomAsync(RoomID) -> GameMode.Shared
 SessH -> Photon : Khởi tạo NetworkRunner & mở phòng
 Photon --> SessH : OnConnectedToServer (Assign White Slot)
 SessH --> UI : Cập nhật danh sách Slot (Host = White)
 
-Client -> SessC : Nhập RoomID + Join Room
-SessC -> Photon : Kết nối phiên phòng tương ứng
+Client -> SessC : Nhập RoomID + JoinRoomAsync(RoomID)
+SessC -> Photon : Kết nối phiên phòng (GameMode.Shared)
 Photon --> SessH : OnPlayerJoined(Client)
 SessC -> Photon : SendReliableData(MSG_MAP_PLAYER_NAME)
 SessC -> Photon : SendReliableData(MSG_REQUEST_SLOT_SYNC)
@@ -56,15 +56,15 @@ Photon --> SessH : OnReliableDataReceived
 SessH -> Photon : Broadcast(MSG_SLOTS_UPDATE + PlayerNames)
 Photon --> SessC : Cập nhật Slot hiện tại (Client vào Black/Spectator)
 
-Client -> SessC : Chỉnh Squad (10 Slots) & bấm Ready
+Client -> SessC : Chỉnh Squad (12 Slots) & bấm Ready
 SessC -> Photon : SendReliableData(MSG_READY_UPDATE + SquadData)
 Photon --> SessH : OnlineDataBroadcastNetwork.DispatchReadyUpdate()
 SessH -> SessH : Lưu _blackSquad & _isBlackReady = true
 
-Host -> UI : Bấm Ready & Start Match (khi cả 2 Ready)
+Host -> UI : Bấm Ready & StartOnlineMatch() (khi cả 2 Ready)
 SessH -> SessH : Sinh _matchSeed & Obstacles (Row 2-3)
 SessH -> Photon : Broadcast(MSG_MATCH_INIT: Seed, WhiteSquad, BlackSquad, Obstacles)
 Photon --> SessC : Nhận MatchInitData đồng bộ 100%
-SessH -> SessH : Load Scene PvPOnlScene (OnMatchStartTriggered)
-SessC -> SessC : Load Scene PvPOnlScene (OnMatchStartTriggered)
+SessH -> SessH : Load Scene PvPOnlScene (TriggerMatchStart)
+SessC -> SessC : Load Scene PvPOnlScene (TriggerMatchStart)
 @enduml

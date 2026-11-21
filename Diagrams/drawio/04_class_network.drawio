@@ -5,13 +5,13 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="osm" value="OnlineSessionManager&#10;---&#10;NetworkRunner, White/Black/Spectators&#10;MatchSeed, WhiteSquad, BlackSquad&#10;CreateOrJoinRoomAsync()&#10;OnReliableDataReceived()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="osm" value="OnlineSessionManager&#10;---&#10;NetworkRunner (GameMode.Shared)&#10;White/Black/Spectators, MatchSeed&#10;CreateRoomAsync(), JoinRoomAsync()&#10;SendMove(), OnReliableDataReceived()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="380" y="40" width="320" height="130" as="geometry" />
         </mxCell>
         <mxCell id="odbn" value="OnlineDataBroadcastNetwork&#10;---&#10;_reliableSeq, Inbound Events&#10;OnHandleReliableDataReceived()&#10;SendMove(), SendSurrender()&#10;CreateBroadcastDataHandler()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="380" y="230" width="320" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="idb" value="&lt;&lt;enum&gt;&gt;&#10;BroadcastDataIdentifierByte&#10;---&#10;MSG_SLOTS_UPDATE..MSG_REQUEST_SLOT_SYNC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="idb" value="&lt;&lt;enum&gt;&gt;&#10;BroadcastDataIdentifierByte&#10;---&#10;MSG_SLOTS_UPDATE..MSG_REQUEST_SLOT_SYNC&#10;(MSG_START_MATCH = 2 [reserved])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="760" y="240" width="300" height="95" as="geometry" />
         </mxCell>
         <mxCell id="bdh" value="BroadcastDataHandler (abstract)&#10;---&#10;HandleData(runner, sender, key)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
@@ -29,13 +29,13 @@
         <mxCell id="h4" value="BroadcastMatchInit/SurrenderHandlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="790" y="550" width="240" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="nc" value="NetworkController&#10;(IMoveInputProvider)&#10;UniTaskCompletionSource&lt;MoveCommand&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="nc" value="NetworkController (NetworkBehaviour)&#10;(IMoveInputProvider)&#10;UniTaskCompletionSource&lt;MoveCommand&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="40" y="120" width="270" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="ols" value="OnlineLocalMoveSender&#10;(Decorator IMoveInputProvider)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="ols" value="OnlineLocalMoveSender&#10;(Wraps RaycastController)&#10;(IMoveInputProvider)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="40" y="260" width="270" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="pvp" value="PvPOnlModeBootstrapper&#10;+ OnlineTurnTimer&#10;+ SpectatorPassiveProvider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="pvp" value="PvPOnlModeBootstrapper&#10;+ OnlineTurnTimer (60s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="770" y="60" width="280" height="100" as="geometry" />
         </mxCell>
         <mxCell id="e1" value="composes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="osm" target="odbn">

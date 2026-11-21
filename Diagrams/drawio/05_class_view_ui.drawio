@@ -8,25 +8,25 @@
         <mxCell id="vqm" value="VisualQueueManager&#10;(IGameEventListener)&#10;---&#10;PlayBatchAsync(GameEventBatch)&#10;Static HUD Events" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="80" y="50" width="270" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="vsb" value="VisualSequenceBuilder&#10;---&#10;BuildNodes(batch, boardView)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="vsb" value="VisualSequenceBuilder&#10;---&#10;Then(), Fire(), ThenParallel(), PlayAsync()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="80" y="210" width="250" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="ivn" value="&lt;&lt;interface&gt;&gt; IVisualNode&#10;---&#10;PieceMove / PieceAttack /&#10;CamShaked / ZoomCam / BoardRotated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="ivn" value="&lt;&lt;interface&gt;&gt; IVisualNode&#10;---&#10;PieceMoveNode / PieceAttackVisualNode /&#10;CamShaked / ZoomCam / BoardRotated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="60" y="340" width="290" height="95" as="geometry" />
         </mxCell>
-        <mxCell id="bv" value="BoardView&#10;---&#10;Tiles[36], PieceViews&#10;SpawnBoard(), HighlightValidTiles()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="bv" value="BoardView&#10;---&#10;_tileViews[36], _pieceViews[]&#10;InitBoard(), ShowMoveAffordances()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="420" y="60" width="250" height="95" as="geometry" />
         </mxCell>
-        <mxCell id="tv" value="TileView&#10;---&#10;TileIndex, Hover/Highlight" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="tv" value="TileView&#10;---&#10;TileIndex, SetHighlight(), ClearHighlight()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="420" y="215" width="220" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="pv" value="PieceView (abstract)&#10;---&#10;StateMachine (5 States)&#10;PlayTargetHitVFX()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="pv" value="PieceView&#10;---&#10;PlayMoveAnimation(), PlayAttackAnimation()&#10;PlayTargetHitVFX(), TriggerVFX()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="420" y="340" width="230" height="85" as="geometry" />
         </mxCell>
-        <mxCell id="par" value="PieceAnimationRelay&#10;---&#10;PlayVFX(), StopVFX(), OnHit()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="par" value="PieceAnimationRelay&#10;---&#10;PlayVFX(), StopVFX(),&#10;OnAnimEvent(), OnAttackHit(), OnHit()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="420" y="480" width="230" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="uim" value="UIManager&#10;---&#10;ShowView&lt;T&gt;(), ShowPopup&lt;T&gt;()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="uim" value="UIManager&#10;---&#10;ShowViewAsync&lt;T&gt;(), ShowPopupAsync&lt;T&gt;()&#10;CloseTopPopupAsync()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="760" y="60" width="240" height="85" as="geometry" />
         </mxCell>
         <mxCell id="map" value="UIMapper (ScriptableObject)&#10;---&#10;SSOT UI Prefab Registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">

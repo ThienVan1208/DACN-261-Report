@@ -43,14 +43,18 @@ interface IGameEventListener {
   +OnEventsDispatchedAsync(batch: GameEventBatch) : UniTask
 }
 
-class MatchManager {
-  -CurrentState : GameState
-  -_p1Provider : IMoveInputProvider
-  -_p2Provider : IMoveInputProvider
-  -_listeners : List<IGameEventListener>
+class MatchManager <<MonoBehaviour>> {
+  -_gameState : GameState
+  +GameState : GameState
+  -_player1Input : IMoveInputProvider
+  -_player2Input : IMoveInputProvider
+  -_eventListeners : List<IGameEventListener>
   +Initialize(...)
   +StartMatchAsync() : UniTask
-  +ExecuteMove(cmd: MoveCommand) : GameEventBatch
+}
+
+class GameEventHandler <<static>> {
+  +ExecuteCommand(state, cmd) : GameEventBatch
 }
 
 class GameState {
@@ -60,86 +64,123 @@ class GameState {
   +TurnCount : int
   +P1_AP : int
   +P2_AP : int
+  +MaxAP : int
+  +ApMergeCost : int
   +SurgeTile : int
   +P1_PassChargesLeft : int
   +P2_PassChargesLeft : int
   +GenerateProceduralObstacles(rng: Random)
   +ApplyMove(cmd: MoveCommand)
+  +ApplyMoveWithUndo(cmd: MoveCommand) : UndoToken
   +Clone() : GameState
 }
 
 class Piece {
   +Owner : PlayerId
-  +Type : PieceType
+  +PieceType : PieceType
   +Passives : PassiveFlags
   +HasMerged : bool
+  +CanMergeWith(target: Piece) : bool
+  +Absorb(source: Piece) : void
 }
 
 class MoveValidator <<static>> {
-  +IsValidMove(state, cmd) : bool
-  +GetLegalMoves(state, buffer) : void
-  +CalculateApCost(state, cmd) : int
+  +ValidateAction(state, from, to, out ap, out type) : bool
+  +GenerateLegalMovesFast(state, list) : void
+  +HasAnyLegalAction(state, tile) : bool
+  +HasAnyLegalActionForPlayer(state, player) : bool
   +IsKingInCheck(state, player) : bool
 }
 
 class MinimaxSearch <<static>> {
   +BestAction(root, maximizer, depth, temp) : int
-  +Search(root, depth, eval, policyPriors) : MoveCommand
-  -AlphaBetaPVS(...) : float
+  +Search(root, maximizer, options) : SearchResult
+  -AlphaBeta(...) : float
 }
 
 class ObservationEncoderV2 <<static>> {
   +ObservationSize = 654
-  +Encode(state, buffer, perspective) : void
+  +Encode(state, buffer, activePlayer) : void
 }
 
-class NNUEFastEvaluator {
-  -_w1Transposed : float[]
+class NNUEModelWeights {
   +InputSize : int
-  +EvaluateState(state, perspective) : float
-  +EvaluateTacticalLeaf(state, perspective) : float
+  +W1Transposed : float[]
+}
+
+class NNUEFastEvaluator <<static>> {
+  +LoadWeights(...) : NNUEModelWeights
+  +EvaluateState(st, p, w) : float
+  +EvaluateTacticalLeaf(st, p, w) : float
+  +EvaluateResidualLeaf(st, p, d, w) : float
+}
+
+class LLMSymbolicEvaluator <<static>> {
+  +Evaluate(state, perspective) : float
+}
+
+class LLMEvolvedModuleBank <<static>> {
+  +ModuleCount = 5
+  +EvaluateSymmetric(selfView, oppView) : float
 }
 
 class AgentBotController {
-  -_rewardHandler : AgentRewardHandler
+  -_minimaxDepth : int
   +CollectObservations(sensor)
   +OnActionReceived(actions)
   +WriteDiscreteActionMask(mask)
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+}
+
+class NeuralMinimaxBotController {
+  -_minimaxDepth : int
+  -_topKCandidates : int
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
 }
 
 class HybridAgentBotController {
-  -_nnueEvaluator : NNUEFastEvaluator
-  -_searchDepth : int
+  -_nnueWeights : NNUEModelWeights
+  -_minimaxDepth : int
+  -_useResidualMode : bool
   +RequestActionAsync(state, ct) : UniTask<MoveCommand>
 }
 
 class NNUEBotController {
-  -_evaluator : NNUEFastEvaluator
-  -_useResidual : bool
+  -_nnueWeights : NNUEModelWeights
+  -_useResidualMode : bool
   +RequestActionAsync(state, ct) : UniTask<MoveCommand>
 }
 
 class LLMBotController {
-  -_symbolicEvaluator : LLMSymbolicEvaluator
-  -_moduleBank : LLMEvolvedModuleBank
+  -_minimaxDepth : int
   +RequestActionAsync(state, ct) : UniTask<MoveCommand>
 }
 
 MatchManager --> GameState
-MatchManager --> MoveValidator
+MatchManager --> GameEventHandler
+GameEventHandler --> MoveValidator
+GameEventHandler --> GameState
 MatchManager --> IMoveInputProvider
 MatchManager --> IGameEventListener
 GameState "1" *-- "0..36" Piece
 
 AgentBotController ..|> IMoveInputProvider
+NeuralMinimaxBotController ..|> IMoveInputProvider
 HybridAgentBotController ..|> IMoveInputProvider
 NNUEBotController ..|> IMoveInputProvider
 LLMBotController ..|> IMoveInputProvider
 
 AgentBotController --> ObservationEncoderV2
+AgentBotController --> MinimaxSearch
+NeuralMinimaxBotController --> MinimaxSearch
 HybridAgentBotController --> MinimaxSearch
 HybridAgentBotController --> NNUEFastEvaluator
+HybridAgentBotController o-- NNUEModelWeights
 NNUEBotController --> MinimaxSearch
 NNUEBotController --> NNUEFastEvaluator
+NNUEBotController o-- NNUEModelWeights
+NNUEFastEvaluator ..> NNUEModelWeights
 LLMBotController --> MinimaxSearch
+LLMBotController --> LLMSymbolicEvaluator
+LLMSymbolicEvaluator --> LLMEvolvedModuleBank
 @enduml

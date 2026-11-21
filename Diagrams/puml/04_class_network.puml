@@ -40,7 +40,7 @@ interface IMoveInputProvider
 
 enum BroadcastDataIdentifierByte {
   MSG_SLOTS_UPDATE = 1
-  MSG_START_MATCH = 2
+  MSG_START_MATCH = 2 [reserved]
   MSG_READY_UPDATE = 3
   MSG_MATCH_INIT = 4
   MSG_MOVE = 5
@@ -61,10 +61,12 @@ class OnlineSessionManager {
   -_matchSeed : int
   -_whiteSquad : SquadData
   -_blackSquad : SquadData
-  +CreateOrJoinRoomAsync(roomId, region)
+  +CreateRoomAsync(roomId)
+  +JoinRoomAsync(roomId)
   +RequestSlotChange(targetSlot)
-  +ToggleReady(squad)
-  +SendLocalMove(cmd: MoveCommand)
+  +ToggleReady()
+  +StartOnlineMatch()
+  +SendMove(cmd: MoveCommand)
   +OnReliableDataReceived(...)
 }
 
@@ -95,7 +97,7 @@ class BroadcastSquadUpdateDataHandler
 class BroadcastMatchInitDataHandler
 class BroadcastSurrenderDataHandler
 
-class NetworkController {
+class NetworkController <<NetworkBehaviour>> {
   -_assignedPlayer : PlayerId
   -_pendingMoveTcs : UniTaskCompletionSource<MoveCommand>
   +Initialize(assignedPlayer)
@@ -104,24 +106,20 @@ class NetworkController {
 }
 
 class OnlineLocalMoveSender {
-  -_innerProvider : IMoveInputProvider
-  -_sessionManager : OnlineSessionManager
-  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
-}
-
-class SpectatorPassiveProvider {
+  -_raycastController : RaycastController
+  -_localPlayerId : PlayerId
   +RequestActionAsync(state, ct) : UniTask<MoveCommand>
 }
 
 class OnlineTurnTimer {
-  +TurnDurationSeconds : float
-  +StartTurnTimer(player)
-  +OnTurnTimeout : event
+  +TurnDuration : float
+  +StartTurnTimer()
+  +StopTimer()
+  +OnTimerExpired : event
 }
 
 class PvPOnlModeBootstrapper {
   +Bootstrap()
-  -WireProvidersForRole()
 }
 
 OnlineSessionManager ..|> INetworkRunnerCallbacks
@@ -139,10 +137,10 @@ BroadcastSurrenderDataHandler --|> BroadcastDataHandler
 
 NetworkController ..|> IMoveInputProvider
 OnlineLocalMoveSender ..|> IMoveInputProvider
-SpectatorPassiveProvider ..|> IMoveInputProvider
+OnlineTurnTimer ..|> IGameEventListener
 
 NetworkController --> OnlineSessionManager : subscribes OnRemoteMoveReceived
-OnlineLocalMoveSender --> OnlineSessionManager : sends local move
+OnlineLocalMoveSender --> OnlineSessionManager : calls SendMove()
 PvPOnlModeBootstrapper --> OnlineSessionManager
 PvPOnlModeBootstrapper --> NetworkController
 PvPOnlModeBootstrapper --> OnlineLocalMoveSender

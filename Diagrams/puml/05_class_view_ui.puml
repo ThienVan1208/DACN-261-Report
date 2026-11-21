@@ -53,34 +53,36 @@ class VisualQueueManager {
 }
 
 class VisualSequenceBuilder {
-  +BuildNodes(batch, boardView) : List<IVisualNode>
+  +Then(node: IVisualNode) : VisualSequenceBuilder
+  +Fire(node: IVisualNode) : VisualSequenceBuilder
+  +ThenParallel(nodes) : VisualSequenceBuilder
+  +PlayAsync(ct: CancellationToken) : UniTask
 }
 
-class PieceMoveVisualNode
+class PieceMoveNode
 class PieceAttackVisualNode
 class CamShakedVisualNode
 class ZoomCamVisualNode
 class BoardRotatedVisualNode
 
 class BoardView {
-  -_tiles : TileView[36]
-  -_pieceViews : Dictionary<int, PieceView>
-  +SpawnBoard(state: GameState)
-  +HighlightValidTiles(indices)
+  -_tileViews : TileView[]
+  -_pieceViews : PieceView[]
+  +InitBoard(state: GameState)
+  +ShowMoveAffordances(tile, state)
   +MovePieceView(from, to)
 }
 
 class TileView {
   +TileIndex : int
-  +SetHighlightState(state)
-  +OnPointerHover()
+  +SetHighlight(type, color)
+  +ClearHighlight()
 }
 
-abstract class PieceView {
-  -_stateMachine : StateMachine
-  -_animationRelay : PieceAnimationRelay
-  +PlayMove(targetPos) : UniTask
-  +PlayAttack(targetPos) : UniTask
+class PieceView {
+  #_animator : Animator
+  +PlayMoveAnimation(targetPos, ct) : UniTask
+  +PlayAttackAnimation(target, ct) : UniTask
   +PlayTargetHitVFX(pos) : virtual void
   +TriggerVFX(vfxName)
 }
@@ -89,8 +91,10 @@ class PieceAnimationRelay {
   -_pieceView : PieceView
   +PlayVFX(vfxName: string)
   +StopVFX(vfxName: string)
+  +OnAnimEvent(eventName: string)
   +OnAttackSwing()
-  +OnHit()
+  +OnAttackHit(hitIndex: int)
+  +OnHit(hitIndex: int)
 }
 
 class ConcreteMedievalPieceViews <<6 Piece Classes>> {
@@ -100,11 +104,11 @@ class ConcreteMedievalPieceViews <<6 Piece Classes>> {
 }
 
 class UIManager {
-  -_mapper : UIMapper
-  -_activeViews : Stack<UIViewBase>
-  +ShowView<T>()
-  +ShowPopup<T>()
-  +HideCurrentPopup()
+  -_uiMapper : UIMapper
+  -_popupStack : Stack<UIPopupBase>
+  +ShowViewAsync<T>() : UniTask<T>
+  +ShowPopupAsync<T>() : UniTask<T>
+  +CloseTopPopupAsync() : UniTask
 }
 
 class UIMapper <<ScriptableObject>> {
@@ -125,7 +129,7 @@ VisualQueueManager --> VisualSequenceBuilder
 VisualQueueManager --> BoardView
 VisualSequenceBuilder ..> IVisualNode
 
-PieceMoveVisualNode ..|> IVisualNode
+PieceMoveNode ..|> IVisualNode
 PieceAttackVisualNode ..|> IVisualNode
 CamShakedVisualNode ..|> IVisualNode
 ZoomCamVisualNode ..|> IVisualNode

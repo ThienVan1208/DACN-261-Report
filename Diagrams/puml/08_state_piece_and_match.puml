@@ -33,33 +33,33 @@ skinparam NoteBackgroundColor #FFFBEB
 skinparam NoteBorderColor #D97706
 
 
-state "Vòng đời trận đấu (MatchManager & GameState)" as MatchLife {
+state "Vòng đời trận đấu (MatchManager & GameEventHandler)" as MatchLife {
   [*] --> MatchInit : Nạp Squad + Sinh Obstacles
-  MatchInit --> PlayerTurn : Khởi tạo StartAP & TurnCount = 1
+  MatchInit --> PlayerTurn : Khởi tạo StartAP=3 (MaxAP=5) & TurnCount = 1
   state PlayerTurn {
-    [*] --> WaitingInput : +2 AP (+1 nếu có BonusAP)
+    [*] --> WaitingInput : Hồi +2 AP (+1 nếu có BonusAP)
     WaitingInput --> ValidatingMove : Nhận MoveCommand từ IMoveInputProvider
-    ValidatingMove --> ExecutingMove : Hợp lệ
+    ValidatingMove --> ExecutingMove : ValidateAction hợp lệ
     ValidatingMove --> WaitingInput : Không hợp lệ
-    ExecutingMove --> SurgeSubPhase : Hành động là Hợp thể & còn đủ AP
+    ExecutingMove --> SurgeSubPhase : Hành động là Merge & còn đủ AP
     ExecutingMove --> TurnEnd : Di chuyển / Tấn công / Pass
     SurgeSubPhase --> TurnEnd : Đòn bồi hoàn tất hoặc chọn Bank AP
   }
-  PlayerTurn --> GameOver : Vua bị tiêu diệt / Đầu hàng / TurnCount > MaxTurns
+  PlayerTurn --> GameOver : Vua bị tiêu diệt / Không còn nước hợp lệ / TurnCount >= MaxTurns
   PlayerTurn --> PlayerTurn : Đổi ActivePlayer
   GameOver --> [*] : Phát GameOverEvent
 }
 
 state "Máy trạng thái diễn hoạt quân cờ (PieceView FSM)" as PieceFSM {
-  [*] --> IdleState
-  IdleState --> MoveState : PieceMovedEvent
-  MoveState --> IdleState : Đến ô đích
-  IdleState --> AttackState : PieceAttack / Kill / ShieldBroken
-  AttackState --> IdleState : Animation Relay hoàn tất
-  IdleState --> GetHitState : Bị tấn công (có DivineShield vỡ khiên)
-  GetHitState --> IdleState : Kết thúc hit-stun
-  IdleState --> DeathState : PieceKilledEvent
-  GetHitState --> DeathState : Chết sau đòn đánh
-  DeathState --> [*] : Ẩn mesh / Chuyển vào Graveyard HUD
+  [*] --> IdleStateBase
+  IdleStateBase --> MoveStateBase : PieceMovedEvent
+  MoveStateBase --> IdleStateBase : Đến ô đích
+  IdleStateBase --> AttackStateBase : PieceKilledEvent / Attack
+  AttackStateBase --> IdleStateBase : Animation Relay hoàn tất
+  IdleStateBase --> GetHitStateBase : Bị tấn công (GetHit)
+  GetHitStateBase --> IdleStateBase : Kết thúc hit-stun
+  IdleStateBase --> DeathStateBase : PieceKilledEvent
+  GetHitStateBase --> DeathStateBase : Chết sau đòn đánh
+  DeathStateBase --> [*] : Hủy PieceView / Chuyển vào Graveyard HUD
 }
 @enduml

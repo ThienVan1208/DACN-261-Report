@@ -20,16 +20,16 @@
         <mxCell id="a_bot" value="Bot AI&#10;(Minimax/RL/NNUE/LLM)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e2e8f0;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="1050" y="460" width="40" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="uc1" value="UC01: Xây dựng đội hình&#10;(Squad Builder 10 Slots)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="uc1" value="UC01: Xây dựng đội hình&#10;(Squad Builder - 12 Slots)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="270" y="80" width="210" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="uc2" value="UC02: Cài đặt âm thanh&#10;và lưu trữ hệ thống" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="uc2" value="UC02: Cài đặt tên người chơi&#10;và lưu trữ hệ thống" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="530" y="80" width="200" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="uc3" value="UC03: Tùy biến nhân vật 3D&#10;(Smart Customization)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="uc3" value="UC03: Tùy biến nhân vật 3D&#10;(Smart Customization - CLI)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="270" y="175" width="210" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="uc4" value="UC04: Chọn Photon Region&#10;và Tạo/Vào phòng Lobby" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="uc4" value="UC04: Chọn Photon Region &amp;&#10;Tạo/Vào phòng (GameMode.Shared)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="530" y="175" width="220" height="65" as="geometry" />
         </mxCell>
         <mxCell id="uc5" value="UC05: Chọn Slot (Trắng/Đen/&#10;Khán giả) &amp; Ready" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
@@ -47,10 +47,10 @@
         <mxCell id="uc9" value="UC09: Đấu PvP Online&#10;(Photon Fusion)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="270" y="580" width="200" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="uc10" value="UC10: Di chuyển, Tấn công,&#10;Hợp thể &amp; Surge Phase" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="uc10" value="UC10: Di chuyển, Tấn công,&#10;Hợp thể (Merge) &amp; Surge Phase" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="550" y="480" width="220" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="uc11" value="UC11: Bỏ lượt (Pass) /&#10;Đầu hàng (Surrender)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="uc11" value="UC11: Bỏ lượt (Pass Turn) &amp;&#10;Khung đầu hàng (GĐ2)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#334155;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="550" y="600" width="220" height="65" as="geometry" />
         </mxCell>
         <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="a_p1" target="uc1">

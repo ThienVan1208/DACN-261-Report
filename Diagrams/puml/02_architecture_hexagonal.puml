@@ -36,7 +36,7 @@ top to bottom direction
 
 package "Composition Root (Khởi tạo chế độ chơi)" #F1F5F9 {
   [IModeBootstrapper] as Boot
-  [PvEModeBootstrapper] as PvEBoot
+  [PveModeBootstrapper] as PvEBoot
   [PvPOffModeBootstrapper] as OffBoot
   [PvPOnlModeBootstrapper] as OnlBoot
   [Training / Benchmark Bootstrappers] as TrainBoot
@@ -50,44 +50,50 @@ package "Composition Root (Khởi tạo chế độ chơi)" #F1F5F9 {
 
 package "Driving Adapters (Nguồn phát sinh nước đi)" #EFF6FF {
   [RaycastController\n(Human Local Input)] as Raycast
-  [OnlineLocalMoveSender\n+ NetworkController\n(Photon Fusion)] as NetCtrl
-  [AgentBotController /\nHybridAgentBotController] as RLBot
-  [NNUEBotController /\nNeuralMinimaxBotController] as NNUEBot
-  [LLMBotController\n(Symbolic Module Bank)] as LLMBot
+  [OnlineLocalMoveSender +\nNetworkController\n(Photon Shared / ReliableData)] as NetCtrl
+  [AgentBotController\n(ML-Agents PPO/BC &\nHeuristic Minimax)] as RLBot
+  [NeuralMinimaxBotController\n(Policy + MinimaxEval)] as NMxBot
+  [HybridAgentBotController /\nNNUEBotController\n(NNUE / Residual)] as NNUEBot
+  [LLMBotController\n(Symbolic Bank)] as LLMBot
 }
 
 rectangle "Driving Port\n<<interface>> IMoveInputProvider" as InPort #DBEAFE
 
-package "Hexagonal Core Domain (Pure C# - Zero UnityEngine)" #ECFDF5 {
-  [MatchManager\n(Vòng lặp ván đấu UniTask)] as MatchMgr
-  [GameState\n(Bàn 6x6, AP, Obstacles, Surge)] as State
-  [MoveValidator\n(Luật đi, Hợp thể, Chiếu tướng)] as Validator
+package "Core Domain & Application Loop (Tách rời đồ họa 3D)" #ECFDF5 {
+  [MatchManager\n(MonoBehaviour UniTask Loop)] as MatchMgr
+  [GameEventHandler\n(ExecuteCommand -> EventBatch)] as EvtHandler
+  [GameState\n(Bàn 6x6, MaxAP=5, Obstacles, Surge)] as State
+  [MoveValidator\n(ValidateAction, GenerateLegalMovesFast)] as Validator
   [Piece & PassiveFlags\n(9-bit ushort bitmask)] as Piece
-  [SquadValidator & GameConfig] as Config
+  [SquadValidator & GameConfig\n(ScriptableObject, 12 Slots)] as Config
+  MatchMgr --> EvtHandler
   MatchMgr --> State
-  MatchMgr --> Validator
+  EvtHandler --> State
+  EvtHandler --> Validator
   State *-- Piece
-  MatchMgr --> Config
+  State --> Config
 }
 
 rectangle "Driven Port\n<<interface>> IGameEventListener" as OutPort #FEF3C7
 
-package "Driven Adapters (Tầng hiển thị, mạng và ghi nhận)" #FFFBEB {
+package "Driven Adapters (Hiển thị, huấn luyện và kiểm chuẩn)" #FFFBEB {
   [VisualQueueManager\n+ BoardView / PieceView / UI] as VisualQ
-  [OnlineSessionManager\n(Broadcast Move & MatchInit)] as NetSess
-  [NullGameEventListener\n(Headless >10,000 FPS Training)] as NullList
-  [FileBenchmarkRecorder\n(Ghi log Winrate / MoveTime)] as BenchRec
+  [BoardRotator & OnlineTurnTimer\n(PvP Offline / Đếm giờ 60s)] as AuxList
+  [AgentRewardHandler\n(NNUE Potential Reward Shaping)] as RewardList
+  [NullGameEventListener\n(Headless Training)] as NullList
+  [BenchmarkGameEventManager\n-> BenchmarkRunner -> FileBenchmarkRecorder] as BenchRec
 }
 
-package "External Module (Smart Customization Microservice)" #F5F3FF {
+package "External Module (Smart Customization - Local Python CLI)" #F5F3FF {
   [SCCharacterCreator\n(Unity UGUI + URP PBR)] as SCUnity
-  [Python FastAPI Backend\n(MediaPipe + ONNX B1 v2 + IC-Light + HRN)] as SCPy
-  SCUnity <--> SCPy : HTTP / JSON + PNG
+  [Python CLI (infer_onnx.py)\n(MediaPipe + ONNX B1 v2 + PyTorch3D\n+ Bilateral Delighting + HRN)] as SCPy
+  SCUnity <--> SCPy : ProcessStartInfo / sc_result.json + PNG
 }
 
 Raycast ..|> InPort
 NetCtrl ..|> InPort
 RLBot ..|> InPort
+NMxBot ..|> InPort
 NNUEBot ..|> InPort
 LLMBot ..|> InPort
 
@@ -96,7 +102,8 @@ Locator ..> MatchMgr : inject Ports
 MatchMgr --> OutPort : GameEventBatch
 
 VisualQ ..|> OutPort
-NetSess ..|> OutPort
+AuxList ..|> OutPort
+RewardList ..|> OutPort
 NullList ..|> OutPort
 BenchRec ..|> OutPort
 @enduml

@@ -5,10 +5,10 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="s1" value="1. Host chọn Region &amp;&#10;Create Room (Photon)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="s1" value="1. Host chọn Region &amp;&#10;CreateRoomAsync (GameMode.Shared)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="60" y="60" width="230" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="s2" value="2. Client nhập RoomID &amp;&#10;Join Room" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="s2" value="2. Client nhập RoomID &amp;&#10;JoinRoomAsync (GameMode.Shared)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="340" y="60" width="230" height="70" as="geometry" />
         </mxCell>
         <mxCell id="s3" value="3. Client gửi&#10;MSG_MAP_PLAYER_NAME &amp;&#10;MSG_REQUEST_SLOT_SYNC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
@@ -17,7 +17,7 @@
         <mxCell id="s4" value="4. Host Broadcast&#10;MSG_SLOTS_UPDATE&#10;(White/Black/Spectator)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="620" y="210" width="250" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="s5" value="5. Hai bên chỉnh Squad (10 Slots)&#10;&amp; gửi MSG_READY_UPDATE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+        <mxCell id="s5" value="5. Hai bên chỉnh Squad (12 Slots)&#10;&amp; gửi MSG_READY_UPDATE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
           <mxGeometry x="340" y="210" width="230" height="80" as="geometry" />
         </mxCell>
         <mxCell id="s6" value="6. Host kiểm tra cả 2 Ready &amp;&#10;sinh MatchSeed + Obstacles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">

@@ -46,11 +46,11 @@ participant "VisualQueueManager\n+ BoardView" as View
 Match -> Sender : RequestActionAsync(GameState, ct)
 Sender -> Ray : RequestActionAsync(GameState, ct)
 Player -> Ray : Click quân cờ & chọn ô đích (From, To)
-Ray -> Ray : Kiểm tra MoveValidator.IsValidMove()
+Ray -> Ray : Kiểm tra MoveValidator.ValidateAction()
 Ray --> Sender : Trả về MoveCommand(From, To, PlayerId)
 
 par Đồng bộ lên mạng (4-byte Binary Payload)
-  Sender -> Broad : SendMove(runner, cmd)
+  Sender -> Broad : OnlineSessionManager.SendMove() -> SendMove(runner, cmd)
   note right of Broad
     Payload 4 bytes:
     [0] MSG_MOVE (5)
@@ -65,9 +65,9 @@ else Thực thi cục bộ song song (Deterministic Core)
   Sender --> Match : Trả về MoveCommand (trên máy cục bộ)
 end
 
-Match -> Match : GameState.ApplyMove(cmd)\n(Trừ AP, Hợp thể/Surge, Kiểm tra Chiếu/Thắng)
+Match -> Match : GameEventHandler.ExecuteCommand()\n(Trừ AP, Hợp thể/Surge, Hòa/Thắng)
 Match -> View : OnEventsDispatchedAsync(GameEventBatch)
-View -> View : VisualSequenceBuilder dựng chuỗi IVisualNode
-View -> View : Diễn hoạt Move / Attack / VFX / Audio / HUD
-View --> Match : Hoàn tất UniTask -> Chuyển lượt kế tiếp
+View -> View : VisualSequenceBuilder\n.Then(...).PlayAsync()
+View -> View : Diễn hoạt Move / Attack\nVFX / Audio / HUD
+View --> Match : Hoàn tất UniTask -> Đổi lượt
 @enduml
