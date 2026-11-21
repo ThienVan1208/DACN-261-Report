@@ -1,0 +1,150 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundcorner 8
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.3
+skinparam BorderColor #475569
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassBorderColor #334155
+skinparam ClassHeaderBackgroundColor #E2E8F0
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #64748B
+skinparam ComponentBackgroundColor #F8FAFC
+skinparam ComponentBorderColor #334155
+skinparam RectangleBackgroundColor #F8FAFC
+skinparam RectangleBorderColor #334155
+skinparam UsecaseBackgroundColor #F1F5F9
+skinparam UsecaseBorderColor #334155
+skinparam ActorBackgroundColor #E2E8F0
+skinparam ActorBorderColor #334155
+skinparam StateBackgroundColor #F8FAFC
+skinparam StateBorderColor #334155
+skinparam SequenceParticipantBackgroundColor #F1F5F9
+skinparam SequenceParticipantBorderColor #334155
+skinparam SequenceLifeLineBorderColor #64748B
+skinparam SequenceGroupBackgroundColor #F8FAFC
+skinparam SequenceGroupBorderColor #94A3B8
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #D97706
+
+skinparam classAttributeIconSize 0
+
+interface INetworkRunnerCallbacks <<Photon Fusion>>
+interface IGameEventListener
+interface IMoveInputProvider
+
+enum BroadcastDataIdentifierByte {
+  MSG_SLOTS_UPDATE = 1
+  MSG_START_MATCH = 2
+  MSG_READY_UPDATE = 3
+  MSG_MATCH_INIT = 4
+  MSG_MOVE = 5
+  MSG_SURRENDER = 6
+  MSG_REQUEST_SLOT_CHANGE = 7
+  MSG_MAP_PLAYER_NAME = 8
+  MSG_SQUAD_UPDATE = 9
+  MSG_REQUEST_SLOT_SYNC = 10
+}
+
+class OnlineSessionManager {
+  +Instance : OnlineSessionManager
+  -_runner : NetworkRunner
+  -_broadcastNetwork : OnlineDataBroadcastNetwork
+  -_whitePlayer : PlayerRef
+  -_blackPlayer : PlayerRef
+  -_spectators : List<PlayerRef>
+  -_matchSeed : int
+  -_whiteSquad : SquadData
+  -_blackSquad : SquadData
+  +CreateOrJoinRoomAsync(roomId, region)
+  +RequestSlotChange(targetSlot)
+  +ToggleReady(squad)
+  +SendLocalMove(cmd: MoveCommand)
+  +OnReliableDataReceived(...)
+}
+
+class OnlineDataBroadcastNetwork {
+  -_reliableSeq : int
+  +OnMoveReceived : event
+  +OnSlotsUpdateReceived : event
+  +OnReadyUpdateReceived : event
+  +OnSquadUpdateReceived : event
+  +OnMatchInitReceived : event
+  +OnHandleReliableDataReceived(runner, player, key, data)
+  +SendMove(runner, cmd)
+  +SendSurrender(runner, player)
+  +BroadcastLocalPlayerName(...)
+  -CreateBroadcastDataHandler(data) : BroadcastDataHandler
+}
+
+abstract class BroadcastDataHandler {
+  #_data : byte[]
+  #_network : OnlineDataBroadcastNetwork
+  +HandleData(runner, sender, key)
+}
+
+class BroadcastMoveDataHandler
+class BroadcastSlotsUpdateDataHandler
+class BroadcastReadyUpdateDataHandler
+class BroadcastSquadUpdateDataHandler
+class BroadcastMatchInitDataHandler
+class BroadcastSurrenderDataHandler
+
+class NetworkController {
+  -_assignedPlayer : PlayerId
+  -_pendingMoveTcs : UniTaskCompletionSource<MoveCommand>
+  +Initialize(assignedPlayer)
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+  -HandleRemoteMove(cmd)
+}
+
+class OnlineLocalMoveSender {
+  -_innerProvider : IMoveInputProvider
+  -_sessionManager : OnlineSessionManager
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+}
+
+class SpectatorPassiveProvider {
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+}
+
+class OnlineTurnTimer {
+  +TurnDurationSeconds : float
+  +StartTurnTimer(player)
+  +OnTurnTimeout : event
+}
+
+class PvPOnlModeBootstrapper {
+  +Bootstrap()
+  -WireProvidersForRole()
+}
+
+OnlineSessionManager ..|> INetworkRunnerCallbacks
+OnlineSessionManager ..|> IGameEventListener
+OnlineSessionManager *-- OnlineDataBroadcastNetwork
+OnlineDataBroadcastNetwork --> BroadcastDataIdentifierByte
+OnlineDataBroadcastNetwork ..> BroadcastDataHandler : Factory creates
+
+BroadcastMoveDataHandler --|> BroadcastDataHandler
+BroadcastSlotsUpdateDataHandler --|> BroadcastDataHandler
+BroadcastReadyUpdateDataHandler --|> BroadcastDataHandler
+BroadcastSquadUpdateDataHandler --|> BroadcastDataHandler
+BroadcastMatchInitDataHandler --|> BroadcastDataHandler
+BroadcastSurrenderDataHandler --|> BroadcastDataHandler
+
+NetworkController ..|> IMoveInputProvider
+OnlineLocalMoveSender ..|> IMoveInputProvider
+SpectatorPassiveProvider ..|> IMoveInputProvider
+
+NetworkController --> OnlineSessionManager : subscribes OnRemoteMoveReceived
+OnlineLocalMoveSender --> OnlineSessionManager : sends local move
+PvPOnlModeBootstrapper --> OnlineSessionManager
+PvPOnlModeBootstrapper --> NetworkController
+PvPOnlModeBootstrapper --> OnlineLocalMoveSender
+PvPOnlModeBootstrapper --> OnlineTurnTimer
+@enduml

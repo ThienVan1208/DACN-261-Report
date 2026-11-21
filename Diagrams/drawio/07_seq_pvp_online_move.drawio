@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="page1" name="Sequence PvP Online Move">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="540" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="m1" value="1. Người chơi click chọn quân&#10;và ô đích (RaycastController)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="240" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="2. MoveValidator kiểm tra hợp lệ&#10;-&gt; tạo MoveCommand(From, To, Pid)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="350" y="80" width="260" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="3. OnlineLocalMoveSender&#10;chuyển tiếp qua 2 nhánh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="660" y="80" width="230" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" value="4a. Nhánh mạng: Đóng gói 4 bytes&#10;[MSG_MOVE, From, To, Pid]&#10;qua Photon ReliableData" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="640" y="230" width="270" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" value="5a. Máy đối thủ nhận packet -&gt;&#10;OnlineDataBroadcastNetwork -&gt;&#10;NetworkController mở khóa Task" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="340" y="230" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" value="4b. Nhánh cục bộ: MatchManager&#10;thực thi GameState.ApplyMove()&#10;(Deterministic Core)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="60" y="230" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="m7" value="6. Cả 2 máy phát GameEventBatch -&gt;&#10;VisualQueueManager diễn hoạt&#10;(Move/Attack/VFX/HUD) -&gt; Đổi lượt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="280" y="390" width="380" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m1" target="m2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m2" target="m3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="remote" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m3" target="m4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m4" target="m5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m5" target="m7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="local" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m3" target="m6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="m6" target="m7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,60 +1,107 @@
-\section{Multiplayer}
-\subsection{Công việc đã làm}
-\subsubsection{PvP Off}
-Hiện thực PvP Offline có ứng dụng Board Rotator, ứng dụng ISquadProvider để áp đúng Squad cho mỗi người chơi 
+\subsection{Thiết kế và hiện thực phân hệ Multiplayer}
 
-\subsubsection{PvP Onl}
-\begin{enumerate}
-    \item Bước đầu tìm hiểu các phương án Multiplayer.
-    \item Thiết lập thành phần tạo phòng
-    \item Vận dụng Reliable Data Stream của Photon Fusion, ứng dụng thành phần gửi Move của client.
-\end{enumerate}
+Phân hệ nhiều người chơi được xây dựng nhằm hỗ trợ hai chế độ độc lập là \textbf{PvP Offline (Hotseat)} và \textbf{PvP Online (Photon Fusion 2)} mà không làm thay đổi bất kỳ dòng mã nào trong Core Domain.
 
+\subsubsection{Chế độ PvP Offline (Hotseat)}
+Trong chế độ chơi hai người trên cùng một thiết bị (\texttt{PvPOffModeBootstrapper}), hệ thống đấu nối hai bộ điều khiển người chơi cục bộ vào \texttt{MatchManager} kết hợp hai cơ chế hỗ trợ:
+\begin{itemize}
+    \item \textbf{Nạp đội hình độc lập qua \texttt{ISquadProvider}:} Sử dụng \texttt{Player1SquadProvider} và \texttt{Player2SquadProvider} (hoặc đội hình thiết lập trực tiếp từ \texttt{UIPopupSquadBuilder}) để gán đúng bộ quân cờ $10$ Slot Points cho từng phe trước khi phát sự kiện \texttt{MatchInitEvent}.
+    \item \textbf{Xoay góc nhìn bàn cờ tự động (\texttt{BoardRotator}):} Lắng nghe sự kiện chuyển lượt và tạo nút diễn hoạt \texttt{BoardRotatedVisualNode} trong hàng đợi hình ảnh để xoay mượt bàn cờ $180^\circ$ về đúng phía người chơi đang tới lượt, ngăn chặn thao tác nhầm góc nhìn.
+\end{itemize}
 
-\subsection{Công việc tương lai}
-\begin{enumerate}
-    \item Ứng dụng các cơ chế xử lí timeout, disconnect
-    \item Thêm chế độ đấu hạng
-    \item Thêm các tính năng log-in, link Facebook, Google
-\end{enumerate}
+\subsubsection{Kiến trúc phòng chơi và quản lý phiên trực tuyến (\texttt{OnlineSessionManager})}
+Chế độ PvP Online được điều phối tập trung bởi lớp \texttt{OnlineSessionManager} (cài đặt \texttt{INetworkRunnerCallbacks} của Photon Fusion và \texttt{IGameEventListener}). Các cơ chế cốt lõi đã hiện thực trong giai đoạn 1 gồm:
+\begin{itemize}
+    \item \textbf{Lựa chọn khu vực máy chủ (Region Selection):} Lưu lựa chọn khu vực Photon Cloud của người dùng qua \texttt{PlayerPrefs} (\texttt{PREF\_REGION}) nhằm giảm độ trễ kết nối theo vị trí địa lý.
+    \item \textbf{Quản lý phòng và phân vai 3 vị trí:} Duy trì danh sách trạng thái gồm \texttt{\_whitePlayer} (Player 1), \texttt{\_blackPlayer} (Player 2), \texttt{\_hostPlayer} và danh sách khán giả \texttt{\_spectators}. Người chơi trong phòng có thể gửi yêu cầu đổi slot (\texttt{MSG\_REQUEST\_SLOT\_CHANGE}), đồng bộ tên hiển thị (\texttt{\_playerNames}) và đồng bộ đội hình cục bộ (\texttt{\_whiteSquad}, \texttt{\_blackSquad}) kèm cờ sẵn sàng (\texttt{\_isWhiteReady}, \texttt{\_isBlackReady}).
+    \item \textbf{Khởi tạo trận đấu tất định (\texttt{MatchInitData}):} Khi cả hai người chơi chính đều ở trạng thái sẵn sàng, Host sinh hạt giống trận đấu \texttt{\_matchSeed} cùng mảng vị trí vật cản \texttt{\_synchronizedObstacles} (trên vùng trung tuyến hàng 2--3) và phát tán đồng thời gói tin \texttt{MSG\_MATCH\_INIT} chứa toàn bộ dữ liệu khởi tạo cho tất cả thành viên (bao gồm cả Khán giả) trước khi chuyển sang \texttt{PvPOnlScene}.
+    \item \textbf{Đấu nối vai trò theo ngữ cảnh (\texttt{PvPOnlModeBootstrapper}):} Khi vào trận, Bootstrapper tự động kiểm tra vai trò của máy cục bộ:
+    \begin{itemize}
+        \item Nếu là Trắng (hoặc Đen): gắn \texttt{OnlineLocalMoveSender} (bọc \texttt{RaycastController}) cho phe mình để vừa thực thi cục bộ vừa gửi gói nước đi ra mạng; gắn \texttt{NetworkController} cho phe đối thủ để chờ gói nước đi từ mạng; đồng thời khởi chạy \texttt{OnlineTurnTimer} giới hạn thời gian mỗi lượt.
+        \item Nếu là Khán giả: gắn hai \texttt{NetworkController} (hoặc \texttt{SpectatorPassiveProvider}) và bật lớp phủ \texttt{UISpectatorOverlay}, vô hiệu hóa hoàn toàn tương tác chọn quân để bảo đảm tính toàn vẹn ván đấu.
+    \end{itemize}
+\end{itemize}
 
-\subsection{So sánh giữa hai phương pháp: Fusion Network Object và Fusion Reliable Data}
+\subsubsection{Giao thức truyền dữ liệu nhị phân tùy biến (\texttt{OnlineDataBroadcastNetwork})}
+Thay vì đồng bộ từng \texttt{GameObject} quân cờ qua hệ thống \texttt{NetworkTransform}/\texttt{RPC} vốn gây phụ thuộc chéo vào kiến trúc MVC và tốn nhiều băng thông thừa, nhóm tách riêng một tầng truyền tải nhị phân gọn nhẹ trong \texttt{OnlineDataBroadcastNetwork} vận hành trên kênh tin cậy \texttt{SendReliableDataToPlayer} của Photon Fusion.
 
-\begin{center}
-\begin{tabular}{ |m{2cm}|m{20em}|m{20em}| } 
-    \hline 
-    Phương pháp Multiplayer & Fusion Network Object & Fusion Reliable Data \\ \hline
-    Phương thức đồng bộ & Đồng bộ từng GameObject ở thời gian thực & Chỉ nhận và gửi dữ liệu ở từng lần gọi hàm \\ \hline
-    Băng thông & Lớn, mỗi gói tin cần chứa thêm thông tin Rpc để đến được GameObject đúng & Nhỏ, chỉ chứa đủ thông tin \\ \hline
-    Coupling & Đòi hỏi coupling với cấu trúc Model View Controller hiện có & Hoàn toàn decoupled khỏi cấu trúc MVC hiện có, chỉ giao tiếp qua Interface IMoveInputProvider \\ \hline
-    Tốc độ & Nhanh, thường được ứng dụng cho các game FPS, RTS & Chậm, thường được ứng dụng cho các game theo lượt \\
-    \hline
-\end{tabular}
-\end{center}
+Mỗi gói tin đều mang một byte định danh đầu tiên (\texttt{BroadcastDataIdentifierByte}) kèm khóa tuần tự \texttt{ReliableKey} chống trùng lặp/mất thứ tự, sau đó được bộ định tuyến \texttt{CreateBroadcastDataHandler} giải mã bằng đúng lớp con kế thừa \texttt{BroadcastDataHandler} như Bảng \ref{tab:network_protocol}.
 
-\subsubsection{Kết quả Benchmark}
-Sử dụng 10 lần probe để kiểm tra tổng băng thông mỗi phương thức sử dụng:
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \caption{Danh mục các bản tin nhị phân trong giao thức OnlineDataBroadcastNetwork}
+    \label{tab:network_protocol}
+    \begin{tabularx}{\textwidth}{C{0.7cm} L{4.3cm} L{4.5cm} Y}
+        \toprule
+        \textbf{ID} & \textbf{Mã bản tin (\texttt{byte[0]})} & \textbf{Lớp xử lý tương ứng} & \textbf{Cấu trúc payload và chức năng} \\
+        \midrule
+        1 & \texttt{MSG\_SLOTS\_UPDATE} & \texttt{BroadcastSlotsUpdate...} & Danh sách \texttt{PlayerRef} của Trắng, Đen, Khán giả và trạng thái Ready từ Host. \\
+        2 & \texttt{MSG\_START\_MATCH} & \texttt{OnlineSessionManager} & Tín hiệu bắt đầu chuyển cảnh vào trận đấu. \\
+        3 & \texttt{MSG\_READY\_UPDATE} & \texttt{BroadcastReadyUpdate...} & Trạng thái sẵn sàng (\texttt{bool}) kèm dữ liệu đội hình \texttt{SquadData}. \\
+        4 & \texttt{MSG\_MATCH\_INIT} & \texttt{BroadcastMatchInit...} & Hạt giống \texttt{MatchSeed}, đội hình Trắng/Đen và mảng vật cản trung tuyến. \\
+        5 & \texttt{MSG\_MOVE} & \texttt{BroadcastMoveDataHandler} & Gói cố định \textbf{4 bytes}: \texttt{[5, FromTile, ToTile, PlayerId]}. \\
+        6 & \texttt{MSG\_SURRENDER} & \texttt{BroadcastSurrender...} & Gói cố định \textbf{2 bytes}: \texttt{[6, ResigningPlayerId]}. \\
+        7 & \texttt{MSG\_REQUEST\_SLOT\_CHANGE} & \texttt{BroadcastRequestSlotChange...} & Yêu cầu của Client chuyển sang vị trí Trắng, Đen hoặc Khán giả. \\
+        8 & \texttt{MSG\_MAP\_PLAYER\_NAME} & \texttt{BroadcastMapPlayerName...} & Ánh xạ \texttt{PlayerRef.RawEncoded} sang chuỗi tên hiển thị người chơi. \\
+        9 & \texttt{MSG\_SQUAD\_UPDATE} & \texttt{BroadcastSquadUpdate...} & Cập nhật đội hình $10$ Slot Points của từng người chơi ngay trong Lobby. \\
+        10 & \texttt{MSG\_REQUEST\_SLOT\_SYNC} & \texttt{BroadcastRequestSlotSync...} & Yêu cầu Host gửi lại trạng thái phòng hiện hành khi Client mới kết nối. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
-\begin{center}
-\begin{tabular}{ |m{2cm}|m{20em}|m{20em}| } 
-    \hline 
-    Phương pháp Multiplayer & Fusion Network Object & Fusion Reliable Data \\ \hline
-    Tổng băng thông & 320 bytes & 70 bytes \\ \hline
-    Average RTT & 194.6 ms & 728.8 ms \\
-    \hline
-\end{tabular}
-\end{center}
+Ở đầu nhận trong trận đấu, \texttt{NetworkController} đăng ký sự kiện \texttt{OnRemoteMoveReceived}. Khi \texttt{MatchManager} gọi \texttt{RequestActionAsync}, \texttt{NetworkController} trả về một \texttt{UniTask<MoveCommand>} đang chờ từ \texttt{UniTaskCompletionSource}; ngay khi gói 4 bytes \texttt{MSG\_MOVE} hợp lệ của đúng phe đối thủ đến nơi, \texttt{HandleRemoteMove} hoàn tất \texttt{Task} và trao thẳng \texttt{MoveCommand} cho Core Engine.
 
-\begin{figure}[h!]
-    \begin{center}
-    \includegraphics[width=0.5\textwidth]{Content/Multiplayer/networkobjectbench.png}
-    \caption{Phương pháp Network Object}
-    \end{center}
-\end{figure}
+\subsubsection{So sánh kiến trúc và đánh giá thực nghiệm: Fusion Network Object vs Fusion Reliable Data}
+Để kiểm chứng cơ sở khoa học cho quyết định chọn giao thức luồng dữ liệu tin cậy thay cho đồng bộ đối tượng mạng truyền thống, nhóm thực hiện phân tích đối chiếu theo 4 tiêu chí kiến trúc (Bảng \ref{tab:fusion_compare}) và chạy thực nghiệm đo lường trực tiếp trên Photon Fusion với 10 lần thăm dò (probe) liên tiếp.
 
-\begin{figure}[h!]
-    \begin{center}
-    \includegraphics[width=0.5\textwidth]{Content/Multiplayer/reliabledatabench.png}
-    \caption{Phương pháp Reliable Data}
-    \end{center}
+\begin{table}[H]
+    \centering
+    \caption{So sánh kiến trúc giữa Fusion Network Object và Fusion Reliable Data trong Convergence Chess}
+    \label{tab:fusion_compare}
+    \begin{tabularx}{\textwidth}{L{2.8cm} Y Y}
+        \toprule
+        \textbf{Tiêu chí đánh giá} & \textbf{Fusion Network Object (RPC / State Sync)} & \textbf{Fusion Reliable Data (Custom Binary Stream)} \\
+        \midrule
+        Phương thức đồng bộ & Đồng bộ trạng thái từng \texttt{GameObject} liên tục theo tick thời gian thực. & Chỉ truyền nhận gói tin nhị phân gọn nhẹ tại thời điểm phát sinh sự kiện (chọn slot, đi cờ, đầu hàng). \\
+        Băng thông tiêu thụ & Cao; mỗi gói tin phải kèm header định tuyến RPC và định danh \texttt{NetworkObject} để tới đúng đối tượng đích. & Rất thấp; chỉ chứa đúng dữ liệu cần thiết (ví dụ 4 bytes cho một nước đi hoàn chỉnh). \\
+        Mức độ phụ thuộc kiến trúc (Coupling) & Cao; buộc phải gắn \texttt{NetworkObject}/\texttt{NetworkBehaviour} sâu vào tầng trình diễn và phá vỡ cấu trúc Core thuần C\#. & Tách rời hoàn toàn (Decoupled) khỏi Core và View; chỉ giao tiếp qua duy nhất giao diện \texttt{IMoveInputProvider}. \\
+        Đặc tính độ trễ và ứng dụng phù hợp & Tốc độ truyền phản hồi nhanh; tối ưu cho game hành động thời gian thực (FPS, RTS). & Độ trễ RTT lớn hơn do cơ chế đảm bảo tin cậy phân mảnh của Fusion; rất phù hợp với game chiến thuật theo lượt. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Kết quả đo đạc thực nghiệm qua 10 lần thăm dò (Hình \ref{fig:bench_netobj}, Hình \ref{fig:bench_reliable} và tổng hợp tại Bảng \ref{tab:fusion_bench}) cho thấy \texttt{Fusion Reliable Data} chỉ tiêu tốn \textbf{70 bytes} tổng dung lượng so với \textbf{320 bytes} của \texttt{Fusion Network Object} (giảm \textbf{78.1\%} băng thông). Dù độ trễ vòng lặp trung bình (Average RTT) của \texttt{Reliable Data} đạt $728.8\text{ ms}$ cao hơn mức $194.6\text{ ms}$ của \texttt{Network Object}, trong bối cảnh một tựa game cờ chiến thuật theo lượt nơi mỗi lượt suy nghĩ kéo dài từ vài giây đến vài chục giây, độ trễ dưới $0.8$ giây hoàn toàn không ảnh hưởng đến trải nghiệm người chơi, trong khi lợi ích tiết kiệm băng thông và giữ sạch kiến trúc Hexagonal là vượt trội.
+
+\begin{table}[H]
+    \centering
+    \caption{Tổng hợp kết quả đo benchmark mạng qua 10 lần probe giữa hai phương pháp trên Photon Fusion}
+    \label{tab:fusion_bench}
+    \begin{tabular}{L{4.5cm} C{4.2cm} C{4.2cm}}
+        \toprule
+        \textbf{Chỉ số đo lường (10 probes)} & \textbf{Fusion Network Object} & \textbf{Fusion Reliable Data} \\
+        \midrule
+        Tổng băng thông tiêu thụ & 320 bytes & \textbf{70 bytes} (-78.1\%) \\
+        Độ trễ trung bình (Average RTT) & \textbf{194.6 ms} & 728.8 ms \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Content/Multiplayer/networkobjectbench.png}
+        \caption{Log đo lường phương pháp Fusion Network Object}
+        \label{fig:bench_netobj}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Content/Multiplayer/reliabledatabench.png}
+        \caption{Log đo lường phương pháp Fusion Reliable Data}
+        \label{fig:bench_reliable}
+    \end{subfigure}
+    \caption{Kết quả đo kiểm băng thông và RTT trực tiếp trên Unity Console của hai cơ chế Photon Fusion}
+    \label{fig:fusion_console_bench}
 \end{figure}

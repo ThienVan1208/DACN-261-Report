@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="page1" name="Smart Customization Microservice Pipeline">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gu" value="Unity 6 URP Client" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fillColor=#f1f5f9;strokeColor=#64748b;dashed=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="290" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="gp" value="Python FastAPI Backend (RTX 4050 FP16)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fillColor=#f1f5f9;strokeColor=#64748b;dashed=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="390" y="40" width="730" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="u1" value="SCCanvasUI&#10;(Upload Photo, Gender,&#10;25 Sliders, 7 Hairs, RGB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="70" y="90" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="u2" value="SCCharacterCreator&#10;(HTTP Client + Runtime Apply)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="70" y="215" width="230" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="u3" value="MPFB v2 Character Mesh&#10;+ PBR Catchlight Eyes&#10;+ 6 Hair Cards FBX" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="70" y="330" width="230" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" value="FastAPI /reconstruct" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="420" y="215" width="160" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="Nhánh Hình học (Method B1 v2)&#10;MediaPipe 478 -&gt; ONNX (25 ch,&#10;ValMAE 0.062) -&gt; BVLS Polish" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="640" y="80" width="260" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="Nhánh Texture &amp; Normal&#10;IC-Light (1.8s) -&gt; PyTorch3D&#10;Barycentric UV -&gt; Masking -&gt;&#10;Pyramid Blending + HRN Sobel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="640" y="200" width="260" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="Color Extraction&#10;Iris RGB (Min Lum 0.38)&#10;&amp; Hair Border RGB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="640" y="345" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" value="Response Output&#10;sc_result.json +&#10;sc_blended_skin.png +&#10;sc_normal_skin.png" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="940" y="200" width="160" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="POST Photo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="u2" target="p1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="p1" target="p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="p1" target="p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="p1" target="p4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="p2" target="p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="p3" target="p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="p4" target="p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="JSON + PNG" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;html=1;strokeColor=#475569;fontSize=11;" edge="1" parent="1" source="p5" target="u2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="update mesh/mat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,102 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundcorner 8
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.3
+skinparam BorderColor #475569
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassBorderColor #334155
+skinparam ClassHeaderBackgroundColor #E2E8F0
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #64748B
+skinparam ComponentBackgroundColor #F8FAFC
+skinparam ComponentBorderColor #334155
+skinparam RectangleBackgroundColor #F8FAFC
+skinparam RectangleBorderColor #334155
+skinparam UsecaseBackgroundColor #F1F5F9
+skinparam UsecaseBorderColor #334155
+skinparam ActorBackgroundColor #E2E8F0
+skinparam ActorBorderColor #334155
+skinparam StateBackgroundColor #F8FAFC
+skinparam StateBorderColor #334155
+skinparam SequenceParticipantBackgroundColor #F1F5F9
+skinparam SequenceParticipantBorderColor #334155
+skinparam SequenceLifeLineBorderColor #64748B
+skinparam SequenceGroupBackgroundColor #F8FAFC
+skinparam SequenceGroupBorderColor #94A3B8
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #D97706
+
+top to bottom direction
+
+package "Composition Root (Khởi tạo chế độ chơi)" #F1F5F9 {
+  [IModeBootstrapper] as Boot
+  [PvEModeBootstrapper] as PvEBoot
+  [PvPOffModeBootstrapper] as OffBoot
+  [PvPOnlModeBootstrapper] as OnlBoot
+  [Training / Benchmark Bootstrappers] as TrainBoot
+  [ArenaServiceLocator\n(Scoped DI Container)] as Locator
+  PvEBoot -u-|> Boot
+  OffBoot -u-|> Boot
+  OnlBoot -u-|> Boot
+  TrainBoot -u-|> Boot
+  Boot --> Locator : đăng ký dịch vụ
+}
+
+package "Driving Adapters (Nguồn phát sinh nước đi)" #EFF6FF {
+  [RaycastController\n(Human Local Input)] as Raycast
+  [OnlineLocalMoveSender\n+ NetworkController\n(Photon Fusion)] as NetCtrl
+  [AgentBotController /\nHybridAgentBotController] as RLBot
+  [NNUEBotController /\nNeuralMinimaxBotController] as NNUEBot
+  [LLMBotController\n(Symbolic Module Bank)] as LLMBot
+}
+
+rectangle "Driving Port\n<<interface>> IMoveInputProvider" as InPort #DBEAFE
+
+package "Hexagonal Core Domain (Pure C# - Zero UnityEngine)" #ECFDF5 {
+  [MatchManager\n(Vòng lặp ván đấu UniTask)] as MatchMgr
+  [GameState\n(Bàn 6x6, AP, Obstacles, Surge)] as State
+  [MoveValidator\n(Luật đi, Hợp thể, Chiếu tướng)] as Validator
+  [Piece & PassiveFlags\n(9-bit ushort bitmask)] as Piece
+  [SquadValidator & GameConfig] as Config
+  MatchMgr --> State
+  MatchMgr --> Validator
+  State *-- Piece
+  MatchMgr --> Config
+}
+
+rectangle "Driven Port\n<<interface>> IGameEventListener" as OutPort #FEF3C7
+
+package "Driven Adapters (Tầng hiển thị, mạng và ghi nhận)" #FFFBEB {
+  [VisualQueueManager\n+ BoardView / PieceView / UI] as VisualQ
+  [OnlineSessionManager\n(Broadcast Move & MatchInit)] as NetSess
+  [NullGameEventListener\n(Headless >10,000 FPS Training)] as NullList
+  [FileBenchmarkRecorder\n(Ghi log Winrate / MoveTime)] as BenchRec
+}
+
+package "External Module (Smart Customization Microservice)" #F5F3FF {
+  [SCCharacterCreator\n(Unity UGUI + URP PBR)] as SCUnity
+  [Python FastAPI Backend\n(MediaPipe + ONNX B1 v2 + IC-Light + HRN)] as SCPy
+  SCUnity <--> SCPy : HTTP / JSON + PNG
+}
+
+Raycast ..|> InPort
+NetCtrl ..|> InPort
+RLBot ..|> InPort
+NNUEBot ..|> InPort
+LLMBot ..|> InPort
+
+InPort --> MatchMgr : UniTask<MoveCommand>
+Locator ..> MatchMgr : inject Ports
+MatchMgr --> OutPort : GameEventBatch
+
+VisualQ ..|> OutPort
+NetSess ..|> OutPort
+NullList ..|> OutPort
+BenchRec ..|> OutPort
+@enduml

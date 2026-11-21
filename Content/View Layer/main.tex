@@ -1,31 +1,26 @@
-\section{View Layer}
-\subsection{Công việc đã làm}
+\subsection{Thiết kế và hiện thực tầng hiển thị (View Layer), giao diện và hiệu ứng}
 
-\subsubsection{Đọc Core Logic, Hiện thực TileView, PieceView, UIManager}
-\begin{enumerate}[(i)]
-    \item Nghiên cứu Core Logic của game, các pattern được ứng dụng (Service Locator, Event), mô hình MVC được ứng dụng.
-    \item Hiện thực các thành phần thuộc phần View: TileView, PieceView.
-    \item Ứng dụng một bản chơi được với Bot.
-\end{enumerate}
+Tầng hiển thị trong \texttt{Assets/Scripts/View/} được thiết kế theo nguyên tắc \textbf{thụ động theo sự kiện (Event-Driven Presentation)}: tuyệt đối không tự tính toán luật di chuyển hay trừ AP, mà chỉ lắng nghe \texttt{GameEventBatch} từ Core thông qua giao diện \texttt{IGameEventListener} để diễn hoạt hình ảnh, âm thanh và cập nhật giao diện người dùng.
 
-\subsubsection{Hiện thực InGame HUD}
-Hiện thực HUD cơ bản trong game gồm:
-\begin{enumerate}
-    \item Nút Pass
-    \item Số lượt Pass còn lại
-    \item Lượng AP còn lại
-    \item Lượng AP sẽ nhận trong lượt sau
-\end{enumerate}
+\subsubsection{Hàng đợi diễn hoạt bất đồng bộ (\texttt{VisualQueueManager} và \texttt{IVisualNode})}
+Vì một lệnh duy nhất từ người chơi (ví dụ: hợp thể quân cờ, tấn công phá khiên hoặc ăn quân kích hoạt \texttt{APDrain}) có thể kéo theo chuỗi nhiều sự kiện nối tiếp nhau, hệ thống sử dụng kiến trúc hàng đợi trực quan gồm ba lớp:
+\begin{itemize}
+    \item \textbf{\texttt{VisualQueueManager}:} Cài đặt \texttt{IGameEventListener}, nhận từng \texttt{GameEventBatch} và thực thi tuần tự qua \texttt{UniTask} (kèm \texttt{CancellationTokenSource} tự hủy an toàn khi chuyển cảnh để tránh rò rỉ tác vụ). Đồng thời lớp này phát ra 5 sự kiện tĩnh nhẹ (\texttt{OnMatchInitialized}, \texttt{OnApUpdated}, \texttt{OnTurnChanged}, \texttt{OnPieceEliminated}, \texttt{OnGameOver}) giúp tầng HUD cập nhật tức thì mà không cần tham chiếu trực tiếp vào \texttt{MatchManager}.
+    \item \textbf{\texttt{VisualSequenceBuilder} và \texttt{IVisualNode}:} Chuyển đổi các sự kiện logic thành chuỗi hành động đồ họa độc lập như \texttt{PieceMoveVisualNode} (di chuyển quân kèm vệt bóng mờ \texttt{PieceGhostTrail}), \texttt{PieceAttackVisualNode} (lao vào tấn công và kích hoạt phản hồi va chạm), \texttt{ZoomCamVisualNode} (phóng cận cảnh khi tiêu diệt quân), \texttt{CamShakedVisualNode} (rung camera tạo lực đánh) và \texttt{BoardRotatedVisualNode} (xoay bàn $180^\circ$ ở PvP Offline).
+\end{itemize}
 
-\subsubsection{Hiện thực Squad Builder}
-\begin{enumerate}
-    \item Hiện thực một Squad Builder để xây dựng Squad cho người chơi ngoài menu.
-\end{enumerate}
+\subsubsection{Hệ thống bàn cờ, mô hình quân cờ 3D trung cổ và \texttt{PieceAnimationRelay}}
+\begin{itemize}
+    \item \textbf{\texttt{BoardView} và \texttt{TileView}:} Khởi tạo lưới $36$ ô cờ 3D tương ứng với chỉ số $0$--$35$ của \texttt{GameState}, hiển thị mô hình vật cản trung tuyến theo cấu hình \texttt{GameConfig}, đồng thời đổi vật liệu (material) tức thời khi rê chuột (\texttt{OnPointerHover}) và tô sáng phân biệt ô di chuyển thường, ô tấn công địch và ô hợp thể đồng minh.
+    \item \textbf{Bộ 6 quân cờ 3D phong cách Trung cổ (Medieval):} Thay thế toàn bộ khối hình học tạm ban đầu bằng 6 lớp hiển thị cụ thể kế thừa từ \texttt{PieceView}: \texttt{KingPieceView}, \texttt{DarkMagePieceView}, \texttt{GreatSwordKnightPieceView}, \texttt{SwordShieldKnightPieceView}, \texttt{TraineeMagePieceView} và \texttt{VampirePieceView}. Mỗi quân cờ vận hành bằng máy trạng thái 5 pha độc lập (\texttt{IdleState}, \texttt{MoveState}, \texttt{AttackState}, \texttt{GetHitState}, \texttt{DeathState}) cùng bộ chỉ báo phe và loại quân trên không gian thế giới (\texttt{WorldCanvasPieceIndicatorService}, \texttt{SideIndicatorService}).
+    \item \textbf{Cơ chế \texttt{PieceAnimationRelay} cho VFX và SFX:} Nhằm tránh lặp mã và lỗi thiếu hàm nhận sự kiện khi dùng chung Animation Clip, nhóm tái cấu trúc toàn bộ sự kiện khung hình (Animation Events) qua duy nhất một script trung chuyển \texttt{PieceAnimationRelay} gắn trên GameObject chứa \texttt{Animator}. Script này nhận chuỗi nhãn định danh (\texttt{PlayVFX}, \texttt{StopVFX}, \texttt{OnAttackSwing}, \texttt{OnHit}) từ timeline hoạt họa rồi điều phối đa hình xuống từng lớp \texttt{PieceView} cụ thể để kích hoạt đúng hiệu ứng chém, sấm sét, vỡ khiên và âm thanh qua \texttt{AudioManager} (hỗ trợ phát ngẫu nhiên/tuần tự qua \texttt{RandomAudioClipSO}, \texttt{SequenceAudioClipSO}).
+\end{itemize}
 
-\subsubsection{UI}
-Tìm UI mới cho game, gắn UI, gắn Skybox
-
-\subsubsection{VFX, SFX}
-Gắn VFX, SFX theo Core Logic; Refactor để animation sử dụng Animation Relay
-
-\subsection{Công việc tương lai}
+\subsubsection{Kiến trúc giao diện người dùng (\texttt{UIManager}, \texttt{UIMapper} và các màn hình chính)}
+Toàn bộ giao diện UGUI được chuẩn hóa tỷ lệ tự động theo độ phân giải màn hình (\texttt{CanvasScaler}) và quản lý tập trung qua cặp thành phần:
+\begin{itemize}
+    \item \textbf{\texttt{UIMapper} (ScriptableObject) và \texttt{UIManager}:} Đóng vai trò bảng ánh xạ nguồn chân lý duy nhất (SSOT), xây dựng sẵn hai từ điển tra cứu theo tên và theo kiểu dữ liệu \texttt{Type} tại thời điểm khởi chạy để \texttt{UIManager} bật/tắt các màn hình \texttt{UIViewBase} và hộp thoại chồng lớp \texttt{UIPopupBase} gọn gàng.
+    \item \textbf{Màn hình xây dựng đội hình (\texttt{UIPopupSquadBuilder}):} Gồm bảng thẻ quân cờ (\texttt{UISquadPaletteCard}), lưới ô sân nhà (\texttt{UISquadTileSlot}) và bóng kéo thả (\texttt{UISquadDragGhost}); tự động khóa các quân vượt quá hạn mức $10$ Slot Points và phản chiếu đúng tọa độ cho cả hai phe.
+    \item \textbf{Màn hình sảnh chờ trực tuyến (\texttt{UIPopupLobby}):} Cho phép chọn khu vực máy chủ Photon, tạo/vào phòng theo mã, hiển thị danh sách người chơi ở 3 nhóm Trắng -- Đen -- Khán giả, đổi slot và bật trạng thái sẵn sàng.
+    \item \textbf{HUD trong trận (\texttt{UIInGameHUD}):} Hiển thị đầy đủ các chỉ số chiến thuật thiết yếu giúp người chơi ra quyết định nhanh: thanh/số lượng AP hiện tại (\texttt{UIViewAP}), lượng AP sẽ nhận ở lượt kế tiếp, nút Bỏ lượt (Pass) và số lượt Pass còn lại, chỉ báo lượt phe đang đi (\texttt{UIDualPlayerInfoPanel}, \texttt{UIPlayerHeaderWidget}) và danh sách quân cờ đã bị tiêu diệt (\texttt{UIGraveyardPanel}). Ngoài ra, hệ thống bổ sung bầu trời 3D (Skybox), ánh sáng sàn đấu và hiệu ứng chuyển cảnh mượt qua \texttt{FadeableLoader}.
+\end{itemize}

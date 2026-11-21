@@ -1,0 +1,130 @@
+\section{Đặc tả chi tiết các lược đồ hệ thống}
+
+Khắc phục hạn chế thiếu trực quan hóa kiến trúc thường gặp ở các báo cáo giai đoạn đầu, chương này trình bày đầy đủ hệ thống lược đồ UML và luồng xử lý của \textit{Convergence Chess} ở các mức độ từ nghiệp vụ người dùng (Use-case) đến thiết kế lớp (Class), tương tác tuần tự (Sequence), máy trạng thái (State) và quy trình dữ liệu (Pipeline). Toàn bộ lược đồ nguồn dạng \texttt{.drawio} và \texttt{.puml} được lưu đồng bộ tại thư mục \texttt{Diagrams/} của kho mã nguồn báo cáo để thuận tiện bảo trì sang Giai đoạn 2 (DATN).
+
+\subsection{Lược đồ Use-case tổng thể và đặc tả kịch bản chính}
+Hình \ref{fig:usecase_overview} mô tả tổng thể các tác nhân (Người chơi chính, Đối thủ Online/Offline, Khán giả và Bot AI) cùng 12 ca sử dụng (Use-case) trải dài từ khâu chuẩn bị đội hình, quản lý phòng chơi trực tuyến đến vòng lặp thi đấu $6 \times 6$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.72\textwidth,height=0.72\textheight,keepaspectratio]{Diagrams/images/01_usecase_overview.png}
+    \caption{Lược đồ Use-case tổng thể hệ thống Convergence Chess}
+    \label{fig:usecase_overview}
+\end{figure}
+
+{\small
+\begin{longtable}{L{2.5cm} L{2.4cm} L{5.3cm} L{4.7cm}}
+    \caption{Đặc tả kịch bản cho các Use-case trọng tâm của hệ thống}
+    \label{tab:usecase_specs} \\
+    \toprule
+    \textbf{Use-case} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
+    \midrule
+    \endfirsthead
+    \toprule
+    \textbf{Use-case} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
+    \midrule
+    \endhead
+    \bottomrule
+    \endfoot
+        UC01: Xây dựng và lưu đội hình (Squad Builder) & Người chơi chính; đang ở màn hình Main Menu. & (1) Mở \texttt{UIPopupSquadBuilder}; (2) Kéo thả quân cờ vào 12 ô sân nhà (trừ ô Vua cố định); (3) Hệ thống tính tổng Slot Points thời gian thực qua \texttt{SquadValidator}; (4) Nhấn Lưu để ghi ra \texttt{SquadSLO} qua \texttt{SaveLoadManager}. & Nếu tổng Slot Points vượt quá $10$ hoặc ô đã có quân/Vua, nút đặt quân bị khóa và hiển thị cảnh báo giới hạn ngân sách. \\
+        \midrule
+        UC05--UC06: Tạo/Vào phòng Online, phân vai và Sẵn sàng & Người chơi chính, Đối thủ Online, Khán giả; có kết nối Internet. & (1) Chọn Photon Region và nhập Room ID tại \texttt{UIPopupLobby}; (2) Host mở phòng và chiếm vị trí Trắng; (3) Client tham gia, gửi tên người chơi (\texttt{MSG\_MAP\_PLAYER\_NAME}) và yêu cầu đồng bộ slot; (4) Chọn vị trí Trắng/Đen/Khán giả, chọn Squad và bật Ready; (5) Khi cả Trắng và Đen sẵn sàng, Host sinh \texttt{MatchSeed} + vật cản và phát \texttt{MSG\_MATCH\_INIT} để đồng loạt tải \texttt{PvPOnlScene}. & Nếu phòng đầy 2 người chơi chính, người vào sau tự động xếp vào danh sách Khán giả (\texttt{Spectator}). Nếu mất kết nối Photon Cloud, hiển thị trạng thái lỗi trên \texttt{OnConnectionStatusChanged}. \\
+        \midrule
+        UC10--UC11: Thực hiện nước đi, Hợp thể và Surge Phase & Người chơi đang tới lượt hoặc Bot AI; trận đấu đang ở trạng thái \texttt{WaitingInput}. & (1) Chọn quân đồng minh, hệ thống highlight ô hợp lệ kèm chi phí AP; (2) Chọn ô đích để Di chuyển, Tấn công hoặc Hợp thể; (3) \texttt{MoveValidator} xác thực, \texttt{GameState.ApplyMove} cập nhật trạng thái và phát \texttt{GameEventBatch}; (4) Nếu vừa Hợp thể và còn đủ AP, mở \texttt{Surge Sub-phase} cho phép đánh bồi hoặc kết thúc lượt giữ AP; (5) Chuyển lượt. & Không đủ AP, chọn ô vật cản với quân trượt, hợp thể 2 quân cùng loại hoặc hợp thể quân đã có \texttt{hasMerged = true} đều bị từ chối. Bỏ lượt bị chặn khi \texttt{PassChargesLeft == 0}. \\
+        \midrule
+        UC03: Tùy biến nhân vật 3D từ ảnh chân dung (SC) & Người chơi chính; Backend FastAPI Smart Customization đang hoạt động. & (1) Mở giao diện \texttt{SCCanvasUI}, chọn giới tính (Nam/Nữ) và ảnh chân dung 2D; (2) Gửi HTTP POST tới \texttt{/reconstruct}; (3) Nhận \texttt{sc\_result.json}, ảnh da khử bóng và Normal Map; (4) Tự động áp 25 BlendShapes, màu mắt, màu tóc và cho phép tinh chỉnh thanh trượt hoặc đổi 7 kiểu tóc 3D. & Nếu ảnh không phát hiện khuôn mặt qua MediaPipe hoặc backend ngoại tuyến, Unity giữ nguyên nhân vật cơ sở và thông báo lỗi kết nối mà không treo ứng dụng. \\
+\end{longtable}
+}
+
+\subsection{Lược đồ kiến trúc tổng thể (Hexagonal Architecture -- Ports \& Adapters)}
+Hình \ref{fig:arch_hexagonal} minh họa kiến trúc lục giác (Ports \& Adapters) là xương sống của toàn bộ dự án. Toàn bộ luật trò chơi nằm trong khối \textbf{Hexagonal Core Domain} viết bằng C\# thuần. Mọi nguồn điều khiển (chuột người chơi, Photon Fusion mạng, 4 họ Bot AI) đều chỉ giao tiếp qua cổng \texttt{IMoveInputProvider}, còn mọi thành phần tiêu thụ kết quả (diễn hoạt 3D, đồng bộ mạng, ghi benchmark hoặc listener rỗng cho huấn luyện Headless) đều đi qua cổng \texttt{IGameEventListener} dưới sự điều phối cục bộ của \texttt{ArenaServiceLocator}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/02_architecture_hexagonal.png}
+    \caption{Sơ đồ kiến trúc tổng thể theo mô hình Ports \& Adapters và ArenaServiceLocator}
+    \label{fig:arch_hexagonal}
+\end{figure}
+
+\subsection{Lược đồ lớp (Class diagrams) theo từng phân hệ}
+Để bảo đảm khả năng đọc rõ ràng trên khổ giấy A4, lược đồ lớp toàn hệ thống được phân tách thành ba phân hệ chính khớp trực tiếp với cấu trúc thư mục mã nguồn trong \texttt{Assets/Scripts/}.
+
+\subsubsection{Lược đồ lớp phân hệ Core Logic và các bộ điều khiển AI}
+Hình \ref{fig:class_core_ai} thể hiện quan hệ giữa \texttt{MatchManager}, \texttt{GameState}, \texttt{Piece}, \texttt{MoveValidator} và các lớp thực thi \texttt{IMoveInputProvider} phục vụ AI (\texttt{AgentBotController}, \texttt{HybridAgentBotController}, \texttt{NNUEBotController}, \texttt{LLMBotController}) kết nối tới \texttt{ObservationEncoderV2}, \texttt{MinimaxSearch} và \texttt{NNUEFastEvaluator}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/03_class_core_ai.png}
+    \caption{Lược đồ lớp phân hệ Core Domain và các tác nhân AI}
+    \label{fig:class_core_ai}
+\end{figure}
+
+\subsubsection{Lược đồ lớp phân hệ Multiplayer (Photon Fusion)}
+Hình \ref{fig:class_network} trình bày kiến trúc mạng tách lớp: \texttt{OnlineSessionManager} điều phối phiên Photon Fusion và ủy quyền toàn bộ mã hóa/giải mã gói tin nhị phân cho \texttt{OnlineDataBroadcastNetwork}. Lớp định tuyến này sử dụng Factory Method khởi tạo đúng lớp xử lý con kế thừa \texttt{BroadcastDataHandler} dựa trên byte định danh \texttt{BroadcastDataIdentifierByte}. Ở biên giao tiếp với Core, \texttt{NetworkController} (nhận nước đi từ xa qua \texttt{UniTaskCompletionSource}) và \texttt{OnlineLocalMoveSender} (bọc input cục bộ để phát lên mạng) cùng cài đặt \texttt{IMoveInputProvider}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/04_class_network.png}
+    \caption{Lược đồ lớp phân hệ Multiplayer sử dụng Photon Fusion Reliable Data}
+    \label{fig:class_network}
+\end{figure}
+
+\subsubsection{Lược đồ lớp phân hệ View Layer và giao diện người dùng (UI)}
+Hình \ref{fig:class_view_ui} minh họa luồng trình diễn tách biệt hoàn toàn khỏi Core: \texttt{VisualQueueManager} lắng nghe \texttt{GameEventBatch}, gọi \texttt{VisualSequenceBuilder} tạo chuỗi nút diễn hoạt \texttt{IVisualNode} điều khiển \texttt{BoardView}, \texttt{TileView} và \texttt{PieceView}. Sự kiện khung hình từ Animator được gom về một đầu mối duy nhất \texttt{PieceAnimationRelay}. Hệ thống giao diện sử dụng \texttt{UIManager} tra cứu prefab tập trung thông qua ScriptableObject \texttt{UIMapper} (Single Source of Truth).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/05_class_view_ui.png}
+    \caption{Lược đồ lớp phân hệ View Layer, VisualQueueManager và UIManager/UIMapper}
+    \label{fig:class_view_ui}
+\end{figure}
+
+\subsection{Lược đồ tuần tự (Sequence diagrams) cho luồng Multiplayer Online}
+\subsubsection{Luồng khởi tạo phòng, phân vai, đồng bộ đội hình và bắt đầu trận}
+Hình \ref{fig:seq_lobby} chi tiết hóa toàn bộ giao thức trao đổi gói tin tin cậy giữa máy Host, Photon Fusion Cloud và máy Client từ lúc mở phòng cho tới khi hai máy đồng bộ tuyệt đối cùng một hạt giống bản đồ (\texttt{MatchSeed}), danh sách vật cản trung tuyến và đội hình $10$ Slot Points hai bên.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/06_seq_pvp_online_lobby.png}
+    \caption{Lược đồ tuần tự luồng Lobby, phân vai, đồng bộ đội hình và khởi tạo trận đấu PvP Online}
+    \label{fig:seq_lobby}
+\end{figure}
+
+\subsubsection{Luồng truyền và thực thi một nước đi hợp lệ trong PvP Online}
+Hình \ref{fig:seq_move} mô tả cơ chế đồng bộ nước đi khép kín chỉ với \textbf{4 bytes payload nhị phân} (\texttt{[MSG\_MOVE, FromTile, ToTile, PlayerId]}). Nhờ lõi \texttt{GameState} mang tính tất định (Deterministic), khi nước đi hợp lệ được xác nhận cục bộ và phát tới đối thủ qua Photon Reliable Data, cả hai máy đều tự cập nhật trạng thái ván đấu và diễn hoạt độc lập qua \texttt{VisualQueueManager} mà không cần truyền vị trí 3D liên tục từng khung hình.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/07_seq_pvp_online_move.png}
+    \caption{Lược đồ tuần tự luồng gửi, nhận và diễn hoạt một nước đi trong chế độ PvP Online}
+    \label{fig:seq_move}
+\end{figure}
+
+\subsection{Lược đồ trạng thái (State diagrams) của ván đấu và quân cờ 3D}
+Hình \ref{fig:state_machine} tổng hợp hai máy trạng thái quan trọng nhất: (i) vòng đời một trận đấu trong \texttt{MatchManager}/\texttt{GameState} thể hiện rõ nhánh chuyển sang \texttt{SurgeSubPhase} sau khi hợp thể; và (ii) máy trạng thái 5 pha của \texttt{PieceView} (\texttt{IdleState}, \texttt{MoveState}, \texttt{AttackState}, \texttt{GetHitState}, \texttt{DeathState}) xử lý cả trường hợp vỡ khiên \texttt{DivineShield} không chết và trường hợp bị tiêu diệt.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{Diagrams/images/08_state_piece_and_match.png}
+    \caption{Lược đồ trạng thái vòng đời trận đấu (MatchManager) và diễn hoạt quân cờ (PieceView FSM)}
+    \label{fig:state_machine}
+\end{figure}
+
+\subsection{Sơ đồ quy trình huấn luyện AI đa thế hệ và Smart Customization}
+Hình \ref{fig:pipeline_ai} khái quát hóa hệ sinh thái 5 tầng huấn luyện và kiểm chuẩn AI trong dự án, thể hiện vòng lặp đồng huấn luyện (Iterative Co-training) giữa ML-Agents PPO và mạng giá trị NNUE cùng nhánh tiến hóa luật biểu tượng bằng LLM.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{Diagrams/images/09_pipeline_ai_training.png}
+    \caption{Sơ đồ quy trình huấn luyện AI đa thế hệ (Minimax, BC/DAgger, PPO, NNUE, Hybrid và LLM)}
+    \label{fig:pipeline_ai}
+\end{figure}
+
+Hình \ref{fig:pipeline_sc} trình bày kiến trúc Microservice giữa Unity 6 URP Client và Backend Python FastAPI xử lý đồng thời hai nhánh Hình học khuôn mặt (Method B1 v2) và Khử bóng -- Chiếu Texture UV (IC-Light + PyTorch3D + HRN).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.88\textwidth]{Diagrams/images/10_pipeline_smart_customization.png}
+    \caption{Sơ đồ kiến trúc Microservice cho phân hệ tùy biến nhân vật 3D (Smart Customization)}
+    \label{fig:pipeline_sc}
+\end{figure}

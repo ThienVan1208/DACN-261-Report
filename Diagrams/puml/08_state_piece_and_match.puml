@@ -1,0 +1,65 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundcorner 8
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.3
+skinparam BorderColor #475569
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassBorderColor #334155
+skinparam ClassHeaderBackgroundColor #E2E8F0
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #64748B
+skinparam ComponentBackgroundColor #F8FAFC
+skinparam ComponentBorderColor #334155
+skinparam RectangleBackgroundColor #F8FAFC
+skinparam RectangleBorderColor #334155
+skinparam UsecaseBackgroundColor #F1F5F9
+skinparam UsecaseBorderColor #334155
+skinparam ActorBackgroundColor #E2E8F0
+skinparam ActorBorderColor #334155
+skinparam StateBackgroundColor #F8FAFC
+skinparam StateBorderColor #334155
+skinparam SequenceParticipantBackgroundColor #F1F5F9
+skinparam SequenceParticipantBorderColor #334155
+skinparam SequenceLifeLineBorderColor #64748B
+skinparam SequenceGroupBackgroundColor #F8FAFC
+skinparam SequenceGroupBorderColor #94A3B8
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #D97706
+
+
+state "Vòng đời trận đấu (MatchManager & GameState)" as MatchLife {
+  [*] --> MatchInit : Nạp Squad + Sinh Obstacles
+  MatchInit --> PlayerTurn : Khởi tạo StartAP & TurnCount = 1
+  state PlayerTurn {
+    [*] --> WaitingInput : +2 AP (+1 nếu có BonusAP)
+    WaitingInput --> ValidatingMove : Nhận MoveCommand từ IMoveInputProvider
+    ValidatingMove --> ExecutingMove : Hợp lệ
+    ValidatingMove --> WaitingInput : Không hợp lệ
+    ExecutingMove --> SurgeSubPhase : Hành động là Hợp thể & còn đủ AP
+    ExecutingMove --> TurnEnd : Di chuyển / Tấn công / Pass
+    SurgeSubPhase --> TurnEnd : Đòn bồi hoàn tất hoặc chọn Bank AP
+  }
+  PlayerTurn --> GameOver : Vua bị tiêu diệt / Đầu hàng / TurnCount > MaxTurns
+  PlayerTurn --> PlayerTurn : Đổi ActivePlayer
+  GameOver --> [*] : Phát GameOverEvent
+}
+
+state "Máy trạng thái diễn hoạt quân cờ (PieceView FSM)" as PieceFSM {
+  [*] --> IdleState
+  IdleState --> MoveState : PieceMovedEvent
+  MoveState --> IdleState : Đến ô đích
+  IdleState --> AttackState : PieceAttack / Kill / ShieldBroken
+  AttackState --> IdleState : Animation Relay hoàn tất
+  IdleState --> GetHitState : Bị tấn công (có DivineShield vỡ khiên)
+  GetHitState --> IdleState : Kết thúc hit-stun
+  IdleState --> DeathState : PieceKilledEvent
+  GetHitState --> DeathState : Chết sau đòn đánh
+  DeathState --> [*] : Ẩn mesh / Chuyển vào Graveyard HUD
+}
+@enduml

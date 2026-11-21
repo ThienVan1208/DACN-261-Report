@@ -1,0 +1,145 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundcorner 8
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.3
+skinparam BorderColor #475569
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassBorderColor #334155
+skinparam ClassHeaderBackgroundColor #E2E8F0
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #64748B
+skinparam ComponentBackgroundColor #F8FAFC
+skinparam ComponentBorderColor #334155
+skinparam RectangleBackgroundColor #F8FAFC
+skinparam RectangleBorderColor #334155
+skinparam UsecaseBackgroundColor #F1F5F9
+skinparam UsecaseBorderColor #334155
+skinparam ActorBackgroundColor #E2E8F0
+skinparam ActorBorderColor #334155
+skinparam StateBackgroundColor #F8FAFC
+skinparam StateBorderColor #334155
+skinparam SequenceParticipantBackgroundColor #F1F5F9
+skinparam SequenceParticipantBorderColor #334155
+skinparam SequenceLifeLineBorderColor #64748B
+skinparam SequenceGroupBackgroundColor #F8FAFC
+skinparam SequenceGroupBorderColor #94A3B8
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #D97706
+
+skinparam classAttributeIconSize 0
+
+interface IMoveInputProvider {
+  +IsBot : bool
+  +RequestActionAsync(state: GameState, ct: CancellationToken) : UniTask<MoveCommand>
+}
+
+interface IGameEventListener {
+  +OnEventsDispatchedAsync(batch: GameEventBatch) : UniTask
+}
+
+class MatchManager {
+  -CurrentState : GameState
+  -_p1Provider : IMoveInputProvider
+  -_p2Provider : IMoveInputProvider
+  -_listeners : List<IGameEventListener>
+  +Initialize(...)
+  +StartMatchAsync() : UniTask
+  +ExecuteMove(cmd: MoveCommand) : GameEventBatch
+}
+
+class GameState {
+  +Tiles : Piece[36]
+  +Obstacles : bool[36]
+  +ActivePlayer : PlayerId
+  +TurnCount : int
+  +P1_AP : int
+  +P2_AP : int
+  +SurgeTile : int
+  +P1_PassChargesLeft : int
+  +P2_PassChargesLeft : int
+  +GenerateProceduralObstacles(rng: Random)
+  +ApplyMove(cmd: MoveCommand)
+  +Clone() : GameState
+}
+
+class Piece {
+  +Owner : PlayerId
+  +Type : PieceType
+  +Passives : PassiveFlags
+  +HasMerged : bool
+}
+
+class MoveValidator <<static>> {
+  +IsValidMove(state, cmd) : bool
+  +GetLegalMoves(state, buffer) : void
+  +CalculateApCost(state, cmd) : int
+  +IsKingInCheck(state, player) : bool
+}
+
+class MinimaxSearch <<static>> {
+  +BestAction(root, maximizer, depth, temp) : int
+  +Search(root, depth, eval, policyPriors) : MoveCommand
+  -AlphaBetaPVS(...) : float
+}
+
+class ObservationEncoderV2 <<static>> {
+  +ObservationSize = 654
+  +Encode(state, buffer, perspective) : void
+}
+
+class NNUEFastEvaluator {
+  -_w1Transposed : float[]
+  +InputSize : int
+  +EvaluateState(state, perspective) : float
+  +EvaluateTacticalLeaf(state, perspective) : float
+}
+
+class AgentBotController {
+  -_rewardHandler : AgentRewardHandler
+  +CollectObservations(sensor)
+  +OnActionReceived(actions)
+  +WriteDiscreteActionMask(mask)
+}
+
+class HybridAgentBotController {
+  -_nnueEvaluator : NNUEFastEvaluator
+  -_searchDepth : int
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+}
+
+class NNUEBotController {
+  -_evaluator : NNUEFastEvaluator
+  -_useResidual : bool
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+}
+
+class LLMBotController {
+  -_symbolicEvaluator : LLMSymbolicEvaluator
+  -_moduleBank : LLMEvolvedModuleBank
+  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+}
+
+MatchManager --> GameState
+MatchManager --> MoveValidator
+MatchManager --> IMoveInputProvider
+MatchManager --> IGameEventListener
+GameState "1" *-- "0..36" Piece
+
+AgentBotController ..|> IMoveInputProvider
+HybridAgentBotController ..|> IMoveInputProvider
+NNUEBotController ..|> IMoveInputProvider
+LLMBotController ..|> IMoveInputProvider
+
+AgentBotController --> ObservationEncoderV2
+HybridAgentBotController --> MinimaxSearch
+HybridAgentBotController --> NNUEFastEvaluator
+NNUEBotController --> MinimaxSearch
+NNUEBotController --> NNUEFastEvaluator
+LLMBotController --> MinimaxSearch
+@enduml

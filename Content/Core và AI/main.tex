@@ -1,0 +1,96 @@
+\subsection{Thiết kế và hiện thực phân hệ Core Logic}
+
+\subsubsection{Nguyên lý tách rời Core Domain và Single Source of Truth}
+Toàn bộ logic trò chơi trong thư mục \texttt{Assets/Scripts/Core/} được lập trình bằng C\# thuần không có bất kỳ phụ thuộc nào tới \texttt{UnityEngine.MonoBehaviour} hay \texttt{Transform}. Mọi trạng thái ván đấu được tập trung duy nhất tại đối tượng \texttt{GameState} gồm mảng một chiều \texttt{Tiles[36]} lưu các quân cờ, mảng \texttt{Obstacles[36]} lưu $1$--$2$ ô vật cản sinh trong dải chỉ số $[12, 23]$ theo hạt giống \texttt{Seed}, ví điểm hành động \texttt{P1\_AP}/\texttt{P2\_AP}, biến \texttt{SurgeTile} đánh dấu trạng thái đòn bồi sau hợp thể, cùng bộ đếm \texttt{P1\_PassChargesLeft}/\texttt{P2\_PassChargesLeft} và \texttt{TurnCount}.
+
+Để tối ưu hiệu năng CPU trong hàng triệu lần duyệt nút của cây tìm kiếm Minimax và huấn luyện ML-Agents, toàn bộ 9 kỹ năng di chuyển và kỹ năng thức tỉnh được mã hóa thành bitmask 16-bit (\texttt{ushort}) trong kiểu liệt kê \texttt{PassiveFlags}:
+
+\begin{lstlisting}[style=csharpstyle, caption={Biểu diễn bitmask 9 kỹ năng nội tại không cấp phát bộ nhớ động trong PassiveFlag.cs}]
+[Flags]
+public enum PassiveFlags : ushort
+{
+    None            = 0,
+    DivineShield    = 1 << 0, // Chan 1 don tan cong tieu diet va day lui
+    BonusAP         = 1 << 1, // Dau luot cong them +1 AP
+    KnightJump      = 1 << 2, // Nhay chu L vuot quan va vat can
+    OrthogonalSlide = 1 << 3, // Truot ngang/doc
+    BattleSiphon    = 1 << 4, // Diet quan dich hoan +1 AP
+    OmniSlide       = 1 << 5, // Truot tu do 8 huong
+    APDrain         = 1 << 6, // Diet quan dich tru -1 AP cua doi thu
+    DiagonalSlide   = 1 << 7, // Truot 4 duong cheo
+    ShieldBreaker   = 1 << 8  // Xuyen pha truc tiep DivineShield
+}
+\end{lstlisting}
+
+Nhờ biểu diễn bitmask, phép hợp thể quân A vào quân B chỉ tốn một phép toán bitwise OR (\texttt{target.Passives |= movePassive | specialPassive}) ở tốc độ cấp thanh ghi CPU, đồng thời hỗ trợ sao chép sâu (\texttt{GameState.Clone()}) cực nhanh trong tìm kiếm cây trò chơi.
+
+\subsubsection{Kiểm định nước đi, điều phối trận đấu và kiến trúc hộp cát Arena}
+\begin{itemize}
+    \item \textbf{Bộ thẩm định \texttt{MoveValidator}:} Cung cấp các hàm tĩnh \texttt{IsValidMove}, \texttt{GetLegalMoves} (ghi vào buffer cấp phát trước để hạn chế Garbage Collection), \texttt{CalculateApCost} và \texttt{IsKingInCheck}. Bộ thẩm định kiểm tra đồng thời đường trượt bị cản bởi quân cờ/vật cản, khóa \textit{Anti-Same-Type}, khóa \textit{Single-Merge Lock}, ràng buộc không cho phép Vua hợp thể và giới hạn chỉ quân tại \texttt{SurgeTile} được hành động trong \texttt{Surge Sub-phase}.
+    \item \textbf{Điều phối vòng lặp \texttt{MatchManager}:} Chạy vòng lặp bất đồng bộ bằng \texttt{UniTask}: ở mỗi lượt, \texttt{MatchManager} gọi \texttt{RequestActionAsync(CurrentState, ct)} trên \texttt{IMoveInputProvider} của phe đang đi, áp lệnh \texttt{MoveCommand} vào \texttt{GameState}, thu gom toàn bộ thay đổi vào \texttt{GameEventBatch} (gồm các sự kiện \texttt{PieceMovedEvent}, \texttt{PieceMergeEvent}, \texttt{PieceShieldBrokenEvent}, \texttt{PieceKilledEvent}, \texttt{PawnPromotionEvent}, \texttt{SurgeActivatedEvent}, \texttt{ApSpentEvent}, \texttt{TurnChangedEvent}, \texttt{GameOverEvent}) và gửi tuần tự đến danh sách \texttt{IGameEventListener}.
+    \item \textbf{Cô lập trạng thái qua \texttt{ArenaServiceLocator}:} Mỗi \texttt{ArenaPrefab} chứa một container \texttt{ArenaServiceLocator} phi tĩnh (non-static) được cấu hình bởi một lớp cài đặt \texttt{IModeBootstrapper} (\texttt{PvEModeBootstrapper}, \texttt{PvPOffModeBootstrapper}, \texttt{PvPOnlModeBootstrapper}, \texttt{BehaviourCloneBootstrapper}, \texttt{NNUEBootstrapper}, \texttt{BenchmarkBootstrapper}). Khi huấn luyện AI, Bootstrapper gắn \texttt{NullGameEventListener} thay cho \texttt{VisualQueueManager}, cho phép chạy song song hàng chục bàn cờ trong cùng một Unity Scene mà không có xung đột biến toàn cục.
+\end{itemize}
+
+\subsection{Thiết kế và hiện thực hệ thống trí tuệ nhân tạo đa thế hệ}
+
+Một trong những đóng góp nghiên cứu trọng tâm của giai đoạn 1 là xây dựng và đánh giá có hệ thống 4 nhánh kiến trúc AI trên cùng giao diện \texttt{IMoveInputProvider} trong thư mục \texttt{Assets/Scripts/Controller/MLAgent/}.
+
+\subsubsection{Bộ mã hóa không gian quan sát (\texttt{ObservationEncoderV2})}
+Ở thế hệ đầu, dự án dùng bộ mã hóa \texttt{MLAgentUtils.EncodeObservation} kích thước $438$ số thực. Qua thực nghiệm, nhóm phát triển phiên bản nâng cấp song song \texttt{ObservationEncoderV2} kích thước \textbf{654 số thực} ($36\text{ ô} \times 18\text{ kênh} + 6\text{ biến toàn cục}$), luôn quy chuẩn hóa theo góc nhìn của người chơi đang tới lượt (Perspective-normalized):
+\begin{itemize}
+    \item Mỗi ô trong $36$ ô bàn cờ được biểu diễn bởi $18$ đặc trưng: $1$ kênh nhị phân \texttt{IsObstacle}, $6$ kênh \texttt{PieceType} có dấu ($+1$ quân mình, $-1$ quân địch cho Pawn..King), $9$ kênh tương ứng $9$ cờ \texttt{PassiveFlags} có dấu theo phe sở hữu, $1$ kênh \texttt{HasMerged} có dấu và $1$ kênh \texttt{IsSurgeTile}.
+    \item $6$ biến toàn cục mã hóa lượng AP chuẩn hóa hai bên, số lượt Pass còn lại hai bên, tiến độ lượt đấu (\texttt{TurnCount / MaxTurns}) và cờ trạng thái Surge.
+\end{itemize}
+Không gian hành động rời rạc gồm $36 \times 36 + 1 = 1{,}297$ chỉ số (ánh xạ cặp \texttt{FromTile -> ToTile} và hành động cuối cùng là \texttt{Pass Turn}), được lọc chặt bằng \textbf{Action Masking} (\texttt{WriteDiscreteActionMask}) dựa trực tiếp trên \texttt{MoveValidator.GetLegalMoves} để tác nhân không bao giờ chọn nước đi phạm luật.
+
+\subsubsection{Nhánh 1: Minimax Alpha-Beta, PVS và Soft Policy LMR}
+Lớp \texttt{MinimaxSearch} cài đặt tìm kiếm cây trò chơi với cắt tỉa Alpha-Beta, bảng hoán vị dùng mã băm 64-bit \texttt{ZobristHash}, sắp xếp nước đi ưu tiên nước tốt nhất từ bảng hoán vị (\texttt{ttBestMove}) và các nước chiến thuật ăn quân/hợp thể. Đặc biệt, \texttt{MinimaxSearch} hỗ trợ hai chế độ:
+\begin{itemize}
+    \item \textbf{Chế độ tất định ($T = 0$):} Cắt tỉa tối đa để thi đấu và benchmark với tốc độ phản hồi dưới $30$ ms ở độ sâu 4.
+    \item \textbf{Chế độ ngẫu nhiên nhiệt độ ($T = 0.8$):} Lấy mẫu Softmax trên nhóm nước đi tốt nhất để sinh tập dữ liệu đa dạng phục vụ huấn luyện Behavioral Cloning và DAgger.
+\end{itemize}
+
+\subsubsection{Nhánh 2: Học bắt chước (BC/DAgger) và Học tăng cường PPO Self-Play}
+Chuỗi huấn luyện trên Unity ML-Agents được tổ chức qua ba bước kế thừa trọng số:
+\begin{enumerate}
+    \item \textbf{Behavioral Cloning và DAgger:} \texttt{BehaviourCloneBootstrapper} và \texttt{DaggerBootstrapper} thu thập hàng chục nghìn cặp $(s_t, a_t^*)$ từ thầy dạy \texttt{MinimaxSearch} độ sâu 4 để khởi tạo mạng chính sách tránh giai đoạn khám phá mù quáng ban đầu.
+    \item \textbf{PPO Self-Play đa bàn cờ:} \texttt{TrainingArenaController} và \texttt{HeuTrainingArenaController} vận hành nhiều bàn cờ song song, kết hợp phân rã phần thưởng động (\texttt{RewardDecaySettings}) và định hình phần thưởng theo thế năng NNUE trong \texttt{AgentRewardHandler}:
+    \[
+        \Delta V_{\text{NNUE}} = \text{scale} \cdot \left(\gamma \Phi(s_{t+1}, p) - \Phi(s_t, p)\right)
+    \]
+    \item \textbf{Suy luận và kiểm soát sai số:} \texttt{AgentBotController} nạp mạng \texttt{.onnx} chạy suy luận trực tiếp trong khoảng $16$--$22$ ms mỗi nước đi.
+\end{enumerate}
+
+\subsubsection{Nhánh 3: Mạng đánh giá nhẹ NNUE, Residual NNUE và Hybrid Bot}
+Để khắc phục điểm yếu về tầm nhìn chiến thuật nông của mạng chính sách thuần túy (1-ply Policy) lẫn chi phí suy luận cao nếu gọi ONNX ở mọi nút lá, nhóm xây dựng \texttt{NNUEFastEvaluator} (đọc tệp trọng số nhị phân \texttt{.bytes}, tự động nhận diện đầu vào $438$ hoặc $654$ chiều):
+\begin{itemize}
+    \item Sử dụng ma trận trọng số tầng đầu chuyển vị (\texttt{\_w1Transposed}) kết hợp duyệt thưa (bỏ qua hoàn toàn các ô trống trên bàn cờ $6 \times 6$) để tăng tốc tính giá trị nút lá.
+    \item Biến thể \textbf{Residual NNUE} giữ lại phần neo đánh giá cơ sở kết hợp phần dư học từ mạng nơ-ron đa thế hệ (\texttt{Multi-generation Replay Buffer} dạng \texttt{nnue\_enc\_g*.jsonl}), đồng thời khi chấm điểm nút lá chiến thuật (\texttt{EvaluateTacticalLeaf}) kết hợp điểm đại cục NNUE (\texttt{ScoreScale = 15.0f}) với kiểm tra chiếu tướng tường minh \texttt{MoveValidator.IsKingInCheck} (\texttt{KingThreatWeight = 1.5f}).
+    \item Kiến trúc \textbf{Hybrid (\texttt{HybridAgentBotController} và \texttt{NeuralMinimaxBotController})} kết hợp xác suất ưu tiên nước đi từ mạng Policy với tìm kiếm \textbf{PVS + Soft Policy LMR có Re-search} và đánh giá nút lá bằng NNUE, tạo thành vòng lặp đồng huấn luyện khép kín (Policy sinh dữ liệu cho NNUE, NNUE định hình thưởng cho Policy ở thế hệ kế tiếp).
+\end{itemize}
+
+\subsubsection{Nhánh 4: Tiến hóa hàm đánh giá biểu tượng bằng LLM (FunSearch B1 V2)}
+Song song với học sâu, nhóm thử nghiệm hướng tiếp cận minh bạch giải thích được (Explainable Symbolic AI) thông qua \texttt{LLMBoardView}, \texttt{LLMEvolvedModuleBank}, \texttt{LLMSymbolicEvaluator} và \texttt{LLMBotController}:
+\begin{itemize}
+    \item Biểu diễn bàn cờ $6 \times 6$ dưới dạng mặt nạ bitboard 36-bit (\texttt{ulong}) không cấp phát heap, cho phép Gemini API sinh từng module chiến thuật C\# ngắn ($15$--$35$ dòng) phân tuyến theo $8$ cổng ngữ cảnh \texttt{LLMContextGate} (\texttt{Always}, \texttt{OpeningUnmerged}, \texttt{MidgameMerged}, \texttt{EndgameLowPieces}, \texttt{ShieldClash}, \texttt{KingDanger}, \texttt{PawnRace}, \texttt{HighApSurge}) và bọc hàm đánh giá đối xứng \texttt{EvaluateSymmetric(selfView, oppView)}.
+    \item Mỗi module sinh ra phải vượt qua \textbf{4 cổng kiểm định tự động} trong harness \texttt{train\_llm\_evolution.py} + \texttt{LLMArenaSimulator}: (1) Kiểm tra tĩnh an toàn cú pháp/cấm cấp phát heap; (2) Biên dịch thực tế bằng \texttt{dotnet build -c Release} kèm tối đa 1 lượt tự sửa lỗi biên dịch; (3) Đo độ trễ và tính đối xứng phản chiếu; (4) Thi đấu đối chứng cặp (Paired Duplicate A/B Arena) kèm cắt tỉa loại trừ (Leave-One-Out Ablation Pruning) để chỉ giữ lại các luật thực sự làm tăng sức mạnh chiến thuật trong \texttt{llm\_module\_bank.json}.
+\end{itemize}
+
+\subsection{Thiết kế và hiện thực phân hệ tùy biến nhân vật 3D (Smart Customization)}
+
+Phân hệ Smart Customization (SC) được thiết kế theo mô hình Microservice gồm client Unity (\texttt{SCCharacterCreator}, \texttt{SCCanvasUI}, \texttt{SCBlendShapeRow}) giao tiếp với máy chủ suy luận Python FastAPI chạy cục bộ trên GPU NVIDIA GeForce RTX 4050 Laptop (VRAM 6 GB), sử dụng bộ khung nhân vật chuẩn giải phẫu \textbf{MPFB v2} (MakeHuman Plugin For Blender 4.2).
+
+\subsubsection{Nhánh giải hình học khuôn mặt (Method B1 v2 -- Orthogonal Render-to-MediaPipe)}
+Trong quá trình thử nghiệm giai đoạn 1, nhóm xác nhận việc dùng trực tiếp tọa độ chiều sâu $Z$ của MediaPipe làm đầu vào giải 3D bị sai lệch nặng (RMSE $0.1415$ IOD, gấp $2.5$ lần trục $X$). Do đó, nhóm thiết kế phương pháp \textbf{Method B1 v2}:
+\begin{enumerate}
+    \item Tinh gọn từ $40$ xuống còn \textbf{25 kênh hình thái trực giao chuẩn} (\texttt{B1\_ACTIVE\_BLENDSHAPES}), loại bỏ các kênh gây xung đột như \texttt{head-scale-horiz} hay \texttt{forehead-temple}.
+    \item Sinh tập dữ liệu tổng hợp Render-to-MediaPipe gồm $12{,}000$ mẫu Nam và $12{,}000$ mẫu Nữ trong khoảng biến thiên góc chụp kiểm soát ($\text{elev} \pm 4^\circ$, $\text{azim} \pm 6^\circ$, $\text{fov } 12.5^\circ$--$18^\circ$), đạt $100\%$ tỷ lệ nhận diện mốc MediaPipe.
+    \item Huấn luyện mô hình hồi quy $80$ epochs xuất sang định dạng ONNX, kết hợp bước tinh chỉnh BVLS biên độ $\pm 0.08$ và áp dụng các khóa an toàn giải phẫu (môi ngậm tự nhiên \texttt{mouth-upperlip-height = 0.0}, \texttt{mouth-lowerlip-height = -0.0071}, \texttt{mouth-angles = 0.02} để tránh hở khe môi lộ răng đen).
+\end{enumerate}
+
+\subsubsection{Nhánh xử lý bề mặt da, mắt PBR và hệ thống tóc 3D thời gian thực}
+\begin{itemize}
+    \item \textbf{Khử bóng IC-Light và chiếu ngược Barycentric:} Ảnh chân dung đầu vào được đưa qua mô hình khuếch tán \textbf{IC-Light} (\texttt{iclight\_sd15\_fc.safetensors}, $15$ bước DPMSolver++ ở độ chính xác FP16, hoàn tất trong khoảng $1.8$ giây) để triệt tiêu bóng đổ định hướng trong khi giữ nguyên lỗ chân lông, lông mày và râu. Tiếp theo, \textbf{PyTorch3D} thực hiện phép chiếu ngược Barycentric từ không gian camera sang bản đồ UV của MakeHuman.
+    \item \textbf{Khoét hốc mắt, khử men răng và hòa trộn biên:} Áp dụng mặt nạ khoét bỏ hốc mắt (Eye Aperture Masking) để giữ nguyên $100\%$ kết cấu mắt 3D xoay độc lập; dùng bộ lọc quang phổ men răng (Dental Enamel Spectral Detection) triệt tiêu vệt răng trắng khi ảnh gốc đang cười; cân bằng sắc tố Melanin trong không gian màu Lab kết hợp hòa trộn đa tần số và cửa sổ Hermite ($64$ pixel) cùng bản đồ pháp tuyến Normal Map trích từ \textbf{HRN} (Sobel scale $80.0$ cho Nam và $55.0$ cho Nữ, chỉnh trực tiếp độ sâu \texttt{\_BumpScale} trong Unity).
+    \item \textbf{Vật liệu mắt bắt sáng và hệ thống 6 kiểu tóc 3D:} Vật liệu \texttt{Human.Iris.mat} và \texttt{Human.Sclera.mat} được chuyển sang Opaque với \texttt{\_Smoothness = 0.96} và kích hoạt lớp phủ nước mắt \texttt{\_ClearCoatMask = 1.0} tạo điểm sáng giác mạc (catchlight), đồng thời chuẩn hóa độ sáng tối thiểu màu mống mắt ở mức $0.38$ để vân mống mắt luôn rõ nét. Sáu bộ tóc 3D (\texttt{short01}, \texttt{short02}, \texttt{bob01}, \texttt{long01}, \texttt{ponytail01}, \texttt{braid01}, texture $2048 \times 2048$ RGBA) được định vị chuẩn vào da đầu bằng API \texttt{HumanService.add\_mhclo\_asset()} của MPFB v2, xuất FBX gắn qua \texttt{MeshFilter}/\texttt{MeshRenderer} và quản lý độc lập theo giới tính trong \texttt{SCCharacterCreator} kèm tự động trích xuất màu tóc từ viền trán ảnh chân dung.
+\end{itemize}

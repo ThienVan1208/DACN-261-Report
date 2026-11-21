@@ -1,0 +1,77 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundcorner 8
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.3
+skinparam BorderColor #475569
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassBorderColor #334155
+skinparam ClassHeaderBackgroundColor #E2E8F0
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #64748B
+skinparam ComponentBackgroundColor #F8FAFC
+skinparam ComponentBorderColor #334155
+skinparam RectangleBackgroundColor #F8FAFC
+skinparam RectangleBorderColor #334155
+skinparam UsecaseBackgroundColor #F1F5F9
+skinparam UsecaseBorderColor #334155
+skinparam ActorBackgroundColor #E2E8F0
+skinparam ActorBorderColor #334155
+skinparam StateBackgroundColor #F8FAFC
+skinparam StateBorderColor #334155
+skinparam SequenceParticipantBackgroundColor #F1F5F9
+skinparam SequenceParticipantBorderColor #334155
+skinparam SequenceLifeLineBorderColor #64748B
+skinparam SequenceGroupBackgroundColor #F8FAFC
+skinparam SequenceGroupBorderColor #94A3B8
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #D97706
+
+top to bottom direction
+
+actor "Người chơi" as User
+
+package "Unity Client (Convergence Chess - Unity 6 URP)" #EFF6FF {
+  [SCCanvasUI\n(Chọn ảnh 2D, Nam/Nữ, Thanh trượt BlendShape,\n7 kiểu tóc 3D, Màu tóc RGB & Normal Strength)] as SCUI
+  [SCCharacterCreator\n(Gửi HTTP ảnh + Áp 25 BlendShapes,\nTexture da/Normal + Tóc MPFB v2)] as SCCreator
+  [MPFB v2 SkinnedMeshRenderer\n+ PBR Eyes (ClearCoat Catchlight)\n+ 6 Hair Cards FBX (Barycentric Scalp)] as Mesh3D
+}
+
+package "Python FastAPI Microservice Backend (GPU RTX 4050 FP16)" #ECFDF5 {
+  [FastAPI Endpoint\n(/reconstruct)] as API
+  package "Nhánh 1: Giải hình học khuôn mặt (Method B1 v2)" #F8FAFC {
+    [MediaPipe Face Mesh\n(478 Landmarks 2D)] as MP
+    [ONNX B1 v2 Regressor\n(12,000 mẫu/giới, 25 kênh trực giao,\nValMAE ~ 0.062)] as ONNX
+    [BVLS Polish (±0.08)\n+ Khóa môi ngậm & cằm an toàn] as BVLS
+    MP --> ONNX
+    ONNX --> BVLS
+  }
+  package "Nhánh 2: Khử bóng & Chiếu Texture UV" #F8FAFC {
+    [IC-Light Studio Delighting\n(iclight_sd15_fc, 15 steps DPMSolver++, ~1.8s)] as ICLight
+    [PyTorch3D Barycentric Back-Projection\n(Camera Space -> MakeHuman UV)] as Py3D
+    [Eye Aperture Masking\n+ Dental Enamel Spectral Filter] as Mask
+    [Multi-Band Pyramid & Hermite Blending\n+ HRN Normal Map (Sobel)] as Blend
+    ICLight --> Py3D
+    Py3D --> Mask
+    Mask --> Blend
+  }
+  [Trích xuất màu mống mắt (Min Lum 0.38)\n& màu viền tóc trán] as ColorExt
+}
+
+User --> SCUI : Tải ảnh chân dung 2D
+SCUI --> SCCreator
+SCCreator --> API : HTTP POST (Ảnh chân dung + Gender)
+API --> MP
+API --> ICLight
+API --> ColorExt
+BVLS --> API : 25 trọng số BlendShapes
+Blend --> API : sc_blended_skin.png + sc_normal_skin.png
+ColorExt --> API : iris_rgb + hair_rgb
+API --> SCCreator : sc_result.json + Textures
+SCCreator --> Mesh3D : Cập nhật thời gian thực
+@enduml

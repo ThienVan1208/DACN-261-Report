@@ -1,28 +1,98 @@
 %!TEX program = xelatex
-\documentclass[a4paper]{article}
+\documentclass[a4paper,12pt]{article}
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
 \setsansfont{Arial}
-\setmonofont{Consolas}
+\setmonofont[Scale=0.85]{Consolas}
+\usepackage{xurl}
+\emergencystretch=3em
+\tolerance=1500
+\hbadness=1500
 
-\usepackage{tcolorbox}
-\newtcolorbox{Qbox}[1]{colback=green!5!white,colframe=green!75!black,fonttitle=\bfseries,title=#1}
+\usepackage{geometry}
+\geometry{
+    left=2.5cm,
+    right=2cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
 
-%code C#
-\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{indentfirst}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
 \usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{pdflscape}
+\usepackage{hyperref}
 
-% Màu nền và màu sắc cho code
-\definecolor{codebg}{rgb}{0.94, 1.0, 0.94}
-\definecolor{keywordcolor}{rgb}{0.58, 0, 0.82}   % tím
-\definecolor{stringcolor}{rgb}{0.0, 0.5, 0}      % xanh lá
-\definecolor{commentcolor}{rgb}{0.0, 0.4, 0.4}   % xanh đậm
-\definecolor{frameborder}{rgb}{0, 0, 0}          % đen
+\hypersetup{
+    urlcolor=blue,
+    linkcolor=black,
+    citecolor=black,
+    colorlinks=true,
+    pdftitle={Báo cáo đồ án chuyên ngành - Phát triển game Convergence Chess},
+    pdfauthor={Nhóm thực hiện Convergence Chess}
+}
 
-% Style cho C#
+% Việt hóa các nhãn mặc định theo chuẩn Sentence case
+\renewcommand{\contentsname}{Mục lục}
+\renewcommand{\listfigurename}{Danh mục hình ảnh}
+\renewcommand{\listtablename}{Danh mục bảng biểu}
+\renewcommand{\figurename}{Hình}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\refname}{Tài liệu tham khảo}
+
+% Khung hộp ghi chú và khung chừa chỗ ảnh chụp màn hình in-game
+\newtcolorbox{notebox}[1]{
+    colback=blue!4!white,
+    colframe=blue!55!black,
+    fonttitle=\bfseries,
+    title=#1,
+    boxrule=0.6pt,
+    arc=3pt
+}
+
+\newcommand{\screenshotplaceholder}[2]{%
+    \begin{tcolorbox}[
+        colback=gray!8!white,
+        colframe=gray!60!black,
+        boxrule=0.8pt,
+        arc=3pt,
+        width=0.92\textwidth,
+        halign=center,
+        top=1.2cm,
+        bottom=1.2cm
+    ]
+        \textbf{[Khung chờ ảnh chụp màn hình thực tế trong Unity]} \\[0.3cm]
+        \texttt{#1} \\[0.25cm]
+        \small \textit{Hướng dẫn chụp bổ sung: #2}
+    \end{tcolorbox}
+}
+
+% Style mã nguồn C# và Python
+\definecolor{codebg}{rgb}{0.96, 0.98, 0.96}
+\definecolor{keywordcolor}{rgb}{0.45, 0.0, 0.65}
+\definecolor{stringcolor}{rgb}{0.0, 0.45, 0.0}
+\definecolor{commentcolor}{rgb}{0.25, 0.45, 0.45}
+\definecolor{frameborder}{rgb}{0.3, 0.3, 0.3}
+
 \lstdefinelanguage{CSharp}{
     language=[Sharp]C,
-    morekeywords={async,await,var,dynamic,yield,get,set},
+    morekeywords={async,await,var,dynamic,yield,get,set,readonly,ushort,ulong,record,init}
 }
 
 \lstdefinestyle{csharpstyle}{
@@ -34,192 +104,148 @@
     commentstyle=\color{commentcolor}\itshape,
     frame=single,
     rulecolor=\color{frameborder},
-    framerule=0.7pt,
-    framesep=8pt,
+    framerule=0.5pt,
+    framesep=6pt,
     tabsize=4,
     showspaces=false,
     showstringspaces=false,
     breaklines=true
 }
 
-\usepackage{graphicx,wrapfig,lipsum}
-\usepackage{float}
-\usepackage{longtable}
-
-%\usepackage[utf8]{inputenc}
-%\usepackage[francais]{babel}
-\usepackage{a4wide,amssymb,epsfig,latexsym,multicol,array,hhline,fancyhdr}
-\usepackage{indentfirst}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{empheq}
-\usepackage{lastpage}
-\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
-\usepackage{enumerate}
-\usepackage{color}
-\usepackage{graphicx}							% Standard graphics package
-\usepackage{array}
-\usepackage{tabularx, caption}
-\usepackage{multirow}
-\usepackage{multicol}
-\usepackage{rotating}
-\usepackage{graphics}
-\usepackage{geometry}
-\geometry{
-    left=2cm,      % lề trái
-    right=2cm,     % lề phải
-    % top=2cm,         % lề trên
-    % bottom=2cm,      % lề dưới
-    % bindingoffset=0.5cm, % dùng nếu in 2 mặt (thêm vào lề trái)
-}
-\usepackage{setspace}
-\usepackage{epsfig}
-\usepackage{tikz}
-\usepackage{refcount}
-\usetikzlibrary{arrows,snakes,backgrounds}
-\usepackage{hyperref}
-\hypersetup{urlcolor=blue,linkcolor=black,citecolor=black,colorlinks=true} 
-\usepackage{subfigure}
-\usepackage{fancybox}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
-%\usepackage{pstcol} 								% PSTricks with the standard color package
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\newtheorem{theorem}{{\bf Định lý}}
-\newtheorem{property}{{\bf Tính chất}}
-\newtheorem{proposition}{{\bf Mệnh đề}}
-\newtheorem{corollary}[proposition]{{\bf Hệ quả}}
-\newtheorem{lemma}[proposition]{{\bf Bổ đề}}
-
-
-%\usepackage{fancyhdr}
-\setlength{\headheight}{40pt}
+% Cấu hình Header & Footer
+\setlength{\headheight}{42pt}
 \pagestyle{fancy}
-\fancyhead{} % clear all header fields
+\fancyhead{}
 \fancyhead[L]{
- \begin{tabular}{rl}
-    \begin{picture}(25,15)(0,0)
-    \put(-5,-15){\includegraphics[width=17mm, height=12mm]{hcmut.png}}
-    %\put(0,-8){\epsfig{width=10mm,figure=hcmut.eps}}
-   \end{picture}&
-	%\includegraphics[width=8mm, height=8mm]{hcmut.png} & %
-	\begin{tabular}{l}
-		\textbf{\bf \ttfamily Trường Đại Học Bách Khoa Tp.Hồ Chí Minh}\\
-		\textbf{\bf \ttfamily Khoa Khoa Học và Kỹ Thuật Máy Tính}
-	\end{tabular} 	
- \end{tabular}
+    \begin{tabular}{rl}
+        \begin{picture}(25,15)(0,0)
+            \put(-5,-15){\includegraphics[width=16mm, height=11.5mm]{hcmut.png}}
+        \end{picture} &
+        \begin{tabular}{l}
+            \textbf{\small Trường Đại học Bách khoa Tp. Hồ Chí Minh} \\
+            \textbf{\small Khoa Khoa học và Kỹ thuật Máy tính}
+        \end{tabular}
+    \end{tabular}
 }
-\fancyhead[R]{
-	\begin{tabular}{l}
-		\tiny \bf \\
-		\tiny \bf 
-	\end{tabular}  }
-\fancyfoot{} % clear all footer fields
-\fancyfoot[L]{\scriptsize \ttfamily Đồ án tốt nghiệp - CO4337 - 2026}
+\fancyhead[R]{\small \textit{Convergence Chess}}
+\fancyfoot{}
+\fancyfoot[L]{\scriptsize \ttfamily Đồ án chuyên ngành - CO4029 - HK261}
 \fancyfoot[R]{\scriptsize \ttfamily Trang {\thepage}/\pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.1pt}
-\renewcommand{\footrulewidth}{0.1pt}
-%%%
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Cấu hình chiều sâu mục lục và đánh số mục
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{3}
 \makeatletter
-\newcounter {subsubsubsection}[subsubsection]
-\renewcommand\thesubsubsubsection{\thesubsubsection .\@alph\c@subsubsubsection}
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\@alph\c@subsubsubsection}
 \newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
-                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
-                                     {1.5ex \@plus .2ex}%
-                                     {\normalfont\normalsize\bfseries}}
-\newcommand*\l@subsubsubsection{\@dottedtocline{3}{10.0em}{4.1em}}
+    {-3.0ex\@plus -1ex \@minus -.2ex}%
+    {1.2ex \@plus .2ex}%
+    {\normalfont\normalsize\bfseries}}
+\newcommand*\l@subsubsubsection{\@dottedtocline{4}{10.0em}{4.1em}}
 \newcommand*{\subsubsubsectionmark}[1]{}
 \makeatother
 
 \begin{document}
 \onehalfspacing
+
+% ======================== TRANG BÌA ========================
 \begin{titlepage}
-
 \begin{tikzpicture}[remember picture, overlay]
-
-% Khung ngoài
-\draw[line width=6pt]
-  ([xshift=2cm,yshift=-2cm]current page.north west)
-  rectangle
-  ([xshift=-2cm,yshift=2cm]current page.south east);
-
-% Khung trong
-\draw[line width=3pt]
-  ([xshift=2.3cm,yshift=-2.3cm]current page.north west)
-  rectangle
-  ([xshift=-2.3cm,yshift=2.3cm]current page.south east);
-
+    % Khung ngoài
+    \draw[line width=4pt]
+      ([xshift=1.8cm,yshift=-1.8cm]current page.north west)
+      rectangle
+      ([xshift=-1.8cm,yshift=1.8cm]current page.south east);
+    % Khung trong
+    \draw[line width=1.5pt]
+      ([xshift=2.05cm,yshift=-2.05cm]current page.north west)
+      rectangle
+      ([xshift=-2.05cm,yshift=2.05cm]current page.south east);
 \end{tikzpicture}
 
-\vspace{-1.5cm}
-
+\vspace*{-0.8cm}
 \begin{center}
-\centering
-\Large
-\textbf{ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH \\
-TRƯỜNG ĐẠI HỌC BÁCH KHOA \\
-KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH }
-
+    {\large \textbf{ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}} \\
+    {\large \textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}} \\
+    {\large \textbf{KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}}
 \end{center}
 
-\vspace{0.2cm}
-
+\vspace{0.3cm}
 \begin{figure}[h!]
-\begin{center}
-\includegraphics[width=7cm]{hcmut.png}
-\end{center}
+    \centering
+    \includegraphics[width=5.2cm]{hcmut.png}
 \end{figure}
-\vspace{-0.7cm}
+
+\vspace{0.1cm}
 \begin{center}
-		{\LARGE \bf BÁO CÁO} \\
-        {\LARGE \bf ĐỒ ÁN TỐT NGHIỆP}
-			\vspace*{1cm}
-			\begin{center}
-				\fontsize{24pt}{30pt} \bf{PHÁT TRIỂN GAME}\\
-                \fontsize{24pt}{30pt}  \bf{FISHY BUSINESS} \\
-                \vspace{1cm}
-				\large \normalfont{NGÀNH: KHOA HỌC MÁY TÍNH}
-			\end{center}
+    {\LARGE \textbf{BÁO CÁO ĐỒ ÁN CHUYÊN NGÀNH}} \\[0.25cm]
+    {\large \textit{(Giai đoạn 1: Khảo sát, thiết kế kiến trúc và thử nghiệm nguyên mẫu)}} \\[0.8cm]
 
-\vspace{1cm}
+    {\fontsize{21pt}{28pt}\selectfont \textbf{PHÁT TRIỂN GAME}} \\[0.2cm]
+    {\fontsize{23pt}{30pt}\selectfont \textbf{CONVERGENCE CHESS}} \\[0.6cm]
 
-    \begin{tabular}{lll}
-    \Large \bf HỘI ĐỒNG: &\Large 4L Khoa học Máy tính & 
-    \vspace{0.2cm}\\
-    \Large \bf GVHD:  &\Large Th.S Vương Bá Thịnh & 
-    \vspace{0.2cm}\\
-    \Large \bf SVTH1:  &\Large Lê Ngọc Hiền &\Large 2211024 \\
-    \Large \bf SVTH2:  &\Large Huỳnh Trần Học Đăng &\Large 2210731\\
-    \Large \bf SVTH3:  &\Large Nguyễn Mạnh Hùng &\Large 2211337 \\
-    \end{tabular}
-    \end{center}
-    \vfill
-    \vspace{0.5cm}
-    \begin{center}
-    {\large Thành phố Hồ Chí Minh, tháng 5/2026}
+    {\large NGÀNH: KHOA HỌC MÁY TÍNH}
 \end{center}
+
+\vspace{0.6cm}
+\begin{center}
+    % Ghi chú: Sinh viên tự cập nhật lại tên Hội đồng, GVHD và Họ tên/MSSV chính xác trước khi nộp
+    \begin{tabular}{lll}
+        \large \textbf{Hội đồng:} & \large [Cập nhật tên Hội đồng] & \\[0.2cm]
+        \large \textbf{GVHD:} & \large [Cập nhật Họ tên GVHD] & \\[0.2cm]
+        \large \textbf{SVTH 1:} & \large [Cập nhật Họ tên SV1 - Core, AI, SC] & \large [MSSV 1] \\[0.18cm]
+        \large \textbf{SVTH 2:} & \large [Cập nhật Họ tên SV2 - Multiplayer, View] & \large [MSSV 2] \\
+    \end{tabular}
+\end{center}
+
+\vfill
+\begin{center}
+    {\large Thành phố Hồ Chí Minh, tháng 12/2026}
+\end{center}
+\vspace{0.7cm}
 \end{titlepage}
 
-
-%\thispagestyle{empty}
-\newpage
-
+% ======================== MỤC LỤC & DANH MỤC ========================
 \clearpage
-\setcounter{page}{1} % bắt đầu lại từ trang 1
-\newpage
+\pagenumbering{roman}
 \tableofcontents
 \newpage
 \listoffigures
-
-\listoftables
 \newpage
+\listoftables
+
+% ======================== NỘI DUNG CHÍNH ========================
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
 
 \input{Content/Giới thiệu/main}
+\newpage
 \input{Content/Yêu cầu/main}
+\newpage
+\input{Content/Nghiên cứu tổng quan/main}
+\newpage
+\input{Content/Lược đồ hệ thống/main}
+\newpage
+
+% Chương 5: Phân tích thiết kế và hiện thực hệ thống (gồm 3 phân hệ lớn)
+\section{Thiết kế và hiện thực hệ thống}
+\input{Content/Core và AI/main}
 \input{Content/Multiplayer/main}
+\input{Content/View Layer/main}
+\newpage
 
+\input{Content/Thực nghiệm và đánh giá/main}
+\newpage
+\input{Content/Tiến độ và kế hoạch/main}
+\newpage
+\input{Content/Tài liệu tham khảo/main}
 
-% \input{bib}
 \end{document}

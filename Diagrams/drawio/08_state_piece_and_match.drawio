@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="page1" name="State Machine Match and PieceView">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gm" value="Vòng đời trận đấu (MatchManager / GameState)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fillColor=#f1f5f9;strokeColor=#64748b;dashed=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1080" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="gp" value="Máy trạng thái diễn hoạt quân cờ (PieceView FSM)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fillColor=#f1f5f9;strokeColor=#64748b;dashed=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="330" width="1080" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="ms1" value="MatchInit&#10;(Load Squad + Obstacles)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="70" y="110" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ms2" value="WaitingInput&#10;(+2 AP / +1 BonusAP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="290" y="110" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ms3" value="ExecutingMove&#10;(Move / Attack / Merge)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="510" y="110" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ms4" value="SurgeSubPhase&#10;(Follow-up / Bank AP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="730" y="70" width="180" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="ms5" value="TurnEnd -&gt; Next Turn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="730" y="175" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ms6" value="GameOver&#10;(King Dead / MaxTurns)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="940" y="110" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ps1" value="IdleState" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="90" y="420" width="150" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="ps2" value="MoveState" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="310" y="370" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ps3" value="AttackState" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="310" y="470" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ps4" value="GetHitState&#10;(DivineShield Break)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="570" y="420" width="180" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="ps5" value="DeathState&#10;(Remove &amp; Graveyard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#6d28d9;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="840" y="420" width="180" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ms1" target="ms2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="valid cmd" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ms2" target="ms3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="merge + AP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ms3" target="ms4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="normal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ms3" target="ms5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="done" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ms4" target="ms5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="next player" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;html=1;strokeColor=#475569;fontSize=11;" edge="1" parent="1" source="ms5" target="ms2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="win/draw" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ms5" target="ms6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="move" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ps1" target="ps2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="arrived" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;html=1;strokeColor=#475569;fontSize=11;" edge="1" parent="1" source="ps2" target="ps1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="attack" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ps1" target="ps3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="anim end" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;html=1;strokeColor=#475569;fontSize=11;" edge="1" parent="1" source="ps3" target="ps1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="shield hit" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ps1" target="ps4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="recovered" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;html=1;strokeColor=#475569;fontSize=11;" edge="1" parent="1" source="ps4" target="ps1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" value="killed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ps1" target="ps5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" value="lethal" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ps4" target="ps5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

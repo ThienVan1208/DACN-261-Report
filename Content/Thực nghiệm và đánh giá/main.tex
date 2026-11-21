@@ -1,0 +1,124 @@
+\section{Kết quả thực nghiệm và đánh giá giai đoạn 1}
+
+Đúng với tính chất của Đồ án chuyên ngành (Giai đoạn 1), thay vì chỉ trình bày giao diện tĩnh, nhóm tập trung chạy các bộ thực nghiệm định lượng tự động trên mã nguồn thật để đánh giá độ khả thi kỹ thuật của ba trụ cột cốt lõi: (i) sức mạnh và tốc độ của các thế hệ AI; (ii) hiệu quả băng thông và độ trễ của kiến trúc Multiplayer; và (iii) độ chính xác tái tạo khuôn mặt/tóc 3D của Smart Customization.
+
+\subsection{Thực nghiệm đối kháng và đánh giá các thế hệ AI}
+Toàn bộ các phép đo AI được chạy tự động bằng bộ công cụ \texttt{BenchmarkRunner} và \texttt{FileBenchmarkRecorder} ở chế độ Headless (vô hiệu hóa render), lưu kết quả tại \texttt{Assets/ML-Agents/BenchmarkResults/}. Mỗi cặp đấu chạy từ $100$ đến $1{,}000$ ván đầy đủ, ghi nhận tỷ lệ thắng, hòa, thua và thời gian suy nghĩ trung bình mỗi nước đi (\textit{Avg move time}).
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \caption{Tổng hợp kết quả thực nghiệm đối kháng tự động giữa các thế hệ Bot AI của Convergence Chess}
+    \label{tab:ai_benchmark_full}
+    \begin{tabularx}{\textwidth}{L{3.7cm} L{2.8cm} C{1.0cm} C{1.2cm} C{1.1cm} C{1.2cm} Y}
+        \toprule
+        \textbf{Mô hình thử nghiệm (P1)} & \textbf{Đối thủ chuẩn (P2)} & \textbf{Số trận} & \textbf{P1 thắng} & \textbf{Hòa} & \textbf{P2 thắng} & \textbf{Thời gian/nước (P1 vs P2)} \\
+        \midrule
+        \texttt{bc\_template} (BC cơ sở) & \texttt{HeuristicBot D2} & 100 & 1.00\% & 3.00\% & 96.00\% & -- \\
+        \texttt{BC\_v2} (BC cải tiến) & \texttt{HeuristicBot D2} & 100 & 12.00\% & 11.00\% & 77.00\% & -- \\
+        \texttt{BC\_v2} (BC cải tiến) & \texttt{HeuristicBot D4} & 100 & 18.00\% & 4.00\% & 78.00\% & -- \\
+        \texttt{PPO Self-Play (27M steps)} & \texttt{bc\_template} & 100 & 87.00\% & 5.00\% & 8.00\% & -- \\
+        \texttt{PPO Self-Play (27M steps)} & \texttt{HeuristicBot D2} & 100 & 15.00\% & 6.00\% & 79.00\% & -- \\
+        \texttt{critic\_hyb\_v4} (RL Critic) & \texttt{HeuristicBot D2} & 1,000 & 23.90\% & 18.70\% & 57.40\% & 16 ms vs 11 ms \\
+        \texttt{heu\_v12p1} (RL + Shaping) & \texttt{HeuristicBot D2} & 400 & 47.00\% & 26.25\% & 26.75\% & -- \\
+        \texttt{heu\_v25p2} (RL Gen mới) & \texttt{heu\_v24p2} (RL cũ) & 500 & 44.80\% & 27.20\% & 28.00\% & 21 ms vs 21 ms \\
+        \texttt{NeuralMinimaxBot} & \texttt{HeuristicBot D2} & 100 & \textbf{52.00\%} & 36.00\% & 12.00\% & 33 ms vs 6 ms \\
+        \texttt{NeuralMinimaxBot} & \texttt{HeuristicBot D3} & 100 & \textbf{51.00\%} & 24.00\% & 25.00\% & 41 ms vs 10 ms \\
+        \texttt{NeuralMinimaxBot} & \texttt{HeuristicBot D4} & 100 & 37.00\% & 30.00\% & 33.00\% & 38 ms vs 28 ms \\
+        \texttt{NNUE\_enc\_g7 (Depth 4)} & \texttt{HeuristicBot D4} & 100 & 23.00\% & 49.00\% & 28.00\% & 238 ms vs 21 ms \\
+        \texttt{Hybrid Gen7 (NNUE+RL)} & \texttt{Hybrid Gen3} & 100 & 33.00\% & 47.00\% & 20.00\% & 210 ms vs 218 ms \\
+        \textbf{\texttt{NNUERes\_g7 (Depth 4)}} & \textbf{\texttt{HeuristicBot D4}} & \textbf{100} & \textbf{51.00\%} & \textbf{28.00\%} & \textbf{21.00\%} & \textbf{66 ms vs 4 ms} \\
+        \texttt{HeuristicBot D1} & \texttt{HeuristicBot D6} & 100 & 12.00\% & 10.00\% & 78.00\% & 6 ms vs 536 ms \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Diagrams/images/chart_ai_benchmark.png}
+    \caption{Biểu đồ tiến triển tỷ lệ thắng của các thế hệ AI trước HeuristicBot Depth 2 và Depth 4}
+    \label{fig:chart_ai_bench}
+\end{figure}
+
+Từ Bảng \ref{tab:ai_benchmark_full} và Hình \ref{fig:chart_ai_bench}, nhóm rút ra bốn kết luận khoa học quan trọng làm cơ sở cho Giai đoạn 2:
+\begin{enumerate}
+    \item \textbf{Giới hạn của mạng Policy 1-ply thuần túy:} Dù PPO Self-Play áp đảo bản BC khởi tạo ($87.0\%$ so với $8.0\%$) và phản hồi rất nhanh ($\approx 16$--$21$ ms/nước), mạng không có tìm kiếm cây vẫn dễ mắc lỗi chiến thuật ngắn hạn (blunder) trước cây tìm kiếm Minimax do luật hợp thể và Surge tạo ra chuỗi ăn quân nhiều bước. Khi bổ sung Reward Shaping (\texttt{heu\_v12p1}), tỷ lệ thắng trước HeuristicBot Depth 2 tăng vọt từ $15.0\%$ lên $47.0\%$ (vượt tỷ lệ thua $26.75\%$).
+    \item \textbf{Sức mạnh vượt trội của kiến trúc lai tìm kiếm + học sâu:} Khi kết hợp đánh giá học máy vào cây tìm kiếm (\texttt{NeuralMinimaxBotController}), Bot áp đảo cả HeuristicBot Depth 2 ($52\%$ thắng -- $12\%$ thua) lẫn Depth 3 ($51\%$ thắng -- $25\%$ thua) và nhỉnh hơn Depth 4 ($37\%$ -- $33\%$) chỉ với $38$ ms/nước đi.
+    \item \textbf{Đột phá của Residual NNUE:} So với bản NNUE thường cùng thế hệ dữ liệu Gen 7 (\texttt{NNUE\_enc\_g7}: $23\%$ thắng, $238$ ms/nước), bản \textbf{Residual NNUE (\texttt{NNUERes\_g7})} nâng tỷ lệ thắng trước HeuristicBot Depth 4 lên tới \textbf{51.00\%} (chỉ thua $21.00\%$) đồng thời giảm thời gian suy nghĩ xuống còn \textbf{66 ms/nước} (nhanh hơn $3.6$ lần nhờ cắt tỉa Alpha-Beta hiệu quả hơn khi thứ tự đánh giá nút lá chính xác hơn).
+    \item \textbf{Tiến bộ rõ rệt qua vòng lặp đồng huấn luyện đa thế hệ:} Phiên bản \texttt{Hybrid Gen7} đánh bại \texttt{Hybrid Gen3} với tỷ số $33\%$ thắng -- $20\%$ thua ($47\%$ hòa), khẳng định tính đúng đắn của vòng lặp sinh dữ liệu đa thế hệ (\texttt{Multi-generation Replay Buffer}).
+\end{enumerate}
+
+\subsection{Đánh giá thực nghiệm hệ thống Multiplayer (Photon Fusion)}
+Hình \ref{fig:chart_net_bench} trực quan hóa sự đánh đổi giữa băng thông và độ trễ từ phép đo 10 lần thăm dò trên Photon Fusion. Giao thức nhị phân tùy biến \texttt{OnlineDataBroadcastNetwork} trên kênh \texttt{Fusion Reliable Data} cắt giảm \textbf{78.1\%} tổng lưu lượng truyền tải (chỉ $70$ bytes so với $320$ bytes của \texttt{NetworkObject}) trong khi giữ được $100\%$ sự độc lập với Core Domain. Các kịch bản kiểm thử đồng bộ giữa 2 máy khách và Khán giả (Spectator) đã xác nhận đồng bộ chính xác tên người chơi, danh sách slot, đội hình $10$ Slot Points, trạng thái sẵn sàng, hạt giống vật cản trung tuyến và luồng nước đi 4 bytes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Diagrams/images/chart_network_benchmark.png}
+    \caption{So sánh định lượng băng thông tiêu thụ và Average RTT giữa hai cơ chế Photon Fusion}
+    \label{fig:chart_net_bench}
+\end{figure}
+
+\subsection{Đánh giá thực nghiệm phân hệ Smart Customization (SC)}
+Trên phần cứng máy trạm GPU NVIDIA GeForce RTX 4050 Laptop (VRAM 6 GB), pipeline Smart Customization đã đạt được các cột mốc kiểm chứng thực tế:
+\begin{itemize}
+    \item \textbf{Độ chính xác hình học (Method B1 v2):} Sau khi tinh gọn về $25$ kênh hình thái trực giao và thu hẹp biến thiên góc chụp khi sinh $24{,}000$ mẫu Render-to-MediaPipe ($12{,}000$ Nam, $12{,}000$ Nữ), sai số tuyệt đối trung bình trên tập kiểm định \texttt{ValMAE(active)} sau $80$ epochs giảm từ $0.0749$ (v1) xuống còn \textbf{0.0621} (Nam) và \textbf{0.0616} (Nữ).
+    \item \textbf{Chất lượng bề mặt da, khử bóng và độ trễ:} Mô hình khuếch tán \textbf{IC-Light} hoàn tất khử bóng studio trong khoảng \textbf{1.8 giây} ở FP16. Kết hợp chiếu Barycentric PyTorch3D, mặt nạ khoét mắt, lọc quang phổ men răng và hòa trộn biên Hermite $64$ pixel giúp loại bỏ hoàn toàn viền cắt dán gò má/cổ và tránh hiện tượng mờ tượng sáp.
+    \item \textbf{Hiệu quả trực quan 3D trong Unity 6 URP:} Hệ thống 6 kiểu tóc MPFB v2 khớp chuẩn da đầu bằng tọa độ Barycentric, vật liệu mắt PBR có đốm sáng giác mạc (\texttt{\_ClearCoatMask = 1.0}) và bản đồ pháp tuyến HRN có thể tinh chỉnh thời gian thực trong giao diện Unity như minh họa tại Hình \ref{fig:sc_results}.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Content/Thực nghiệm và đánh giá/images/sc_hair_male_short01.png}
+        \caption{Mẫu Nam kèm tóc \texttt{short01}}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Content/Thực nghiệm và đánh giá/images/sc_hair_long01_verified.png}
+        \caption{Mẫu Nữ kèm tóc \texttt{long01}}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.31\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Content/Thực nghiệm và đánh giá/images/sc_hair_test_obama.png}
+        \caption{Kiểm chứng tái tạo từ ảnh chân dung thực tế}
+    \end{subfigure}
+    \caption{Kết quả thực nghiệm tái tạo khuôn mặt, khử bóng da, mắt PBR và gắn tóc 3D trong Unity 6 URP}
+    \label{fig:sc_results}
+\end{figure}
+
+\begin{notebox}{Các hướng tiếp cận thất bại (Dead-ends) đã kiểm chứng và loại bỏ trong giai đoạn 1}
+Một giá trị thực nghiệm quan trọng của giai đoạn DACN là xác nhận sớm các phương án không khả thi để tránh lãng phí thời gian ở giai đoạn DATN:
+\begin{enumerate}
+    \item \textbf{Dùng trực tiếp tọa độ chiều sâu $Z$ của MediaPipe:} Gây sai số RMSE tới $0.1415$ IOD (gấp $2.5$ lần trục $X$), buộc phải chuyển sang Method B1 v2 Render-to-MediaPipe.
+    \item \textbf{Huấn luyện mạng \texttt{sc\_texnet} trên dữ liệu tổng hợp:} Gây loang màu hồng nhân tạo quanh miệng và bệt da như tượng sáp; đã thay hoàn toàn bằng IC-Light + chiếu Barycentric trực tiếp.
+    \item \textbf{Remap Normal Map RGB trực tiếp từ FLAME sang MPFB v2:} Gây đảo trục tiếp tuyến $(N_x, N_y)$ do đảo UV MakeHuman xoay $90^\circ$; đã khắc phục bằng cách remap bản đồ độ cao vô hướng trước rồi mới tính Sobel trên canvas UV MakeHuman.
+    \item \textbf{Dùng \texttt{SkinnedMeshRenderer} hoặc offset tọa độ cứng cho tóc OBJ:} Gây lệch trục bindpose làm tóc rơi xuống chân hoặc chìm sâu 4--5 cm trong hộp sọ; đã chuẩn hóa bằng \texttt{HumanService.add\_mhclo\_asset()} kết hợp \texttt{MeshFilter}/\texttt{MeshRenderer}.
+\end{enumerate}
+\end{notebox}
+
+\subsection{Kết quả giao diện nguyên mẫu các màn hình trò chơi}
+Bên cạnh các kết quả định lượng AI, mạng và Smart Customization, nguyên mẫu chơi thử đã kết nối hoàn chỉnh các màn hình điều hướng chính trong Unity 6. Các khung hình dưới đây đánh dấu chính xác 4 góc chụp giao diện thực tế từ bản dựng hiện tại để nhóm bổ sung ảnh chụp màn hình mới nhất trước khi in nộp:
+
+\begin{figure}[H]
+    \centering
+    \screenshotplaceholder{Content/Thực nghiệm và đánh giá/images/ui\_mainmenu\_squad.png}{Chụp ảnh màn hình Main Menu và giao diện Squad Builder (UIPopupSquadBuilder) đang kéo thả quân cờ trong ngân sách 10 Slot Points.}
+    \caption{Giao diện Main Menu và màn hình thiết lập đội hình Squad Builder}
+    \label{fig:ui_squad_placeholder}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \screenshotplaceholder{Content/Thực nghiệm và đánh giá/images/ui\_lobby\_online.png}{Chụp ảnh màn hình sảnh chờ PvP Online (UIPopupLobby) thể hiện lựa chọn Photon Region, mã phòng, 3 nhóm vị trí (Trắng, Đen, Khán giả) và trạng thái Sẵn sàng.}
+    \caption{Giao diện sảnh chờ PvP Online hỗ trợ phân vai và đồng bộ đội hình}
+    \label{fig:ui_lobby_placeholder}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \screenshotplaceholder{Content/Thực nghiệm và đánh giá/images/ui\_ingame\_6x6.png}{Chụp ảnh trận đấu thực tế trên bàn cờ 3D 6x6 gồm bộ quân cờ Trung cổ, ô vật cản trung tuyến, vùng highlight nước đi/hợp thể và thanh UIInGameHUD (AP, Pass, Graveyard).}
+    \caption{Giao diện bàn cờ 3D 6x6 và hệ thống HUD chiến thuật trong trận đấu}
+    \label{fig:ui_ingame_placeholder}
+\end{figure}

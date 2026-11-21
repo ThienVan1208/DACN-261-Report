@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="page1" name="Class Diagram Multiplayer">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="osm" value="OnlineSessionManager&#10;---&#10;NetworkRunner, White/Black/Spectators&#10;MatchSeed, WhiteSquad, BlackSquad&#10;CreateOrJoinRoomAsync()&#10;OnReliableDataReceived()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="380" y="40" width="320" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="odbn" value="OnlineDataBroadcastNetwork&#10;---&#10;_reliableSeq, Inbound Events&#10;OnHandleReliableDataReceived()&#10;SendMove(), SendSurrender()&#10;CreateBroadcastDataHandler()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1d4ed8;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="380" y="230" width="320" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="idb" value="&lt;&lt;enum&gt;&gt;&#10;BroadcastDataIdentifierByte&#10;---&#10;MSG_SLOTS_UPDATE..MSG_REQUEST_SLOT_SYNC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="760" y="240" width="300" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="bdh" value="BroadcastDataHandler (abstract)&#10;---&#10;HandleData(runner, sender, key)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="390" y="420" width="290" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="h1" value="BroadcastMoveDataHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="80" y="550" width="200" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="h2" value="BroadcastSlotsUpdateDataHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="300" y="550" width="220" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="h3" value="BroadcastReady/SquadDataHandlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="540" y="550" width="230" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="h4" value="BroadcastMatchInit/SurrenderHandlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#047857;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="790" y="550" width="240" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="nc" value="NetworkController&#10;(IMoveInputProvider)&#10;UniTaskCompletionSource&lt;MoveCommand&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="270" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ols" value="OnlineLocalMoveSender&#10;(Decorator IMoveInputProvider)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#b45309;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="270" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pvp" value="PvPOnlModeBootstrapper&#10;+ OnlineTurnTimer&#10;+ SpectatorPassiveProvider" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#334155;fontSize=12;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="770" y="60" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="composes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="osm" target="odbn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="routes by byte[0]" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="odbn" target="idb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="factory creates" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;html=1;strokeColor=#475569;fontSize=11;" edge="1" parent="1" source="odbn" target="bdh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="h1" target="bdh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="h2" target="bdh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="h3" target="bdh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="h4" target="bdh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="subscribes OnRemoteMove" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="nc" target="osm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="sends local move" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="ols" target="osm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="wires role" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#334155;fontSize=11;" edge="1" parent="1" source="pvp" target="osm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

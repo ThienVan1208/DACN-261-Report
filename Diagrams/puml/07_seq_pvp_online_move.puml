@@ -1,0 +1,73 @@
+@startuml
+!pragma layout smetana
+skinparam dpi 170
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundcorner 8
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.3
+skinparam BorderColor #475569
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassBorderColor #334155
+skinparam ClassHeaderBackgroundColor #E2E8F0
+skinparam PackageBackgroundColor #FFFFFF
+skinparam PackageBorderColor #64748B
+skinparam ComponentBackgroundColor #F8FAFC
+skinparam ComponentBorderColor #334155
+skinparam RectangleBackgroundColor #F8FAFC
+skinparam RectangleBorderColor #334155
+skinparam UsecaseBackgroundColor #F1F5F9
+skinparam UsecaseBorderColor #334155
+skinparam ActorBackgroundColor #E2E8F0
+skinparam ActorBorderColor #334155
+skinparam StateBackgroundColor #F8FAFC
+skinparam StateBorderColor #334155
+skinparam SequenceParticipantBackgroundColor #F1F5F9
+skinparam SequenceParticipantBorderColor #334155
+skinparam SequenceLifeLineBorderColor #64748B
+skinparam SequenceGroupBackgroundColor #F8FAFC
+skinparam SequenceGroupBorderColor #94A3B8
+skinparam NoteBackgroundColor #FFFBEB
+skinparam NoteBorderColor #D97706
+
+autonumber
+
+actor "Người chơi cục bộ\n(Active Player)" as Player
+participant "RaycastController" as Ray
+participant "OnlineLocalMoveSender" as Sender
+participant "OnlineDataBroadcastNetwork" as Broad
+participant "Photon Fusion\nReliableData" as Photon
+participant "NetworkController\n(Máy đối thủ)" as NetC
+participant "MatchManager\n(Core Engine)" as Match
+participant "VisualQueueManager\n+ BoardView" as View
+
+Match -> Sender : RequestActionAsync(GameState, ct)
+Sender -> Ray : RequestActionAsync(GameState, ct)
+Player -> Ray : Click quân cờ & chọn ô đích (From, To)
+Ray -> Ray : Kiểm tra MoveValidator.IsValidMove()
+Ray --> Sender : Trả về MoveCommand(From, To, PlayerId)
+
+par Đồng bộ lên mạng (4-byte Binary Payload)
+  Sender -> Broad : SendMove(runner, cmd)
+  note right of Broad
+    Payload 4 bytes:
+    [0] MSG_MOVE (5)
+    [1] FromTile (0..35)
+    [2] ToTile (0..35)
+    [3] PlayerId
+  end note
+  Broad -> Photon : SendReliableDataToPlayer(key, payload)
+  Photon --> NetC : OnReliableDataReceived -> DispatchMove(cmd)
+  NetC --> Match : Hoàn tất _pendingMoveTcs.TrySetResult(cmd)\n(trên máy đối thủ)
+else Thực thi cục bộ song song (Deterministic Core)
+  Sender --> Match : Trả về MoveCommand (trên máy cục bộ)
+end
+
+Match -> Match : GameState.ApplyMove(cmd)\n(Trừ AP, Hợp thể/Surge, Kiểm tra Chiếu/Thắng)
+Match -> View : OnEventsDispatchedAsync(GameEventBatch)
+View -> View : VisualSequenceBuilder dựng chuỗi IVisualNode
+View -> View : Diễn hoạt Move / Attack / VFX / Audio / HUD
+View --> Match : Hoàn tất UniTask -> Chuyển lượt kế tiếp
+@enduml
