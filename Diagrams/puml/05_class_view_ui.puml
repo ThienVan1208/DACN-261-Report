@@ -8,144 +8,70 @@ skinparam defaultFontSize 12
 skinparam roundcorner 8
 skinparam ArrowColor #334155
 skinparam ArrowThickness 1.3
-skinparam BorderColor #475569
 skinparam ClassBackgroundColor #F8FAFC
 skinparam ClassBorderColor #334155
 skinparam ClassHeaderBackgroundColor #E2E8F0
-skinparam PackageBackgroundColor #FFFFFF
-skinparam PackageBorderColor #64748B
-skinparam ComponentBackgroundColor #F8FAFC
-skinparam ComponentBorderColor #334155
-skinparam RectangleBackgroundColor #F8FAFC
-skinparam RectangleBorderColor #334155
-skinparam UsecaseBackgroundColor #F1F5F9
-skinparam UsecaseBorderColor #334155
-skinparam ActorBackgroundColor #E2E8F0
-skinparam ActorBorderColor #334155
-skinparam StateBackgroundColor #F8FAFC
-skinparam StateBorderColor #334155
-skinparam SequenceParticipantBackgroundColor #F1F5F9
-skinparam SequenceParticipantBorderColor #334155
-skinparam SequenceLifeLineBorderColor #64748B
-skinparam SequenceGroupBackgroundColor #F8FAFC
-skinparam SequenceGroupBorderColor #94A3B8
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #D97706
 
-skinparam classAttributeIconSize 0
-
-interface IGameEventListener {
-  +OnEventsDispatchedAsync(batch: GameEventBatch) : UniTask
+interface "Cổng lắng nghe sự kiện" as OutPort {
+  +Tiếp nhận đợt sự kiện tuần tự()
 }
 
-interface IVisualNode {
-  +ExecuteAsync(ct: CancellationToken) : UniTask
+class "Hàng đợi diễn hoạt bất đồng bộ" as VisualQ {
+  +Phát lần lượt 8 nhóm sự kiện trọng tâm
+  +Phát tín hiệu cập nhật bảng thông số
+  +Tự hủy an toàn khi chuyển màn chơi()
 }
 
-class VisualQueueManager {
-  +OnMatchInitialized : static event
-  +OnApUpdated : static event
-  +OnTurnChanged : static event
-  +OnPieceEliminated : static event
-  +OnGameOver : static event
-  -_boardView : BoardView
-  +PlayBatchAsync(batch: GameEventBatch) : UniTask
+class "Trình ghép chuỗi diễn hoạt" as SeqBuilder {
+  +Ghép nối tuần tự hoặc song song các bước()
 }
 
-class VisualSequenceBuilder {
-  +Then(node: IVisualNode) : VisualSequenceBuilder
-  +Fire(node: IVisualNode) : VisualSequenceBuilder
-  +ThenParallel(nodes) : VisualSequenceBuilder
-  +PlayAsync(ct: CancellationToken) : UniTask
+class "Các bước diễn hoạt 3D" as Nodes {
+  +Di chuyển kèm vệt bóng mờ
+  +Tấn công, rung & phóng cận cảnh góc quay
+  +Xoay bàn cờ 180 độ (PvP Offline)
 }
 
-class PieceMoveNode
-class PieceAttackVisualNode
-class CamShakedVisualNode
-class ZoomCamVisualNode
-class BoardRotatedVisualNode
-
-class BoardView {
-  -_tileViews : TileView[]
-  -_pieceViews : PieceView[]
-  +InitBoard(state: GameState)
-  +ShowMoveAffordances(tile, state)
-  +MovePieceView(from, to)
+class "Bàn cờ 3D" as BoardView {
+  +Dựng lưới 36 ô và vật cản trung tuyến
+  +Tô sáng 3 loại nước đi hợp lệ()
 }
 
-class TileView {
-  +TileIndex : int
-  +SetHighlight(type, color)
-  +ClearHighlight()
+class "Ô cờ 3D (36 ô)" as TileView {
+  +Hiển thị vùng chọn, di chuyển, tấn công, hợp thể()
 }
 
-class PieceView {
-  #_animator : Animator
-  +PlayMoveAnimation(targetPos, ct) : UniTask
-  +PlayAttackAnimation(target, ct) : UniTask
-  +PlayTargetHitVFX(pos) : virtual void
-  +TriggerVFX(vfxName)
+class "Quân cờ 3D (6 mẫu Trung cổ)" as PieceView {
+  +Máy trạng thái hoạt họa 5 pha
+  +Biểu tượng phe & loại quân nổi 3D()
 }
 
-class PieceAnimationRelay {
-  -_pieceView : PieceView
-  +PlayVFX(vfxName: string)
-  +StopVFX(vfxName: string)
-  +OnAnimEvent(eventName: string)
-  +OnAttackSwing()
-  +OnAttackHit(hitIndex: int)
-  +OnHit(hitIndex: int)
+class "Đầu mối trung chuyển hoạt họa" as Relay {
+  +Đồng bộ mốc khung hình tới VFX và âm thanh()
 }
 
-class ConcreteMedievalPieceViews <<6 Piece Classes>> {
-  KingPieceView / DarkMagePieceView
-  GreatSwordKnightPieceView / VampirePieceView
-  SwordShieldKnightPieceView / TraineeMagePieceView
+class "Quản lý giao diện tập trung" as UIMgr {
+  +Điều phối màn hình chính & xếp chồng hộp thoại()
 }
 
-class UIManager {
-  -_uiMapper : UIMapper
-  -_popupStack : Stack<UIPopupBase>
-  +ShowViewAsync<T>() : UniTask<T>
-  +ShowPopupAsync<T>() : UniTask<T>
-  +CloseTopPopupAsync() : UniTask
+class "Bảng ánh xạ giao diện" as UIMapper {
+  +Tra cứu tập trung tài nguyên màn hình()
 }
 
-class UIMapper <<ScriptableObject>> {
-  +uiMappings : UIElementMapping[]
-  +GetUIView(uiName) : UIViewBase
-  +GetUIView<T>() : T
+class "Các màn hình chính" as Screens {
+  +Màn hình chính & xây dựng đội hình (12 điểm)
+  +Sảnh chờ trực tuyến (UIPopupLobby)
+  +Bảng thông số trong trận & Cài đặt
 }
 
-abstract class UIViewBase
-abstract class UIPopupBase
-class UIInGameHUD
-class UIPopupLobby
-class UIPopupSquadBuilder
-class UIPopupSettings
-
-VisualQueueManager ..|> IGameEventListener
-VisualQueueManager --> VisualSequenceBuilder
-VisualQueueManager --> BoardView
-VisualSequenceBuilder ..> IVisualNode
-
-PieceMoveNode ..|> IVisualNode
-PieceAttackVisualNode ..|> IVisualNode
-CamShakedVisualNode ..|> IVisualNode
-ZoomCamVisualNode ..|> IVisualNode
-BoardRotatedVisualNode ..|> IVisualNode
-
+VisualQ ..|> OutPort
+VisualQ --> SeqBuilder
+VisualQ --> BoardView
+SeqBuilder --> Nodes
 BoardView "1" *-- "36" TileView
 BoardView "1" *-- "0..36" PieceView
-PieceView *-- PieceAnimationRelay
-ConcreteMedievalPieceViews --|> PieceView
-
-UIManager --> UIMapper
-UIManager --> UIViewBase
-UIPopupBase --|> UIViewBase
-UIInGameHUD --|> UIViewBase
-UIPopupLobby --|> UIPopupBase
-UIPopupSquadBuilder --|> UIPopupBase
-UIPopupSettings --|> UIPopupBase
-UIInGameHUD ..> VisualQueueManager : listens static events
+PieceView *-- Relay
+UIMgr --> UIMapper
+UIMgr --> Screens
+Screens ..> VisualQ : nhận cập nhật thông số
 @enduml

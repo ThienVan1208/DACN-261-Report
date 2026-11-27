@@ -8,7 +8,7 @@ Trong lĩnh vực trò chơi điện tử chiến thuật theo lượt, cờ vua
 Xuất phát từ các nhận định trên, nhóm thực hiện đề tài \textbf{Phát triển game ``Convergence Chess''} -- một trò chơi cờ chiến thuật 3D trên nền tảng Unity 6 \cite{unity6}, kết hợp cấu trúc di chuyển của cờ vua với cơ chế kinh tế điểm hành động tích lũy (AP), vật cản sinh ngẫu nhiên và đặc biệt là cơ chế \textbf{hợp thể quân cờ} kèm trạng thái đòn bồi (\textbf{Surge}). Dự án đồng thời xây dựng hai hướng tác nhân AI chính là \textbf{Hybrid Bot} (kết hợp tìm kiếm Minimax, học tăng cường PPO \cite{mlagents} và mạng đánh giá nhanh NNUE \cite{nnue}) và \textbf{LLM Bot} (tiến hóa luật đánh giá bằng Mô hình Ngôn ngữ Lớn theo hướng FunSearch \cite{funsearch}), tích hợp chế độ đối kháng trực tuyến qua Photon Fusion 2 \cite{photon_fusion} cùng phân hệ mở rộng tùy biến nhân vật 3D từ ảnh chân dung (Smart Customization).
 
 \subsection{Tổng quan luật chơi và cơ chế cốt lõi của Convergence Chess}
-Khác với bàn cờ $8 \times 8$ truyền thống, \textit{Convergence Chess} được thiết kế tinh gọn trên bàn cờ $6 \times 6$ nhằm đẩy nhanh nhịp độ giao tranh và tăng mật độ tính toán chiến thuật trong từng lượt đi.
+Khác với bàn cờ $8 \times 8$ truyền thống, \textit{Convergence Chess} được thiết kế tinh gọn trên bàn cờ $6 \times 6$ nhằm đẩy nhanh nhịp độ giao tranh và tăng mật độ tính toán chiến thuật trong từng lượt đi (minh họa không gian chiến thuật và tạo hình quân cờ tại Hình \ref{fig:intro_concept}).
 
 \begin{figure}[H]
     \centering
@@ -20,10 +20,10 @@ Khác với bàn cờ $8 \times 8$ truyền thống, \textit{Convergence Chess} 
 \subsubsection{Không gian bàn cờ, đội hình và vật cản ngẫu nhiên}
 Bàn cờ gồm $36$ ô được đánh chỉ số từ $0$ đến $35$ theo công thức $\text{chỉ số} = y \times 6 + x$:
 \begin{itemize}
-    \item \textbf{Sân nhà Người chơi 1:} Hàng 0 và hàng 1 (từ ô $0$ đến ô $11$), quân Vua đứng cố định tại ô $(3,0)$ (tương ứng cột d1).
-    \item \textbf{Sân nhà Người chơi 2:} Hàng 4 và hàng 5 (từ ô $24$ đến ô $35$), quân Vua đứng cố định tại ô $(3,5)$ (tương ứng cột d6).
+    \item \textbf{Sân nhà Người chơi 1:} Hàng 0 và hàng 1 (từ ô $0$ đến ô $11$), quân Vua đứng cố định tại ô $(3,0)$ (tương ứng ô d1).
+    \item \textbf{Sân nhà Người chơi 2:} Hàng 4 và hàng 5 (từ ô $24$ đến ô $35$), quân Vua đứng cố định tại ô $(3,5)$ (tương ứng ô d6).
     \item \textbf{Vùng trung tuyến:} Hàng 2 và hàng 3 (từ ô $12$ đến ô $23$). Khi khởi tạo ván đấu, hệ thống sinh ngẫu nhiên $1$ đến $2$ ô vật cản chỉ trong vùng trung tuyến này dựa trên một hạt giống ngẫu nhiên xác định. Các quân di chuyển theo đường trượt (Xe, Tượng, Hậu) bị chặn đường bởi vật cản, trong khi quân có kỹ năng nhảy chữ L (Mã) được phép nhảy vượt qua.
-    \item \textbf{Thiết lập đội hình trước trận:} Trước khi vào trận, mỗi người chơi có ngân sách hiện hành là \textbf{12 điểm đội hình} để mua và tự do sắp xếp quân cờ trong sân nhà của mình ngoài quân Vua mặc định.
+    \item \textbf{Thiết lập đội hình trước trận:} Trước khi vào trận, mỗi người chơi có ngân sách hiện hành là \textbf{12 điểm đội hình} để mua và tự do sắp xếp quân cờ trong sân nhà của mình ngoài quân Vua mặc định (chi tiết chi phí và kỹ năng từng loại quân được tổng hợp tại Bảng \ref{tab:piece_roster}).
 \end{itemize}
 
 \begin{table}[H]
@@ -96,7 +96,7 @@ Bảng \ref{tab:market_comparison} đối chiếu \textit{Convergence Chess} v�
 Bên cạnh giá trị khác biệt, thiết kế lối chơi của \textit{Convergence Chess} cũng đi kèm những ưu điểm và đánh đổi rõ rệt:
 \begin{itemize}
     \item \textbf{Ưu điểm:} Bàn cờ $6 \times 6$ rút ngắn thời gian mỗi ván đấu và đẩy nhanh nhịp độ giao tranh ngay từ các lượt đầu; cơ chế tự chọn đội hình kết hợp hợp thể khác loại và đòn bồi Surge tạo ra không gian chiến thuật phong phú, hạn chế tình trạng học thuộc khai cuộc; vật cản sinh ngẫu nhiên ở trung tuyến giúp mỗi ván đấu mang tính biến hóa cao.
-    \item \textbf{Nhược điểm và thách thức:} Nhiều cơ chế mới chồng lên nhau (kinh tế điểm hành động, $9$ kỹ năng thức tỉnh, khóa hợp thể, đòn bồi Surge) tạo rào cản tiếp cận ban đầu cao hơn cờ vua truyền thống đối với người chơi mới; không gian $6 \times 6$ hẹp hơn nên dễ xảy ra tình trạng mất cân bằng lợi thế đi trước/đi sau nếu bộ tham số điểm hành động và chi phí đội hình chưa được hiệu chỉnh qua mô phỏng số lượng lớn.
+    \item \textbf{Nhược điểm và thách thức:} Nhiều cơ chế mới chồng lên nhau (kinh tế điểm hành động, $9$ kỹ năng nội tại gồm di chuyển và thức tỉnh, khóa hợp thể, đòn bồi Surge) tạo rào cản tiếp cận ban đầu cao hơn cờ vua truyền thống đối với người chơi mới; không gian $6 \times 6$ hẹp hơn nên dễ xảy ra tình trạng mất cân bằng lợi thế đi trước/đi sau nếu bộ tham số điểm hành động và chi phí đội hình chưa được hiệu chỉnh qua mô phỏng số lượng lớn.
 \end{itemize}
 
 \subsection{Phân công trách nhiệm trong nhóm thực hiện}

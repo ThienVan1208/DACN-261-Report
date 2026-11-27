@@ -35,13 +35,13 @@
     \midrule
     Tuần 9 & Thử nghiệm nắn hình học 3D từ ảnh 2D, xử lý màu da và xem trước trong Unity. & Xây dựng luồng kết nối xử lý ảnh cục bộ giữa Python và Unity, kiểm chứng loại bỏ hướng dùng chiều sâu MediaPipe trực tiếp và mạng sinh da tổng hợp. & Hoàn thành \\
     \midrule
-    Tuần 10 & Đưa giao diện tùy biến nhân vật vào game kèm thanh trượt thủ công và nghiên cứu khử bóng da. & Hoàn thiện giao diện tùy biến và thanh trượt chỉnh tay, phương pháp tái tạo hình học $25$ thông số độc lập, thử nghiệm IC-Light (tạm dừng) và chốt kỹ thuật khử bóng đối xứng. & Hoàn thành \\
+    Tuần 10 & Đưa giao diện tùy biến nhân vật vào game kèm thanh trượt thủ công và nghiên cứu khử bóng da. & Hoàn thiện giao diện tùy biến và thanh trượt chỉnh tay, phương pháp tái tạo hình học $25$ thông số độc lập, thử nghiệm rồi dừng sử dụng IC-Light và chốt kỹ thuật khử bóng đối xứng. & Hoàn thành \\
     \midrule
     Tuần 11 & Làm mượt vùng chuyển tiếp cổ, hạn chế méo bề mặt và kiểm tra chuyển đổi Nam -- Nữ. & Hoàn thiện quy trình chiếu ngược PyTorch3D tự cài đặt, hòa trộn đa tầng $64$ điểm ảnh, vật liệu mắt phản sáng, chốt tắt các mô hình phi thương mại (HRN, IC-Light) để sẵn sàng thương mại hóa và \textbf{bổ sung $6$ kiểu tóc 3D MPFB v2}. & Mở rộng vượt kế hoạch \\
     \midrule
     Tuần 12 & Mở rộng tự đấu AI, kiểm tra ổn định mạng; \textit{thêm tìm trận tự động, đấu hạng, Elo}. & Hoàn thiện \textbf{mạng NNUE, Residual NNUE ($51\%$ thắng Minimax độ sâu 4), bộ mã hóa $654$ đặc trưng cho Hybrid Bot và ngân hàng luật LLM Bot}; chạy đo đạc $10$ lần thăm dò mạng. Hạng mục ghép trận/Elo dời sang DATN. & Mở rộng AI; dời Elo sang DATN \\
     \midrule
-    Tuần 13 & Mô phỏng cân bằng đi trước/đi sau, rà soát tình huống biên AP/Hợp thể, hiệu ứng; \textit{bảng xếp hạng, bạn bè}. & Xử lý lỗi xung đột thứ tự giữa hoạt họa tấn công và di chuyển, kiểm thử hàng trăm ván tự đấu AI, hoàn thiện bộ hiệu ứng sấm sét và va chạm. Hạng mục bảng xếp hạng và bạn bè dời sang DATN. & Hoàn thành Core/AI; dời xã hội sang DATN \\
+    Tuần 13 & Mô phỏng cân bằng đi trước/đi sau, rà soát tình huống biên AP/Hợp thể, hiệu ứng; \textit{bảng xếp hạng, bạn bè}. & Xử lý lỗi xung đột thứ tự giữa hoạt họa tấn công và di chuyển, kiểm thử hàng trăm ván tự đấu AI, hoàn thiện bộ hiệu ứng sấm sét và va chạm. Hạng mục bảng xếp hạng và bạn bè dời sang DATN. & Hoàn thành Lõi/AI; dời tính năng xã hội sang DATN \\
     \midrule
     Tuần 14 & Ghép luồng cài đặt, thử nghiệm lưu dữ liệu, đo hiệu năng khung hình và bộ nhớ. & Hoàn thiện khung hộp thoại cài đặt kèm mục cài đặt chung, lưu dữ liệu cục bộ và kiểm tra tốc độ phản hồi AI ($<70$ mili-giây). Mục âm thanh/đồ họa chuyển sang DATN. & Hoàn thành cơ bản \\
     \midrule
@@ -49,7 +49,7 @@
 \end{longtable}
 
 \subsection{Tổng kết đóng góp của từng thành viên trong giai đoạn 1}
-Bảng \ref{tab:member_contrib} ghi nhận đóng góp thực tế của hai thành viên trong suốt Giai đoạn 1 (với tổng cộng $266$ lượt cập nhật mã nguồn trên hệ thống quản lý phiên bản Git tính đến tháng 11/2026).
+Bảng \ref{tab:member_contrib} tổng kết phạm vi phụ trách và các hạng mục đã hoàn thành của hai thành viên trong suốt Giai đoạn 1.
 
 \begin{table}[H]
     \centering
@@ -59,7 +59,7 @@ Bảng \ref{tab:member_contrib} ghi nhận đóng góp thực tế của hai th�
         \toprule
         \textbf{Thành viên} & \textbf{Các hạng mục chủ trì và hoàn thành} & \textbf{Tỷ trọng} \\
         \midrule
-        Thành viên 1 (Chủ trì Lõi luật chơi, AI và SC) & Thiết kế kiến trúc tổng thể tách biệt lõi và giao diện; xây dựng toàn bộ lõi luật chơi $6 \times 6$; xây dựng và huấn luyện hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (cùng chuỗi thành phần Minimax Alpha-Beta, học bắt chước, học tăng cường PPO tự đấu, bộ mã hóa $654$ đặc trưng và mạng NNUE/Residual NNUE) và \textbf{LLM Bot} (tiến hóa tập luật biểu tượng); xây dựng toàn bộ quy trình tùy biến nhân vật 3D sẵn sàng thương mại hóa (hình học $25$ thông số, chiếu ngược PyTorch3D tự cài đặt, khử bóng đối xứng, $6$ kiểu tóc 3D, vật liệu mắt); bộ trung chuyển hoạt họa và hệ thống đánh giá đối kháng AI tự động. & 50\% \\
+        Thành viên 1 (Chủ trì Lõi luật chơi, AI và Smart Customization) & Thiết kế kiến trúc tổng thể tách biệt lõi và giao diện; xây dựng toàn bộ lõi luật chơi $6 \times 6$; xây dựng và huấn luyện hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (cùng chuỗi thành phần Minimax Alpha-Beta, học bắt chước, học tăng cường PPO tự đấu, bộ mã hóa $654$ đặc trưng và mạng NNUE/Residual NNUE) và \textbf{LLM Bot} (tiến hóa tập luật biểu tượng); xây dựng toàn bộ quy trình tùy biến nhân vật 3D sẵn sàng thương mại hóa (hình học $25$ thông số, chiếu ngược PyTorch3D tự cài đặt, khử bóng đối xứng, $6$ kiểu tóc 3D, vật liệu mắt); bộ trung chuyển hoạt họa và hệ thống đánh giá đối kháng AI tự động. & 50\% \\
         \midrule
         Thành viên 2 -- Đăng (Chủ trì Multiplayer và View Layer) & Khảo sát và triển khai Multiplayer trên Photon Fusion (\texttt{OnlineSessionManager}, \texttt{OnlineDataBroadcastNetwork}, 9 \texttt{BroadcastDataHandler}, \texttt{NetworkController}, \texttt{OnlineLocalMoveSender}, \texttt{OnlineTurnTimer}, đo benchmark NetworkObject vs Reliable Data); PvP Offline (\texttt{BoardRotator}); tầng hiển thị 3D bàn cờ, ô cờ, $6$ quân cờ Trung cổ và hàng đợi diễn hoạt; toàn bộ hệ thống giao diện người dùng (màn hình chính, xây dựng đội hình, sảnh chờ trực tuyến, bảng thông số trong trận); tích hợp hiệu ứng hình ảnh, âm thanh và bối cảnh 3D. & 50\% \\
         \bottomrule
@@ -74,7 +74,7 @@ Tuy nhiên, do phạm vi DACN tập trung vào khảo sát, kiến trúc và ngu
     \item \textbf{Chưa hoàn thiện xử lý sự cố mạng, luồng hết giờ/đầu hàng và tài khoản người chơi:} Hệ thống Multiplayer hiện chưa có cơ chế tự động kết nối lại (Reconnect) sau khi đứt mạng giữa trận; các sự kiện hết giờ (\texttt{OnlineTurnTimer.OnTimerExpired}), đầu hàng (\texttt{MSG\_SURRENDER}) và hết thời gian chờ ngắt kết nối mới dừng ở mức khung giao thức/sự kiện chưa nối mạch hoàn chỉnh tới \texttt{MatchManager} và UI; chưa tích hợp xác thực tài khoản (Google/Facebook) hay cơ sở dữ liệu đám mây.
     \item \textbf{Chưa có hệ thống cạnh tranh xã hội và hoàn thiện giao diện phụ trợ:} Các tính năng ghép trận tự động, tính điểm xếp hạng Elo, bảng xếp hạng toàn cục, danh sách bạn bè, giao diện chuyên biệt cho khán giả, các mục cài đặt âm thanh/đồ họa và hiệu ứng hình ảnh riêng cho phong cấp Tốt cùng đòn bồi Surge cần được hoàn thiện ở Giai đoạn 2.
     \item \textbf{Quy trình tùy biến nhân vật 3D còn phụ thuộc môi trường Python cục bộ:} Hiện tại tính năng này chạy trực tiếp bộ xử lý cục bộ trên máy có cạc đồ họa rời; cần phương án đóng gói thành dịch vụ máy chủ có cạc đồ họa hoặc chế độ rút gọn khi phát hành cho người dùng phổ thông.
-    \item \textbf{Chưa áp dụng quy tắc hòa lặp thế cờ $3$ lần và cần rà soát lỗi biên nhỏ trong luật tính AP:} Hiện hệ thống mới giới hạn hòa theo tổng số lượt ($60$ lượt đi lẻ) và giới hạn số lần bỏ lượt; đồng thời cần rà soát chuẩn hóa lại phần tra cứu chi phí AP di chuyển giữa quân Tượng và quân Xe trước khi cân bằng lại tham số riêng cho hai quân này.
+    \item \textbf{Chưa áp dụng quy tắc hòa lặp thế cờ $3$ lần và cần tiếp tục cân bằng bộ tham số AP:} Hiện hệ thống mới giới hạn hòa theo tổng số lượt ($60$ lượt đi lẻ) và giới hạn số lần bỏ lượt; đồng thời cần chuẩn hóa và cân bằng lại bộ tham số chi phí AP di chuyển giữa các nhóm quân trượt (như Tượng và Xe) thông qua mô phỏng số lượng lớn trước khi phát hành chính thức.
     \item \textbf{Chưa tối ưu đồ họa chuyên sâu và chưa kiểm thử người dùng quy mô lớn:} Chưa áp dụng các kỹ thuật gom lượt vẽ đồ họa và tái sử dụng hiệu ứng cho máy cấu hình thấp, chưa có màn hướng dẫn tương tác cho người mới làm quen với luật hợp thể và Surge, cũng như chưa thu thập khảo sát trải nghiệm từ cộng đồng người chơi thực tế.
 \end{enumerate}
 

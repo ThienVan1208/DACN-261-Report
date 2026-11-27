@@ -1,34 +1,40 @@
 \subsection{Thiết kế và hiện thực tầng hiển thị, giao diện và hiệu ứng}
 
-Tầng hiển thị được xây dựng theo nguyên tắc \textbf{thụ động theo sự kiện}: hoàn toàn không tự tính toán luật di chuyển hay trừ điểm hành động, mà chỉ tiếp nhận từng đợt sự kiện từ lõi luật chơi để diễn hoạt hình ảnh 3D, phát âm thanh và cập nhật giao diện người dùng.
+Từ phân tích bài toán đồng bộ hiển thị ở Mục 3.6, tầng hiển thị của \textit{Convergence Chess} được xây dựng theo nguyên tắc \textbf{thụ động theo sự kiện}: hoàn toàn không tự tính toán luật di chuyển hay trừ điểm hành động, mà chỉ tiếp nhận từng đợt sự kiện từ lõi luật chơi để diễn hoạt hình ảnh 3D, phát âm thanh và cập nhật giao diện người dùng.
 
-\subsubsection{Hàng đợi diễn hoạt bất đồng bộ}
-Trong nhiều trò chơi theo lượt thông thường, lập trình viên thường gọi trực tiếp hoạt họa di chuyển hoặc tấn công ngay bên trong hàm xử lý nước đi. Cách làm đó tuy đơn giản ban đầu nhưng dễ làm đơ vòng lặp luật chơi, gây chồng chéo hiệu ứng khi một nước đi kéo theo nhiều hệ quả liên tiếp (như hợp thể quân cờ, tấn công làm vỡ khiên hộ mệnh hoặc tiêu diệt quân kích hoạt kỹ năng rút AP) và không thể tắt riêng đồ họa khi huấn luyện AI.
-
-Để giải quyết bài toán này, tầng hiển thị sử dụng cơ chế hàng đợi trực quan tách rời gồm hai thành phần chính:
+\subsubsection{Thiết kế hàng đợi diễn hoạt bất đồng bộ}
+Để chuỗi hệ quả nhiều bước trong một nước đi (như di chuyển, hợp thể, vỡ khiên hộ mệnh, tiêu diệt quân và cập nhật AP) diễn ra đúng trình tự nhân quả mà không làm đóng băng lõi xử lý, tầng hiển thị sử dụng cơ chế hàng đợi trực quan gồm hai lớp:
 \begin{itemize}
-    \item \textbf{Bộ điều phối hàng đợi sự kiện:} Tiếp nhận từng đợt sự kiện từ lõi trò chơi và cho phát tuần tự theo cơ chế bất đồng bộ (kèm cơ chế tự hủy an toàn khi chuyển màn chơi để tránh rò rỉ tài nguyên). Giai đoạn 1 đã hoàn thiện diễn hoạt cho $8$ loại sự kiện trọng tâm gồm: khởi tạo trận đấu, di chuyển quân, vỡ khiên hộ mệnh, tiêu diệt quân, hợp thể quân, tiêu hao AP, chuyển lượt và kết thúc trận đấu (hiệu ứng riêng cho phong cấp Tốt và kích hoạt đòn bồi Surge được quy hoạch bổ sung ở Giai đoạn 2). Đồng thời, bộ điều phối này phát tín hiệu cập nhật tức thời cho bảng thông số trong trận mà không cần gắn kết trực tiếp với lõi điều phối ván đấu.
-    \item \textbf{Chuỗi bước diễn hoạt độc lập:} Cho phép ghép nối tuần tự hoặc chạy song song các đơn vị diễn hoạt riêng lẻ như di chuyển quân kèm hiệu ứng vệt bóng mờ, lao vào tấn công tạo phản hồi va chạm, phóng cận cảnh góc quay khi tiêu diệt quân, rung góc quay tạo cảm giác lực đánh và xoay bàn cờ $180^\circ$ trong chế độ đấu hai người trên cùng máy.
+    \item \textbf{Bộ điều phối hàng đợi sự kiện:} Tiếp nhận từng đợt sự kiện từ lõi trò chơi và cho phát tuần tự theo cơ chế bất đồng bộ (kèm cơ chế tự hủy an toàn khi người chơi thoát trận hoặc chuyển màn chơi). Giai đoạn 1 đã hoàn thiện diễn hoạt cho $8$ nhóm sự kiện trọng tâm: khởi tạo trận đấu, di chuyển quân, vỡ khiên hộ mệnh, tiêu diệt quân, hợp thể quân, tiêu hao AP, chuyển lượt và kết thúc trận (hiệu ứng riêng cho phong cấp Tốt và kích hoạt đòn bồi Surge được quy hoạch bổ sung ở Giai đoạn 2).
+    \item \textbf{Chuỗi bước diễn hoạt độc lập:} Cho phép ghép nối tuần tự hoặc chạy song song từng đơn vị hiệu ứng riêng lẻ như di chuyển quân kèm vệt bóng mờ, lao vào tấn công tạo phản hồi va chạm, phóng cận cảnh góc quay khi tiêu diệt quân, rung góc quay và xoay bàn cờ $180^\circ$ trong chế độ đấu hai người trên cùng máy.
 \end{itemize}
 
-\textbf{Ưu và nhược điểm của cơ chế hàng đợi diễn hoạt:}
+\subsubsection{Thiết kế bàn cờ 3D, bộ quân cờ Trung cổ và điều phối hoạt họa}
+Không gian bàn đấu và các thực thể 3D trong Unity 6 được tổ chức theo cấu trúc đối tượng tái sử dụng (\texttt{Prefab}, minh họa tại Hình \ref{fig:unity_view_prefabs}):
 \begin{itemize}
-    \item \textbf{Ưu điểm:} Tách biệt hoàn toàn nhịp diễn hoạt hình ảnh khỏi lõi tính toán; bảo đảm chuỗi hiệu ứng nhiều bước phát đúng thứ tự, không chồng chéo và dễ bật/tắt đồ họa khi chuyển sang chế độ huấn luyện AI.
-    \item \textbf{Nhược điểm:} Cần cân chỉnh thời lượng từng bước diễn hoạt hợp lý để tránh cảm giác chờ lâu khi chuỗi sự kiện dài, đồng thời phải quản lý chặt việc hủy hàng đợi an toàn nếu người chơi thoát trận đột ngột giữa lúc hiệu ứng đang chạy.
+    \item \textbf{Hiển thị bàn cờ và ô cờ 3D:} Tự động dựng lưới $36$ ô cờ 3D và các mô hình vật cản vùng trung tuyến khớp dữ liệu từ lõi trò chơi; phản hồi trực tiếp thao tác di chuột và tô sáng phân biệt rõ ba nhóm nước đi: ô di chuyển thông thường, ô tấn công quân địch và ô hợp thể với quân đồng minh.
+    \item \textbf{Bộ 6 quân cờ 3D phong cách Trung cổ:} Toàn bộ khối hình học tạm ở giai đoạn dựng khung đã được thay thế bằng $6$ mẫu nhân vật 3D đặc trưng: Nhà vua (Vua), Pháp sư Hắc ám (Hậu), Hiệp sĩ Đại kiếm (Mã), Hiệp sĩ Khiên kiếm (Xe), Pháp sư Tập sự (Tốt) và Ma cà rồng (Tượng). Mỗi quân cờ vận hành bằng máy trạng thái $5$ pha (đứng chờ, di chuyển, tấn công, bị đánh trúng và bị tiêu diệt) kèm biểu tượng nhận diện phe và loại quân nổi trong không gian 3D.
+    \item \textbf{Đầu mối trung chuyển sự kiện hoạt họa cho hiệu ứng và âm thanh:} Toàn bộ mốc sự kiện trên dòng thời gian hoạt họa (thời điểm vung vũ khí, thời điểm trúng đòn) được gom về một bộ trung chuyển thống nhất để bật hiệu ứng chém, sấm sét, vỡ khiên và phát âm thanh tương ứng (hỗ trợ phát biến thể ngẫu nhiên để tránh nhàm chán), đảm bảo đồng bộ khung hình giữa nhiều mẫu quân cờ khác nhau.
 \end{itemize}
 
-\subsubsection{Hệ thống bàn cờ, bộ quân cờ 3D phong cách Trung cổ và điều phối hoạt họa}
+\begin{figure}[H]
+    \centering
+    \screenshotplaceholder{Content/View Layer/images/unity\_view\_board\_prefabs.png}{Chụp ảnh màn chơi bàn cờ 3D trong Scene View cùng danh sách các Prefab 6 quân cờ Trung cổ và ô cờ trong Unity Editor.}
+    \caption{Tổ chức không gian bàn cờ 3D và hệ thống Prefab quân cờ Trung cổ trong Unity 6}
+    \label{fig:unity_view_prefabs}
+\end{figure}
+
+\subsubsection{Kiến trúc giao diện người dùng và luồng màn hình chính}
+Toàn bộ giao diện trò chơi được thiết lập tự co giãn theo độ phân giải màn hình và quản lý tập trung qua các thành phần chính:
 \begin{itemize}
-    \item \textbf{Hiển thị bàn cờ và ô cờ 3D:} Tự động dựng lưới $36$ ô cờ 3D khớp chính xác với dữ liệu từ lõi trò chơi, hiển thị các mô hình vật cản tại vùng trung tuyến, đồng thời phản hồi trực tiếp thao tác di chuột chọn ô và tô sáng phân biệt rõ ba nhóm nước đi: ô di chuyển thông thường, ô tấn công quân địch và ô hợp thể với quân đồng minh.
-    \item \textbf{Bộ 6 quân cờ 3D phong cách Trung cổ:} Toàn bộ các khối hình học tạm ở giai đoạn dựng khung ban đầu đã được thay thế bằng $6$ mẫu nhân vật 3D có tạo hình đặc trưng: Nhà vua (Vua), Pháp sư Hắc ám (Hậu), Hiệp sĩ Đại kiếm (Mã), Hiệp sĩ Khiên kiếm (Xe), Pháp sư Tập sự (Tốt) và Ma cà rồng (Tượng). Mỗi quân cờ vận hành bằng máy trạng thái $5$ pha (đứng chờ, di chuyển, tấn công, bị đánh trúng và bị tiêu diệt) đi kèm biểu tượng nhận diện phe và loại quân nổi trực tiếp trong không gian 3D.
-    \item \textbf{Bộ trung chuyển sự kiện hoạt họa cho hiệu ứng và âm thanh:} Nhằm tránh lặp lại xử lý và đồng bộ chính xác thời điểm vung vũ khí hoặc trúng đòn giữa nhiều mẫu quân cờ dùng chung chu trình hoạt họa, toàn bộ sự kiện trên dòng thời gian hoạt họa được gom về một bộ trung chuyển duy nhất. Thành phần này nhận nhãn sự kiện khung hình rồi điều phối đến đúng loại quân cờ tương ứng để bật/tắt hiệu ứng chém, sấm sét, vỡ khiên và phát âm thanh tương ứng (hỗ trợ phát ngẫu nhiên hoặc theo chuỗi để tránh nhàm chán).
+    \item \textbf{Quản lý màn hình và hộp thoại tập trung:} Toàn bộ màn hình chính và hộp thoại bật lên được quản lý qua một bảng ánh xạ duy nhất lập chỉ mục ngay khi khởi động, giúp bật/tắt bất đồng bộ các màn hình và xếp chồng hộp thoại gọn gàng mà không chồng chéo giao diện.
+    \item \textbf{Màn hình xây dựng đội hình:} Gồm bảng thẻ quân cờ, lưới $12$ ô sân nhà và hình bóng kéo thả trực quan; tự động đọc hạn mức ngân sách $12$ điểm, khóa các quân vượt ngân sách hoặc đang khóa mua trước trận và tự động phản chiếu đúng hướng bàn cờ cho cả hai phe.
+    \item \textbf{Màn hình sảnh chờ trực tuyến (\texttt{UIPopupLobby}):} Cho phép chọn khu vực máy chủ Photon, tạo hoặc vào phòng theo mã, hiển thị danh sách người chơi ở 3 nhóm Trắng -- Đen -- Khán giả, đổi vị trí và bật trạng thái sẵn sàng.
+    \item \textbf{Bảng thông số trong trận:} Hiển thị thanh điểm hành động hiện tại cùng lượng điểm dự kiến hồi ở lượt kế tiếp cho cả hai phe, nút bỏ lượt kèm số lượt bỏ còn lại, thẻ xem nhanh kỹ năng của quân cờ đang chọn và danh sách quân cờ đã bị tiêu diệt. Bối cảnh sàn đấu đồng thời được hoàn thiện ánh sáng, bầu trời 3D và hiệu ứng chuyển cảnh mờ.
 \end{itemize}
 
-\subsubsection{Kiến trúc giao diện người dùng và các màn hình chính}
-Toàn bộ giao diện trò chơi được thiết lập tự co giãn theo độ phân giải màn hình và quản lý tập trung qua hai lớp điều phối:
+\subsubsection{Đánh giá ưu và nhược điểm của tầng hiển thị hướng sự kiện}
 \begin{itemize}
-    \item \textbf{Hệ thống quản lý màn hình và hộp thoại tập trung:} Sử dụng một bảng ánh xạ duy nhất lập chỉ mục sẵn toàn bộ màn hình và hộp thoại ngay khi khởi động, giúp bật/tắt bất đồng bộ các màn hình chính và xếp chồng hộp thoại gọn gàng, tránh tình trạng chồng chéo giao diện.
-    \item \textbf{Màn hình xây dựng đội hình:} Gồm bảng thẻ chọn quân cờ, lưới $12$ ô sân nhà và hình bóng kéo thả trực quan; tự động đọc hạn mức ngân sách hiện hành ($12$ điểm đội hình), khóa các quân vượt quá ngân sách hoặc đang khóa mua trước trận và tự động phản chiếu đúng hướng bàn cờ cho cả hai phe.
-    \item \textbf{Màn hình sảnh chờ trực tuyến (\texttt{UIPopupLobby}):} Cho phép chọn khu vực máy chủ Photon, tạo/vào phòng theo mã, hiển thị danh sách người chơi ở 3 nhóm Trắng -- Đen -- Khán giả, đổi slot và bật trạng thái sẵn sàng.
-    \item \textbf{Bảng thông số trong trận:} Hiển thị đầy đủ các thông số chiến thuật thiết yếu giúp người chơi ra quyết định nhanh: thanh điểm hành động hiện tại cùng lượng điểm dự kiến hồi ở lượt kế tiếp cho cả hai phe, nút bỏ lượt kèm số lượt bỏ còn lại, thẻ xem nhanh thông tin kỹ năng quân cờ và khu vực hiển thị các quân cờ đã bị tiêu diệt. Ngoài ra, trò chơi còn được hoàn thiện bối cảnh bầu trời 3D, ánh sáng sàn đấu và hiệu ứng chuyển cảnh mờ mượt mà.
+    \item \textbf{Ưu điểm:} Tách biệt hoàn toàn nhịp diễn hoạt 3D khỏi lõi tính toán; bảo đảm chuỗi hiệu ứng nhiều bước phát đúng thứ tự, không chồng chéo; cho phép tắt toàn bộ tầng hiển thị khi chạy huấn luyện AI và dễ thay đổi tạo hình quân cờ hoặc hiệu ứng mà không đụng tới luật chơi.
+    \item \textbf{Nhược điểm và đánh đổi:} Cần cân chỉnh kỹ thời lượng từng bước diễn hoạt để tránh cảm giác chờ lâu khi chuỗi sự kiện dài; phải quản lý chặt việc hủy hàng đợi an toàn nếu người chơi thoát trận đột ngột giữa lúc hiệu ứng đang chạy; đồng thời tăng thêm khối lượng công việc đồng bộ hiển thị mỗi khi bổ sung cơ chế luật mới.
 \end{itemize}

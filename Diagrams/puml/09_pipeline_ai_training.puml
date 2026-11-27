@@ -8,72 +8,49 @@ skinparam defaultFontSize 12
 skinparam roundcorner 8
 skinparam ArrowColor #334155
 skinparam ArrowThickness 1.3
-skinparam BorderColor #475569
-skinparam ClassBackgroundColor #F8FAFC
-skinparam ClassBorderColor #334155
-skinparam ClassHeaderBackgroundColor #E2E8F0
 skinparam PackageBackgroundColor #FFFFFF
 skinparam PackageBorderColor #64748B
 skinparam ComponentBackgroundColor #F8FAFC
 skinparam ComponentBorderColor #334155
-skinparam RectangleBackgroundColor #F8FAFC
-skinparam RectangleBorderColor #334155
-skinparam UsecaseBackgroundColor #F1F5F9
-skinparam UsecaseBorderColor #334155
-skinparam ActorBackgroundColor #E2E8F0
-skinparam ActorBorderColor #334155
-skinparam StateBackgroundColor #F8FAFC
-skinparam StateBorderColor #334155
-skinparam SequenceParticipantBackgroundColor #F1F5F9
-skinparam SequenceParticipantBorderColor #334155
-skinparam SequenceLifeLineBorderColor #64748B
-skinparam SequenceGroupBackgroundColor #F8FAFC
-skinparam SequenceGroupBorderColor #94A3B8
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #D97706
 
 top to bottom direction
 
-package "Tầng 1: Nền tảng mô phỏng & Thầy dạy cổ điển" #F1F5F9 {
-  [Core Engine tách đồ họa\n(Headless NullGameEventListener)] as Core
-  [MinimaxSearch + Alpha-Beta + Killer/History\n(MinimaxEvaluator, Zobrist TT, Depth 1..6)] as Minimax
+package "Tầng 1: Nền tảng mô phỏng tốc độ cao và thầy dạy tìm kiếm" #F1F5F9 {
+  [Lõi luật chơi tách đồ họa\n(Chế độ mô phỏng không hiển thị)] as Core
+  [Khung tìm kiếm Minimax Alpha-Beta\n(Bảng Zobrist 64-bit, gia hạn Surge, độ sâu 1..6)] as Minimax
   Core --> Minimax
 }
 
-package "Tầng 2: Học bắt chước và Học tăng cường (Unity ML-Agents)" #EFF6FF {
-  [BehaviourCloneBootstrapper\n& DaggerBootstrapper\n(Thu thập tập mẫu Teacher Depth 4)] as BC
-  [PPO Self-Play Training\n(Multi-Arena Parallel, ObservationEncoderV2 654f)] as PPO
-  [AgentRewardHandler\n(Potential-Based Shaping Delta V_NNUE)] as Reward
-  Minimax --> BC : sinh nhãn nước đi (T=0.8 / T=0)
-  BC --> PPO : khởi tạo trọng số (BC -> RL)
-  Reward --> PPO : định hình phần thưởng mật độ cao
+package "Tầng 2: Học bắt chước và Học tăng cường PPO (Unity ML-Agents)" #EFF6FF {
+  [Thu thập dữ liệu mẫu\n(Behavioral Cloning & DAgger từ độ sâu 4)] as BC
+  [Huấn luyện PPO tự đấu song song\n(Bộ mã hóa 654 đặc trưng, lọc nước sai luật)] as PPO
+  [Định hình phần thưởng theo hàm thế năng NNUE] as Reward
+  Minimax --> BC : sinh tập thế cờ đa dạng
+  BC --> PPO : khởi tạo trọng số ban đầu
+  Reward --> PPO : tín hiệu dẫn hướng dày đặc
 }
 
-package "Tầng 3: Mạng đánh giá nhẹ & Đồng huấn luyện (NNUE + Hybrid)" #ECFDF5 {
-  [NNUEBootstrapper\n(Sinh Multi-Generation Replay Buffer .jsonl)] as NNUEData
-  [PyTorch NNUE / Residual NNUE Trainer\n(654->128->64->1 -> Export .bytes)] as NNUETrain
-  [NNUEFastEvaluator (SIMD Sparse Columns)\n+ ZobristHash Transposition Table] as NNUEEval
-  [NeuralMinimaxBotController (Policy + MinimaxEval)\n& HybridAgentBotController (Soft LMR + NNUE)] as Hybrid
-  PPO --> NNUEData : sinh ván đấu sát thực chiến
+package "Tầng 3: Hybrid Bot (Mạng NNUE / Residual NNUE & đồng huấn luyện)" #ECFDF5 {
+  [Sinh tập thế cờ thực chiến đa thế hệ] as NNUEData
+  [Huấn luyện NNUE / Residual NNUE\n(Mạng thưa 654 -> 128 -> 64 -> 1)] as NNUETrain
+  [Hybrid Bot\n(Tìm kiếm Minimax + Chính sách PPO + Residual NNUE)] as Hybrid
+  PPO --> NNUEData : tự đấu sinh dữ liệu
   NNUEData --> NNUETrain
-  NNUETrain --> NNUEEval
-  PPO --> Hybrid : Policy Priors (.onnx)
-  NNUEEval --> Hybrid : Value Evaluation (.bytes)
-  NNUEEval ..> Reward : đồng huấn luyện vòng lặp (Gen N -> Gen N+1)
+  PPO --> Hybrid : ưu tiên nhánh tìm kiếm
+  NNUETrain --> Hybrid : chấm điểm nút lá nhanh (~66 ms)
+  NNUETrain ..> Reward : vòng lặp đồng huấn luyện thế hệ mới
 }
 
-package "Tầng 4: Tiến hóa luật biểu tượng bằng LLM (FunSearch B1 V2)" #F5F3FF {
-  [Gemini API Synthesizer\n(Sinh module C# 15-35 dòng trên 36-bit ulong)] as Gemini
-  [4-Gate Verification Harness\n(Static Guard -> dotnet build -> Latency/Symmetry -> Paired Arena)] as Gate
-  [LLMEvolvedModuleBank\n(8 Context Gates + LOO Ablation Pruning)] as Bank
-  [LLMBotController\n(LLMSymbolicEvaluator + MinimaxSearch)] as LLMBot
+package "Tầng 4: LLM Bot (Tiến hóa tập luật biểu tượng theo FunSearch)" #F5F3FF {
+  [Gemini API sinh mô-đun quy tắc\n(15-35 dòng theo 8 ngữ cảnh chiến thuật)] as Gemini
+  [4 cổng kiểm định tự động\n(Cú pháp -> Biên dịch -> Tốc độ/Đối xứng -> Đấu cặp)] as Gate
+  [LLM Bot\n(Minimax + Ngân hàng 5 mô-đun biểu tượng)] as LLMBot
   Gemini --> Gate
-  Gate --> Bank : chỉ giữ module thắng A/B test
-  Bank --> LLMBot
+  Gate --> LLMBot : giữ lại mô-đun cải thiện tỷ lệ thắng
 }
 
-package "Tầng 5: Kiểm chuẩn tự động (BenchmarkRunner)" #FFFBEB {
-  [BenchmarkBootstrapper & FileBenchmarkRecorder\n(100 - 1000 ván đối kháng tự động)] as Bench
+package "Tầng 5: Kiểm chuẩn đối kháng tự động" #FFFBEB {
+  [Hệ thống đấu tự động 100 - 1.000 ván\n(Ghi nhận tỷ lệ thắng, hòa, thua & thời gian/nước)] as Bench
 }
 
 Minimax --> Bench

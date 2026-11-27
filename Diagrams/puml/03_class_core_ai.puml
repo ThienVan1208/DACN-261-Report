@@ -8,179 +8,96 @@ skinparam defaultFontSize 12
 skinparam roundcorner 8
 skinparam ArrowColor #334155
 skinparam ArrowThickness 1.3
-skinparam BorderColor #475569
 skinparam ClassBackgroundColor #F8FAFC
 skinparam ClassBorderColor #334155
 skinparam ClassHeaderBackgroundColor #E2E8F0
-skinparam PackageBackgroundColor #FFFFFF
-skinparam PackageBorderColor #64748B
-skinparam ComponentBackgroundColor #F8FAFC
-skinparam ComponentBorderColor #334155
-skinparam RectangleBackgroundColor #F8FAFC
-skinparam RectangleBorderColor #334155
-skinparam UsecaseBackgroundColor #F1F5F9
-skinparam UsecaseBorderColor #334155
-skinparam ActorBackgroundColor #E2E8F0
-skinparam ActorBorderColor #334155
-skinparam StateBackgroundColor #F8FAFC
-skinparam StateBorderColor #334155
-skinparam SequenceParticipantBackgroundColor #F1F5F9
-skinparam SequenceParticipantBorderColor #334155
-skinparam SequenceLifeLineBorderColor #64748B
-skinparam SequenceGroupBackgroundColor #F8FAFC
-skinparam SequenceGroupBorderColor #94A3B8
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #D97706
 
-skinparam classAttributeIconSize 0
-
-interface IMoveInputProvider {
-  +IsBot : bool
-  +RequestActionAsync(state: GameState, ct: CancellationToken) : UniTask<MoveCommand>
+interface "Cổng nhận nước đi" as InPort {
+  +Yêu cầu nước đi bất đồng bộ()
 }
 
-interface IGameEventListener {
-  +OnEventsDispatchedAsync(batch: GameEventBatch) : UniTask
+interface "Cổng lắng nghe sự kiện" as OutPort {
+  +Tiếp nhận đợt sự kiện()
 }
 
-class MatchManager <<MonoBehaviour>> {
-  -_gameState : GameState
-  +GameState : GameState
-  -_player1Input : IMoveInputProvider
-  -_player2Input : IMoveInputProvider
-  -_eventListeners : List<IGameEventListener>
-  +Initialize(...)
-  +StartMatchAsync() : UniTask
+class "Bộ điều phối trận đấu" as MatchMgr {
+  -Trạng thái bàn cờ hiện tại
+  -Nguồn nước đi 2 phe
+  -Danh sách thành phần lắng nghe
+  +Khởi tạo và vận hành vòng lặp lượt()
 }
 
-class GameEventHandler <<static>> {
-  +ExecuteCommand(state, cmd) : GameEventBatch
+class "Bộ xử lý sự kiện luật" as EvtHandler {
+  +Thực thi lệnh và gom đợt sự kiện()
 }
 
-class GameState {
-  +Tiles : Piece[36]
-  +Obstacles : bool[36]
-  +ActivePlayer : PlayerId
-  +TurnCount : int
-  +P1_AP : int
-  +P2_AP : int
-  +MaxAP : int
-  +ApMergeCost : int
-  +SurgeTile : int
-  +P1_PassChargesLeft : int
-  +P2_PassChargesLeft : int
-  +GenerateProceduralObstacles(rng: Random)
-  +ApplyMove(cmd: MoveCommand)
-  +ApplyMoveWithUndo(cmd: MoveCommand) : UndoToken
-  +Clone() : GameState
+class "Trạng thái bàn cờ 6x6" as State {
+  +Lưới 36 ô quân cờ và vật cản
+  +Điểm AP hai bên (tối đa 5)
+  +Trạng thái đòn bồi Surge & lượt bỏ
+  +Đi thử và hoàn tác cho tìm kiếm AI()
 }
 
-class Piece {
-  +Owner : PlayerId
-  +PieceType : PieceType
-  +Passives : PassiveFlags
-  +HasMerged : bool
-  +CanMergeWith(target: Piece) : bool
-  +Absorb(source: Piece) : void
+class "Quân cờ & 9 kỹ năng" as Piece {
+  +Phe sở hữu & loại quân gốc
+  +Tập cờ 9 kỹ năng nội tại
+  +Trạng thái đã hợp thể
+  +Kiểm tra và thực hiện hợp thể()
 }
 
-class MoveValidator <<static>> {
-  +ValidateAction(state, from, to, out ap, out type) : bool
-  +GenerateLegalMovesFast(state, list) : void
-  +HasAnyLegalAction(state, tile) : bool
-  +HasAnyLegalActionForPlayer(state, player) : bool
-  +IsKingInCheck(state, player) : bool
+class "Bộ thẩm định luật chơi" as Validator {
+  +Kiểm tra nước đi hợp lệ & chi phí AP()
+  +Sinh danh sách nước đi hợp lệ()
+  +Kiểm tra chiếu Vua & hết nước đi()
 }
 
-class MinimaxSearch <<static>> {
-  +BestAction(root, maximizer, depth, temp) : int
-  +Search(root, maximizer, options) : SearchResult
-  -AlphaBeta(...) : float
+class "Bộ mã hóa 654 đặc trưng" as Encoder {
+  +Mã hóa 36 ô x 18 kênh + 6 biến toàn cục()
 }
 
-class ObservationEncoderV2 <<static>> {
-  +ObservationSize = 654
-  +Encode(state, buffer, activePlayer) : void
+class "Khung tìm kiếm Minimax Alpha-Beta" as Minimax {
+  +Cắt tỉa Alpha-Beta & bảng Zobrist 64-bit
+  +Gia hạn độ sâu khi có Surge (tối đa 2)
+  +Giảm độ sâu thăm dò theo mạng chính sách()
 }
 
-class NNUEModelWeights {
-  +InputSize : int
-  +W1Transposed : float[]
+class "Mạng chính sách (BC / PPO)" as PolicyNet {
+  +Gợi ý phân phối xác suất nước đi()
 }
 
-class NNUEFastEvaluator <<static>> {
-  +LoadWeights(...) : NNUEModelWeights
-  +EvaluateState(st, p, w) : float
-  +EvaluateTacticalLeaf(st, p, w) : float
-  +EvaluateResidualLeaf(st, p, d, w) : float
+class "Mạng đánh giá nhanh NNUE" as NNUE {
+  +Kiến trúc thưa 654 -> 128 -> 64 -> 1
+  +Biến thể Residual NNUE (hiệu chỉnh dư)()
 }
 
-class LLMSymbolicEvaluator <<static>> {
-  +Evaluate(state, perspective) : float
+class "Hybrid Bot" as HybridBot {
+  +Kết hợp Minimax + Chính sách PPO + NNUE()
 }
 
-class LLMEvolvedModuleBank <<static>> {
-  +ModuleCount = 5
-  +EvaluateSymmetric(selfView, oppView) : float
+class "LLM Bot" as LLMBot {
+  +Tìm kiếm Minimax kết hợp luật biểu tượng()
 }
 
-class AgentBotController {
-  -_minimaxDepth : int
-  +CollectObservations(sensor)
-  +OnActionReceived(actions)
-  +WriteDiscreteActionMask(mask)
-  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
+class "Ngân hàng luật biểu tượng" as LLMBank {
+  +5 mô-đun kiểm định theo 8 ngữ cảnh
+  +Đánh giá đối xứng hai phe()
 }
 
-class NeuralMinimaxBotController {
-  -_minimaxDepth : int
-  -_topKCandidates : int
-  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
-}
+MatchMgr --> State
+MatchMgr --> EvtHandler
+EvtHandler --> Validator
+EvtHandler --> State
+MatchMgr --> InPort
+MatchMgr --> OutPort
+State "1" *-- "0..36" Piece
 
-class HybridAgentBotController {
-  -_nnueWeights : NNUEModelWeights
-  -_minimaxDepth : int
-  -_useResidualMode : bool
-  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
-}
+HybridBot ..|> InPort
+LLMBot ..|> InPort
 
-class NNUEBotController {
-  -_nnueWeights : NNUEModelWeights
-  -_useResidualMode : bool
-  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
-}
-
-class LLMBotController {
-  -_minimaxDepth : int
-  +RequestActionAsync(state, ct) : UniTask<MoveCommand>
-}
-
-MatchManager --> GameState
-MatchManager --> GameEventHandler
-GameEventHandler --> MoveValidator
-GameEventHandler --> GameState
-MatchManager --> IMoveInputProvider
-MatchManager --> IGameEventListener
-GameState "1" *-- "0..36" Piece
-
-AgentBotController ..|> IMoveInputProvider
-NeuralMinimaxBotController ..|> IMoveInputProvider
-HybridAgentBotController ..|> IMoveInputProvider
-NNUEBotController ..|> IMoveInputProvider
-LLMBotController ..|> IMoveInputProvider
-
-AgentBotController --> ObservationEncoderV2
-AgentBotController --> MinimaxSearch
-NeuralMinimaxBotController --> MinimaxSearch
-HybridAgentBotController --> MinimaxSearch
-HybridAgentBotController --> NNUEFastEvaluator
-HybridAgentBotController o-- NNUEModelWeights
-NNUEBotController --> MinimaxSearch
-NNUEBotController --> NNUEFastEvaluator
-NNUEBotController o-- NNUEModelWeights
-NNUEFastEvaluator ..> NNUEModelWeights
-LLMBotController --> MinimaxSearch
-LLMBotController --> LLMSymbolicEvaluator
-LLMSymbolicEvaluator --> LLMEvolvedModuleBank
+HybridBot --> Encoder
+HybridBot --> Minimax
+HybridBot --> PolicyNet
+HybridBot --> NNUE
+LLMBot --> Minimax
+LLMBot --> LLMBank
 @enduml

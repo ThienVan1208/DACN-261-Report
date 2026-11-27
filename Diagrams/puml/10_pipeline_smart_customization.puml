@@ -8,70 +8,48 @@ skinparam defaultFontSize 12
 skinparam roundcorner 8
 skinparam ArrowColor #334155
 skinparam ArrowThickness 1.3
-skinparam BorderColor #475569
-skinparam ClassBackgroundColor #F8FAFC
-skinparam ClassBorderColor #334155
-skinparam ClassHeaderBackgroundColor #E2E8F0
 skinparam PackageBackgroundColor #FFFFFF
 skinparam PackageBorderColor #64748B
 skinparam ComponentBackgroundColor #F8FAFC
 skinparam ComponentBorderColor #334155
-skinparam RectangleBackgroundColor #F8FAFC
-skinparam RectangleBorderColor #334155
-skinparam UsecaseBackgroundColor #F1F5F9
-skinparam UsecaseBorderColor #334155
-skinparam ActorBackgroundColor #E2E8F0
-skinparam ActorBorderColor #334155
-skinparam StateBackgroundColor #F8FAFC
-skinparam StateBorderColor #334155
-skinparam SequenceParticipantBackgroundColor #F1F5F9
-skinparam SequenceParticipantBorderColor #334155
-skinparam SequenceLifeLineBorderColor #64748B
-skinparam SequenceGroupBackgroundColor #F8FAFC
-skinparam SequenceGroupBorderColor #94A3B8
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #D97706
 
 top to bottom direction
 
 actor "Người chơi" as User
 
-package "Unity Client (Convergence Chess - Unity 6 URP)" #EFF6FF {
-  [SCCanvasUI\n(Chọn ảnh 2D, Nam/Nữ, TexNet/HRN,\n7 kiểu tóc 3D, Màu tóc RGB & Normal Strength)] as SCUI
-  [SCCharacterCreator\n(Gọi ProcessStartInfo infer_onnx.py\n+ Auto-Reload JSON + Áp BlendShapes/Tóc)] as SCCreator
-  [MPFB v2 SkinnedMeshRenderer\n+ PBR Eyes (ClearCoat Catchlight)\n+ 6 Hair Cards FBX (Barycentric Scalp)] as Mesh3D
+package "Ứng dụng Unity 6 (Giao diện & Hiển thị 3D)" #EFF6FF {
+  [Giao diện tùy biến nhân vật\n(Chọn ảnh 2D, Nam/Nữ, 6 kiểu tóc 3D, thanh trượt chỉnh tay)] as SCUI
+  [Bộ điều phối tùy biến nhân vật\n(Gọi xử lý cục bộ & nạp kết quả tự động)] as SCCreator
+  [Nhân vật 3D chuẩn MPFB v2\n(Vật liệu mắt phản sáng + 6 kiểu tóc 3D khớp da đầu)] as Mesh3D
 }
 
-package "Python Local Inference CLI (infer_onnx.py - GPU RTX 4050)" #ECFDF5 {
-  [CLI Entrypoint\n(infer_onnx.py: image, gender, backend)] as CLI
-  package "Nhánh 1: Giải hình học khuôn mặt (Method B1 v2)" #F8FAFC {
-    [MediaPipe Face Mesh\n(478 Landmarks 2D)] as MP
-    [ONNX B1 v2 Regressor\n(12,000 mẫu/giới, 25 kênh trực giao,\nValMAE ~ 0.062)] as ONNX
-    [BVLS Polish (±0.08)\n+ Khóa môi ngậm & cằm an toàn] as BVLS
+package "Bộ xử lý cục bộ tự xây dựng (Python, RTX 4050 6 GB — Tắt HRN & IC-Light)" #ECFDF5 {
+  package "Nhánh 1: Tái tạo hình học khuôn mặt 3D" #F8FAFC {
+    [MediaPipe Face Mesh\n(478 điểm mốc 2D)] as MP
+    [Mô hình hồi quy ONNX\n(25 thông số độc lập, 24.000 mẫu PyTorch3D)] as ONNX
+    [Tinh chỉnh giới hạn biên độ (±0.08)\n& khóa an toàn vùng môi] as BVLS
     MP --> ONNX
     ONNX --> BVLS
   }
-  package "Nhánh 2: Chiếu Texture UV & Khử bóng đối xứng" #F8FAFC {
-    [PyTorch3D Barycentric Back-Projection\n(MeInGame, Camera Space -> MakeHuman UV)] as Py3D
-    [Bilateral Symmetry Delighting (Lab)\n+ Khử bóng lệch & tóc mái che trán] as Delight
-    [Eye Aperture Masking\n+ Dental Enamel Spectral Filter] as Mask
-    [Multi-Band Laplacian Pyramid & Hermite\n+ HRN Normal Map (Sobel 80/55)] as Blend
+  package "Nhánh 2: Kết cấu da & khử bóng đối xứng" #F8FAFC {
+    [Chiếu ngược tam giác PyTorch3D\n(Tham khảo ý tưởng MeInGame)] as Py3D
+    [Khử bóng đối xứng hai bên (Lab)\n(Không dùng IC-Light)] as Delight
+    [Tách hốc mắt & lọc vệt men răng] as Mask
+    [Hòa trộn biên cổ đa tầng (64 px)\n(Không dùng HRN)] as Blend
     Py3D --> Delight
     Delight --> Mask
     Mask --> Blend
   }
-  [Trích xuất màu mống mắt (Min Lum 0.38)\n& màu viền tóc trán] as ColorExt
+  [Trích màu mống mắt (sáng tối thiểu 0.38)\nvà màu tóc vùng viền trán] as ColorExt
 }
 
 User --> SCUI : Tải ảnh chân dung 2D
 SCUI --> SCCreator
-SCCreator --> CLI : ProcessStartInfo CLI (Ảnh + Gender + Mode)
-CLI --> MP
-CLI --> Py3D
-CLI --> ColorExt
-BVLS --> CLI : 25 trọng số BlendShapes
-Blend --> CLI : sc_blended_skin.png + sc_normal_skin.png
-ColorExt --> CLI : iris_rgb + hair_rgb
-CLI --> SCCreator : Ghi ổ đĩa sc_result.json + PNG
-SCCreator --> Mesh3D : Cập nhật thời gian thực
+SCCreator --> MP : ảnh chân dung + giới tính
+SCCreator --> Py3D
+SCCreator --> ColorExt
+BVLS --> SCCreator : 25 thông số hình thái
+Blend --> SCCreator : bản đồ da đã khử bóng (~5.9 giây)
+ColorExt --> SCCreator : màu mắt & màu tóc
+SCCreator --> Mesh3D : cập nhật nhân vật 3D thời gian thực
 @enduml

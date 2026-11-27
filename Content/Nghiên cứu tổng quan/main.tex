@@ -11,20 +11,31 @@ Các công cụ hỗ trợ quản lý và triển khai gồm:
 \end{itemize}
 
 \subsection{Bài toán kiến trúc phần mềm và các hướng tiếp cận}
-\subsubsection{Bài toán đặt ra và các cách triển khai phổ biến trên Unity}
-Đối với một trò chơi chiến thuật 3D trên Unity tích hợp đồng thời đấu trực tuyến và huấn luyện AI, thách thức lớn nhất là làm sao dùng chung một bộ luật duy nhất cho cả người chơi (có đồ họa, hoạt họa) lẫn môi trường huấn luyện AI (cần chạy song song hàng chục bàn cờ không đồ họa ở tốc độ cao). Trong thực tế phát triển game Unity, các dự án thường tiếp cận theo ba hướng phổ biến:
-\begin{itemize}
-    \item \textbf{Gắn trực tiếp luật chơi vào các đối tượng 3D trên màn chơi:} Cách làm mặc định và nhanh nhất khi dựng nguyên mẫu nhỏ. Tuy nhiên, trạng thái bàn cờ bị phân tán vào từng quân cờ 3D, không thể chạy mô phỏng không đồ họa để huấn luyện AI và rất dễ phát sinh lệch trạng thái giữa hình ảnh với luật chơi.
-    \item \textbf{Sử dụng đối tượng quản lý dùng chung toàn cục:} Giúp các thành phần truy cập nhanh vào trạng thái ván đấu, nhưng phá vỡ khả năng chạy đồng thời nhiều bàn đấu độc lập trong cùng một không gian huấn luyện AI do xung đột dữ liệu dùng chung.
-    \item \textbf{Kiến trúc hướng dữ liệu hiệu năng cao (như Unity DOTS/ECS):} Cho tốc độ mô phỏng rất lớn với hàng nghìn thực thể, nhưng có độ phức tạp triển khai cao và kén tương thích với hệ sinh thái giao diện, hoạt họa truyền thống và các gói AI/mạng sẵn có trong phạm vi thời gian đồ án.
-\end{itemize}
+\subsubsection{Bài toán đặt ra và các cách triển khai phổ biến trong cộng đồng Unity}
+Đối với một trò chơi chiến thuật 3D trên Unity tích hợp đồng thời đấu trực tuyến và huấn luyện AI, bài toán kiến trúc cốt lõi là bảo đảm \textbf{cùng một bộ luật chơi duy nhất} có thể vận hành chính xác ở cả hai môi trường trái ngược: chế độ chơi thực tế (có hoạt họa, hiệu ứng 3D, tương tác người dùng và đồng bộ mạng) và chế độ huấn luyện AI (cần chạy song song hàng chục bàn đấu không đồ họa ở tốc độ cao). Trong thực tế phát triển game trên Unity, các dự án thường giải bài toán này theo ba hướng chính (đối chiếu ở Bảng \ref{tab:arch_approaches}):
+
+\begin{table}[H]
+    \centering
+    \caption{So sánh các hướng kiến trúc phần mềm phổ biến trên Unity cho trò chơi chiến thuật}
+    \label{tab:arch_approaches}
+    \begin{tabularx}{\textwidth}{L{3.1cm} Y Y L{2.8cm}}
+        \toprule
+        \textbf{Hướng triển khai phổ biến} & \textbf{Ưu điểm chính} & \textbf{Nhược điểm khi áp vào dự án} & \textbf{Đánh giá} \\
+        \midrule
+        Gắn trực tiếp luật chơi vào các đối tượng 3D trên màn chơi & Dựng nguyên mẫu rất nhanh, tận dụng trực tiếp thao tác kéo thả của Unity. & Trạng thái bàn cờ bị phân tán vào từng quân cờ 3D; không thể chạy mô phỏng không đồ họa để huấn luyện AI; dễ lệch giữa hình ảnh và luật. & Không phù hợp. \\
+        Dùng đối tượng quản lý toàn cục (Singleton) & Các thành phần truy cập nhanh trạng thái trận đấu, dễ cài đặt cho chế độ chơi đơn. & Xung đột dữ liệu dùng chung khi chạy song song nhiều bàn đấu trong cùng một màn chơi huấn luyện AI. & Không phù hợp cho huấn luyện song song. \\
+        Kiến trúc hướng dữ liệu hiệu năng cao (Unity DOTS/ECS) & Tốc độ mô phỏng cực lớn với hàng nghìn thực thể đồng thời. & Độ phức tạp triển khai cao, khó kết nối trực tiếp với hệ thống giao diện, hoạt họa truyền thống và các gói AI/mạng sẵn có trong khung thời gian đồ án. & Vượt nhu cầu quy mô $36$ ô cờ. \\
+        \textbf{Lõi tách rời đồ họa kết hợp cô lập theo từng bàn đấu} & Một nguồn luật duy nhất cho mọi chế độ; tắt hoàn toàn đồ họa khi huấn luyện AI; chạy song song nhiều bàn không xung đột. & Tăng khối lượng thiết kế ban đầu do phải xây dựng cổng giao tiếp nước đi và hàng đợi diễn hoạt tách riêng. & \textbf{Lựa chọn của nhóm}. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
 \subsubsection{Kiến trúc và các mẫu thiết kế nhóm lựa chọn}
-Để khắc phục hạn chế của ba hướng trên mà vẫn giữ tốc độ phát triển hợp lý, nhóm lựa chọn kết hợp kiến trúc tách biệt lõi xử lý khỏi đồ họa cùng cơ chế cô lập dịch vụ theo từng bàn đấu, vận dụng có chọn lọc năm mẫu thiết kế sau:
+Từ phân tích đánh đổi ở Bảng \ref{tab:arch_approaches}, nhóm chọn kiến trúc lục giác tách biệt lõi xử lý khỏi đồ họa \cite{cockburn} kết hợp cô lập dịch vụ theo từng bàn đấu, vận dụng năm nguyên lý thiết kế bổ trợ nhau:
 \begin{itemize}
-    \item \textbf{Kiến trúc lục giác tách biệt lõi và giao diện \cite{cockburn}:} Đặt toàn bộ thực thể và quy tắc cờ trong vùng lõi độc lập khỏi đồ họa 3D. Mọi tương tác vào ra của ván đấu đều đi qua hai cổng giao tiếp chuẩn: một cổng tiếp nhận nước đi (từ người chơi, từ mạng hoặc từ AI) và một cổng phát sự kiện diễn biến ván đấu cho phần hiển thị hoặc bộ ghi nhận thực nghiệm.
-    \item \textbf{Cô lập dịch vụ theo từng bàn đấu:} Thay vì dùng biến dùng chung toàn cục dễ gây xung đột khi chạy song song nhiều bàn cờ huấn luyện AI, mỗi bàn đấu sở hữu một vùng quản lý dịch vụ riêng được cấu hình độc lập tùy theo chế độ chơi (đấu với máy, đấu hai người hay chạy mô phỏng huấn luyện).
-    \item \textbf{Chuẩn hóa lệnh hành động và gom nhóm sự kiện:} Mọi nước đi đều được đóng gói thành một cấu trúc lệnh thống nhất; sau khi lõi luật xử lý xong sẽ phát ra một gói sự kiện theo đúng trình tự xảy ra, giúp tầng hiển thị diễn hoạt tuần tự còn các bộ theo dõi huấn luyện vẫn lắng nghe độc lập.
+    \item \textbf{Tách biệt lõi xử lý và các cổng giao tiếp chuẩn \cite{cockburn}:} Đặt toàn bộ thực thể bàn cờ và quy tắc thẩm định trong vùng lõi độc lập khỏi đồ họa 3D. Mọi tương tác vào ra của ván đấu đi qua hai cổng thống nhất: cổng tiếp nhận nước đi (từ người chơi, từ mạng trực tuyến hoặc từ AI) và cổng phát sự kiện diễn biến ván đấu cho phần hiển thị hoặc bộ ghi nhận thực nghiệm.
+    \item \textbf{Cô lập dịch vụ theo từng bàn đấu:} Thay vì dùng biến dùng chung toàn cục dễ gây xung đột khi chạy song song nhiều bàn cờ huấn luyện AI, mỗi bàn đấu sở hữu một vùng quản lý dịch vụ riêng được lắp ráp linh hoạt theo từng chế độ chơi.
+    \item \textbf{Chuẩn hóa lệnh hành động và gom nhóm sự kiện:} Mọi nước đi được đóng gói theo một định dạng lệnh thống nhất; sau khi lõi luật xử lý xong sẽ phát ra một đợt sự kiện theo đúng trình tự xảy ra, giúp tầng hiển thị diễn hoạt tuần tự còn các bộ theo dõi huấn luyện vẫn lắng nghe độc lập.
     \item \textbf{Máy trạng thái hữu hạn cho hoạt họa quân cờ:} Quản lý rõ ràng 5 trạng thái hoạt họa của từng quân cờ 3D (đứng chờ, di chuyển, tấn công, bị đánh trúng và bị tiêu diệt), giúp mã xử lý hoạt họa gọn gàng và dễ mở rộng thêm mẫu quân cờ mới.
     \item \textbf{Mẫu thiết kế khởi tạo theo loại bản tin và bọc bộ điều khiển trong tầng mạng:} Áp dụng cho phân hệ Multiplayer để tự động phân tuyến gói tin nhị phân theo mã định danh và bổ sung tính năng gửi nước đi lên mạng mà không cần sửa đổi bộ điều khiển chuột cục bộ.
 \end{itemize}
@@ -77,33 +88,30 @@ Trong cộng đồng nghiên cứu và phát triển game chiến thuật, bài 
 Từ phân tích trên, để xây dựng hai dòng tác nhân chính là \textbf{Hybrid Bot} và \textbf{LLM Bot}, nhóm ứng dụng bốn nền tảng lý thuyết bổ trợ cho nhau:
 
 \subsubsection{Tìm kiếm cây trò chơi Minimax với cắt tỉa Alpha-Beta và bảng băm Zobrist}
-Thuật toán Minimax tìm nước đi tối ưu trong trò chơi đối kháng hai người theo nguyên lý cực đại hóa lợi thế trong kịch bản đối thủ phản ứng tốt nhất. Để giảm mạnh số trạng thái phải duyệt, nền tảng tìm kiếm của Hybrid Bot kết hợp các kỹ thuật tối ưu kinh điển:
+Thuật toán Minimax tìm nước đi tối ưu trong trò chơi đối kháng hai người theo nguyên lý cực đại hóa lợi thế trong kịch bản đối thủ phản ứng tốt nhất. Để vượt qua sự bùng nổ tổ hợp khi xuất hiện hợp thể và chuỗi đòn bồi Surge, cơ sở tìm kiếm cổ điển kết hợp ba kỹ thuật kinh điển:
 \begin{itemize}
-    \item \textbf{Cắt tỉa Alpha-Beta kết hợp sắp xếp nước đi ưu tiên:} Loại bỏ sớm các nhánh chắc chắn không cải thiện kết quả, đồng thời ghi nhớ các nước đi thường gây cắt tỉa tốt và bảng điểm lịch sử cho các nước đi tĩnh để duyệt những nhánh hứa hẹn trước.
-    \item \textbf{Bảng hoán vị Zobrist và gia hạn độ sâu khi có đòn bồi Surge:} Mã hóa toàn bộ trạng thái bàn cờ (vị trí quân, vật cản, kỹ năng, trạng thái hợp thể, AP hai bên, số lượt bỏ lượt, trạng thái Surge và lượt đi) thành một mã băm 64-bit để tránh tính lại các thế cờ lặp. Đồng thời, hệ thống gia hạn thêm tối đa $2$ tầng tìm kiếm trên các nhánh kích hoạt đòn bồi Surge nhằm tránh hiện tượng bỏ sót đòn ăn quân liên hoàn ở rìa độ sâu tìm kiếm.
-    \item \textbf{Giảm độ sâu thăm dò có kiểm chứng lại theo mạng chính sách:} Khi kết hợp với mạng nơ-ron gợi ý nước đi, bộ tìm kiếm duyệt đủ độ sâu cho nước đi tốt nhất từ bảng hoán vị, nhóm nước đi có xác suất cao và toàn bộ nước ăn quân hoặc hợp thể; với các nước đi tĩnh ít tiềm năng hơn, hệ thống duyệt nông hơn để tiết kiệm thời gian và tự động kiểm chứng lại ở độ sâu đầy đủ nếu phát hiện điểm số vượt trội.
+    \item \textbf{Cắt tỉa Alpha-Beta kết hợp sắp xếp nước đi ưu tiên:} Loại bỏ sớm các nhánh chắc chắn không cải thiện kết quả bằng cách duyệt trước các nước chiến thuật (ăn quân, hợp thể), nước cắt tỉa hiệu quả và bảng điểm lịch sử.
+    \item \textbf{Bảng hoán vị Zobrist và gia hạn tìm kiếm theo tình huống chiến thuật:} Mã hóa trạng thái bàn cờ thành khóa băm để tránh tính lại các thế cờ lặp, đồng thời gia hạn độ sâu tìm kiếm trên các nhánh kích hoạt chuỗi đòn bồi nhằm khắc phục hiệu ứng chân trời (bỏ sót đòn ăn quân liên hoàn ngay rìa độ sâu tìm kiếm).
+    \item \textbf{Giảm độ sâu thăm dò có kiểm chứng lại theo mạng chính sách:} Tập trung duyệt đủ độ sâu cho các nước triển vọng cao do mạng chính sách gợi ý và giảm độ sâu đối với các nước tĩnh ít tiềm năng (tự kiểm chứng lại ở độ sâu đầy đủ nếu xuất hiện giá trị vượt trội).
 \end{itemize}
 
-\subsubsection{Học bắt chước và Học tăng cường PPO tự đấu (thành phần huấn luyện Hybrid Bot)}
-Huấn luyện học tăng cường từ con số không trên trò chơi có tín hiệu thưởng thưa (chỉ phân định thắng thua khi tiêu diệt Vua) thường hội tụ rất chậm. Do đó, mạng chính sách của Hybrid Bot được huấn luyện qua hai bước nối tiếp trên nền tảng \textbf{Unity ML-Agents} \cite{mlagents}:
+\subsubsection{Học bắt chước và học tăng cường PPO tự đấu (thành phần huấn luyện Hybrid Bot)}
+Huấn luyện học tăng cường từ con số không trên trò chơi có tín hiệu thưởng thưa (chỉ phân định thắng thua khi tiêu diệt Vua) thường hội tụ rất chậm. Vì vậy, nền tảng huấn luyện học sâu trên \textbf{Unity ML-Agents} \cite{mlagents} kết hợp ba kỹ thuật bổ trợ nhau:
 \begin{itemize}
-    \item \textbf{Học bắt chước (Behavioral Cloning và DAgger \cite{dagger}):} Thu thập hàng chục nghìn cặp thế cờ và nước đi mẫu từ bộ tìm kiếm Minimax độ sâu 4 (kết hợp lấy mẫu có độ ngẫu nhiên để đa dạng hóa thế cờ và lấy nhãn tối ưu) nhằm khởi tạo trọng số mạng nơ-ron ban đầu, tránh giai đoạn mò mẫm kém hiệu quả.
-    \item \textbf{Học tăng cường tối ưu chính sách cắt ngưỡng (PPO) \cite{ppo}:} Tinh chỉnh chính sách chọn nước đi $\pi_\theta(a|s)$ thông qua quá trình tự đấu bằng hàm mục tiêu cắt ngưỡng, ngăn bước cập nhật quá lớn làm sụp đổ chiến thuật đã học:
+    \item \textbf{Học bắt chước (Behavioral Cloning và DAgger \cite{dagger}):} Dùng bộ tìm kiếm cổ điển làm thầy dạy sinh dữ liệu mẫu để khởi tạo trọng số ban đầu cho mạng chính sách, tránh giai đoạn thăm dò ngẫu nhiên kém hiệu quả.
+    \item \textbf{Học tăng cường tối ưu chính sách cắt ngưỡng (PPO) \cite{ppo}:} Tinh chỉnh chính sách chọn nước đi $\pi_\theta(a|s)$ qua tự đấu bằng hàm mục tiêu cắt ngưỡng, ngăn bước cập nhật quá lớn làm sụp đổ chiến thuật đã học:
     \begin{equation}
         L^{\text{CLIP}}(\theta) = \hat{\mathbb{E}}_t \left[ \min\left( r_t(\theta)\hat{A}_t,\; \text{clip}\left(r_t(\theta), 1-\epsilon, 1+\epsilon\right)\hat{A}_t \right) \right]
     \end{equation}
     trong đó $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}$ là tỷ số xác suất giữa chính sách mới và cũ, còn $\hat{A}_t$ là ước lượng mức độ lợi thế của hành động.
-    \item \textbf{Định hình phần thưởng theo hàm thế năng \cite{potential_shaping}:} Để cung cấp tín hiệu dẫn hướng đều đặn hơn trong trận mà không làm lệch mục tiêu thắng thua gốc, phần thưởng trung gian được tính từ chênh lệch điểm đánh giá thế cờ của mạng NNUE:
-    \begin{equation}
-        F(s_t, s_{t+1}) = \lambda \cdot \left( \gamma \Phi_{\text{NNUE}}(s_{t+1}, p) - \Phi_{\text{NNUE}}(s_t, p) \right)
-    \end{equation}
+    \item \textbf{Định hình phần thưởng theo hàm thế năng \cite{potential_shaping}:} Cung cấp tín hiệu thưởng trung gian theo chênh lệch giá trị thế cờ giữa hai trạng thái kế tiếp để đẩy nhanh hội tụ mà về mặt lý thuyết không làm thay đổi chính sách tối ưu của trò chơi gốc.
 \end{itemize}
 
 \subsubsection{Mạng đánh giá nhanh NNUE và biến thể dạng dư (Residual NNUE)}
-Lấy cảm hứng từ kiến trúc \textbf{NNUE} trong máy đánh cờ Stockfish \cite{nnue}, thay vì chạy suy luận mạng nơ-ron nặng ở từng nút lá của cây tìm kiếm, nhóm sử dụng một mạng nơ-ron gọn ba tầng ($654 \to 128 \to 64 \to 1$) tận dụng tính thưa của bàn cờ $6 \times 6$: chỉ cộng dồn trọng số tại những ô thực sự có quân cờ hoặc vật cản và bỏ qua toàn bộ ô trống. Ở biến thể \textbf{NNUE dạng dư (Residual NNUE)}, hệ thống giữ lại điểm đánh giá vật chất cơ sở làm mốc neo và chỉ để mạng nơ-ron học phần hiệu chỉnh chiến thuật tinh tế trong biên độ giới hạn $[-3.0, +3.0]$. Cách làm này giúp tránh sai lệch nghiêm trọng về giá trị quân cờ và tăng tốc độ hội tụ rõ rệt.
+Lấy cảm hứng từ kiến trúc \textbf{NNUE} trong máy đánh cờ Stockfish \cite{nnue}, thay vì gọi mạng nơ-ron sâu nặng nề ở mỗi nút lá của cây tìm kiếm, NNUE tận dụng tính thưa của bàn cờ (chỉ cộng dồn trọng số tại các ô thực sự có quân hoặc vật cản) để đạt tốc độ suy luận siêu nhanh ngay trên CPU. Ở hướng biến thể dạng dư (\textbf{Residual NNUE}), giá trị vật chất cơ sở đóng vai trò mốc neo ổn định còn mạng nơ-ron chỉ học phần hiệu chỉnh chiến thuật có giới hạn biên độ, giúp hội tụ nhanh và tránh sai lệch nghiêm trọng về giá trị quân cờ.
 
 \subsubsection{Tiến hóa hàm đánh giá biểu tượng bằng Mô hình Ngôn ngữ Lớn (nền tảng LLM Bot)}
-Song song với hướng học sâu của Hybrid Bot, nhóm nghiên cứu hướng \textbf{LLM Bot} theo phương pháp \textbf{FunSearch} \cite{funsearch} nhằm tạo ra tri thức chiến thuật có thể đọc hiểu và kiểm chứng được. Hệ thống sử dụng Gemini API để sinh và tiến hóa trực tiếp các đoạn quy tắc đánh giá ngắn gọn, phân loại theo 8 tình huống chiến thuật của ván đấu (khai cuộc chưa hợp thể, trung cuộc đã hợp thể, tàn cuộc ít quân, tranh chấp khiên, Vua bị đe dọa, đua phong cấp Tốt, dự trữ AP cao...). Mỗi quy tắc sinh ra đều trải qua 4 bước sàng lọc tự động về tính hợp lệ, tốc độ, tính đối xứng và tỷ lệ thắng đối kháng trước khi được lưu vào ngân hàng luật của LLM Bot.
+Song song với hướng học sâu, phương pháp \textbf{FunSearch} \cite{funsearch} mở ra cách dùng Mô hình Ngôn ngữ Lớn (LLM) ngoại tuyến để sinh và tiến hóa các hàm đánh giá ngắn gọn, đọc hiểu được, kết hợp với vòng lặp kiểm định tự động thay vì gọi trực tiếp LLM trong lúc thi đấu. Cách thiết kế cụ thể cả hai dòng tác nhân \textbf{Hybrid Bot} và \textbf{LLM Bot} sẽ được trình bày ở Mục 5.2.
 
 \subsection{Bài toán tùy biến nhân vật 3D (Smart Customization) và khảo sát hướng tiếp cận}
 \subsubsection{Bài toán đặt ra và các phương pháp triển khai trên mạng hiện nay}
@@ -116,8 +124,16 @@ Bài toán đặt ra là tái tạo một nhân vật 3D có sẵn khung xương
 \end{itemize}
 
 \subsubsection{Định hướng tự xây dựng sẵn sàng thương mại hóa của nhóm}
-Tham khảo ý tưởng ánh xạ hình thái và chiếu ngược bề mặt từ các nghiên cứu trên (MeInGame, HRN, IC-Light) nhưng kiên quyết \textbf{tắt và loại bỏ toàn bộ các mô hình phi thương mại (HRN, IC-Light)} khỏi luồng sản phẩm chính thức, nhóm tự xây dựng trọn vẹn quy trình xử lý nội bộ trên bộ khung chuẩn giải phẫu \textbf{MPFB v2} (Blender) \cite{mpfb2}:
+Từ phân tích bốn hướng tiếp cận trên, nhóm rút ra khoảng trống rõ rệt: các dịch vụ đóng sẵn thiếu tự chủ, còn các mô hình học sâu tái tạo chi tiết cao ngoài cộng đồng nghiên cứu như \textbf{HRN} và \textbf{IC-Light} lại vướng ràng buộc giấy phép phi thương mại và gánh nặng phần cứng. Do đó, nhóm chỉ tham khảo ý tưởng ánh xạ hình thái và chiếu ngược bề mặt từ \textbf{MeInGame} \cite{meingame}, kiên quyết \textbf{tắt và loại bỏ toàn bộ mô hình phi thương mại (HRN, IC-Light)} khỏi luồng chính thức, và tự xây dựng quy trình cục bộ trên bộ khung chuẩn giải phẫu \textbf{MPFB v2} \cite{mpfb2} kết hợp \textbf{MediaPipe} \cite{mediapipe} và \textbf{PyTorch3D} \cite{pytorch3d}. Thiết kế chi tiết hai nhánh hình học và kết cấu bề mặt của quy trình này sẽ được trình bày ở Mục 5.3.
+
+\subsection{Bài toán đồng bộ hiển thị 3D, hoạt họa và các hướng tiếp cận}
+Một nước đi trong \textit{Convergence Chess} có thể kéo theo chuỗi hệ quả nối tiếp trong cùng một lượt (di chuyển, hợp thể quân cờ, kích hoạt đòn bồi Surge, phá khiên hoặc đẩy lùi, tiêu diệt quân và cập nhật điểm hành động). Bài toán đặt ra cho tầng hiển thị là làm sao diễn hoạt mượt mà toàn bộ chuỗi sự kiện này trên bàn cờ 3D, đồng thời giữ lõi luật chơi hoàn toàn sạch để có thể tắt đồ họa khi huấn luyện AI.
+
+Trong thực tế phát triển trò chơi theo lượt, bài toán đồng bộ hiển thị thường được giải theo ba cách:
 \begin{itemize}
-    \item \textbf{Tái tạo hình học khuôn mặt 3D:} Sử dụng \textbf{MediaPipe} \cite{mediapipe} trích xuất 478 điểm mốc giải phẫu trên ảnh 2D, sau đó ánh xạ sang hệ thống thông số biến dạng của MPFB v2. Do thực nghiệm chứng minh việc dùng trực tiếp chiều sâu ước lượng từ MediaPipe gây sai số lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt), nhóm tự xây dựng phương pháp sinh dữ liệu ảnh phối cảnh tổng hợp từ chính mô hình MPFB v2 bằng \textbf{PyTorch3D} \cite{pytorch3d} để huấn luyện bộ hồi quy gọn trên $25$ thông số hình thái độc lập, kết hợp bước tinh chỉnh tối ưu bình phương tối thiểu có giới hạn.
-    \item \textbf{Tái tạo kết cấu da và khử bóng đối xứng tự cài đặt:} Tham khảo ý tưởng chiếu tam giác ngược từ \textbf{MeInGame} \cite{meingame}, nhóm tự hiện thực quy trình chiếu ngược trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D, sau đó tự xây dựng bộ khử bóng theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab (trung hòa vùng tối lệch hoặc tóc mái che một bên trong khi bảo toàn lỗ chân lông, lông mày và râu), kết hợp tách riêng vùng hốc mắt, lọc loại bỏ vệt răng trắng khi ảnh gốc đang cười và hòa trộn biên đa tầng làm mịn vùng chuyển tiếp gò má -- cổ.
+    \item \textbf{Gọi trực tiếp hoạt họa bên trong hàm xử lý nước đi:} Đơn giản khi dựng bản mẫu nhỏ, nhưng làm lõi luật phụ thuộc trực tiếp vào thời gian chờ hoạt họa, dễ chồng chéo hiệu ứng khi có nhiều hệ quả liên tiếp và không thể chạy mô phỏng không đồ họa cho AI.
+    \item \textbf{Quét và đồng bộ lại toàn bộ trạng thái bàn cờ mỗi khung hình:} Dễ bảo đảm vị trí hiển thị khớp dữ liệu, nhưng mất thông tin về trình tự nhân quả của các sự kiện trung gian (như đòn đánh bị Khiên hộ mệnh đẩy ngược về ô cũ), khiến người chơi khó theo dõi diễn biến trận đấu.
+    \item \textbf{Hàng đợi diễn hoạt hướng sự kiện bất đồng bộ:} Lõi luật chơi xử lý tức thời trạng thái mới rồi phát ra danh sách các sự kiện theo đúng thứ tự xảy ra; tầng hiển thị đứng tách rời, xếp các sự kiện vào hàng đợi để diễn hoạt tuần tự từng pha hình ảnh, âm thanh và cập nhật giao diện.
 \end{itemize}
+
+Nhóm lựa chọn hướng thứ ba kết hợp máy trạng thái 5 pha cho từng quân cờ 3D và quản lý giao diện tập trung. Thiết kế cụ thể và đánh giá ưu, nhược điểm của tầng hiển thị sẽ được trình bày ở Mục 5.5.

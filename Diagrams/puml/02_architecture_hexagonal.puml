@@ -8,64 +8,37 @@ skinparam defaultFontSize 12
 skinparam roundcorner 8
 skinparam ArrowColor #334155
 skinparam ArrowThickness 1.3
-skinparam BorderColor #475569
-skinparam ClassBackgroundColor #F8FAFC
-skinparam ClassBorderColor #334155
-skinparam ClassHeaderBackgroundColor #E2E8F0
 skinparam PackageBackgroundColor #FFFFFF
 skinparam PackageBorderColor #64748B
 skinparam ComponentBackgroundColor #F8FAFC
 skinparam ComponentBorderColor #334155
 skinparam RectangleBackgroundColor #F8FAFC
 skinparam RectangleBorderColor #334155
-skinparam UsecaseBackgroundColor #F1F5F9
-skinparam UsecaseBorderColor #334155
-skinparam ActorBackgroundColor #E2E8F0
-skinparam ActorBorderColor #334155
-skinparam StateBackgroundColor #F8FAFC
-skinparam StateBorderColor #334155
-skinparam SequenceParticipantBackgroundColor #F1F5F9
-skinparam SequenceParticipantBorderColor #334155
-skinparam SequenceLifeLineBorderColor #64748B
-skinparam SequenceGroupBackgroundColor #F8FAFC
-skinparam SequenceGroupBorderColor #94A3B8
-skinparam NoteBackgroundColor #FFFBEB
-skinparam NoteBorderColor #D97706
 
 top to bottom direction
 
-package "Composition Root (Khởi tạo chế độ chơi)" #F1F5F9 {
-  [IModeBootstrapper] as Boot
-  [PveModeBootstrapper] as PvEBoot
-  [PvPOffModeBootstrapper] as OffBoot
-  [PvPOnlModeBootstrapper] as OnlBoot
-  [Training / Benchmark Bootstrappers] as TrainBoot
-  [ArenaServiceLocator\n(Scoped DI Container)] as Locator
-  PvEBoot -u-|> Boot
-  OffBoot -u-|> Boot
-  OnlBoot -u-|> Boot
-  TrainBoot -u-|> Boot
-  Boot --> Locator : đăng ký dịch vụ
+package "Khởi tạo và cô lập theo từng bàn đấu" #F1F5F9 {
+  [Bộ lắp ráp chế độ chơi\n(Đấu máy, Đấu 2 người, Trực tuyến, Huấn luyện AI)] as Boot
+  [Vùng quản lý dịch vụ độc lập\ncho từng bàn đấu] as Locator
+  Boot --> Locator : lắp ráp dịch vụ
 }
 
-package "Driving Adapters (Nguồn phát sinh nước đi)" #EFF6FF {
-  [RaycastController\n(Human Local Input)] as Raycast
-  [OnlineLocalMoveSender +\nNetworkController\n(Photon Shared / ReliableData)] as NetCtrl
-  [AgentBotController\n(ML-Agents PPO/BC &\nHeuristic Minimax)] as RLBot
-  [NeuralMinimaxBotController\n(Policy + MinimaxEval)] as NMxBot
-  [HybridAgentBotController /\nNNUEBotController\n(NNUE / Residual)] as NNUEBot
-  [LLMBotController\n(Symbolic Bank)] as LLMBot
+package "Nguồn phát sinh nước đi (Driving Adapters)" #EFF6FF {
+  [Điều khiển chuột\n(Người chơi cục bộ)] as Raycast
+  [Tầng mạng trực tuyến\n(Photon Fusion Shared)] as NetCtrl
+  [Hybrid Bot\n(Minimax + PPO + NNUE)] as HybridBot
+  [LLM Bot\n(Ngân hàng luật biểu tượng)] as LLMBot
 }
 
-rectangle "Driving Port\n<<interface>> IMoveInputProvider" as InPort #DBEAFE
+rectangle "Cổng tiếp nhận nước đi thống nhất" as InPort #DBEAFE
 
-package "Core Domain & Application Loop (Tách rời đồ họa 3D)" #ECFDF5 {
-  [MatchManager\n(MonoBehaviour UniTask Loop)] as MatchMgr
-  [GameEventHandler\n(ExecuteCommand -> EventBatch)] as EvtHandler
-  [GameState\n(Bàn 6x6, MaxAP=5, Obstacles, Surge)] as State
-  [MoveValidator\n(ValidateAction, GenerateLegalMovesFast)] as Validator
-  [Piece & PassiveFlags\n(9-bit ushort bitmask)] as Piece
-  [SquadValidator & GameConfig\n(ScriptableObject, 12 Slots)] as Config
+package "Khối lõi luật chơi (Tách rời hoàn toàn đồ họa 3D)" #ECFDF5 {
+  [Bộ điều phối vòng lặp trận đấu] as MatchMgr
+  [Bộ xử lý sự kiện và cập nhật bàn cờ] as EvtHandler
+  [Trạng thái bàn cờ 6x6\n(Vật cản, Điểm AP, Đòn bồi Surge)] as State
+  [Bộ thẩm định luật chơi\n(Di chuyển, Hợp thể, Chiếu Vua)] as Validator
+  [Quân cờ & 9 kỹ năng nội tại] as Piece
+  [Cấu hình cân bằng tập trung\n(ScriptableObject, 12 điểm)] as Config
   MatchMgr --> EvtHandler
   MatchMgr --> State
   EvtHandler --> State
@@ -74,32 +47,30 @@ package "Core Domain & Application Loop (Tách rời đồ họa 3D)" #ECFDF5 {
   State --> Config
 }
 
-rectangle "Driven Port\n<<interface>> IGameEventListener" as OutPort #FEF3C7
+rectangle "Cổng phát sự kiện diễn biến ván đấu" as OutPort #FEF3C7
 
-package "Driven Adapters (Hiển thị, huấn luyện và kiểm chuẩn)" #FFFBEB {
-  [VisualQueueManager\n+ BoardView / PieceView / UI] as VisualQ
-  [BoardRotator & OnlineTurnTimer\n(PvP Offline / Đếm giờ 60s)] as AuxList
-  [AgentRewardHandler\n(NNUE Potential Reward Shaping)] as RewardList
-  [NullGameEventListener\n(Headless Training)] as NullList
-  [BenchmarkGameEventManager\n-> BenchmarkRunner -> FileBenchmarkRecorder] as BenchRec
+package "Thành phần tiếp nhận sự kiện (Driven Adapters)" #FFFBEB {
+  [Hàng đợi diễn hoạt 3D\n(Bàn cờ, Quân cờ, Giao diện)] as VisualQ
+  [Xoay bàn cờ & Đếm giờ lượt] as AuxList
+  [Định hình phần thưởng AI\n(Hàm thế năng NNUE)] as RewardList
+  [Chế độ chạy không đồ họa\n(Huấn luyện AI song song)] as NullList
+  [Ghi nhận đối kháng tự động] as BenchRec
 }
 
-package "External Module (Smart Customization - Local Python CLI)" #F5F3FF {
-  [SCCharacterCreator\n(Unity UGUI + URP PBR)] as SCUnity
-  [Python CLI (infer_onnx.py)\n(MediaPipe + ONNX B1 v2 + PyTorch3D\n+ Bilateral Delighting + HRN)] as SCPy
-  SCUnity <--> SCPy : ProcessStartInfo / sc_result.json + PNG
+package "Phân hệ mở rộng: Tùy biến nhân vật 3D (Sẵn sàng thương mại hóa)" #F5F3FF {
+  [Giao diện tùy biến Unity 6\n(Chọn ảnh 2D, 6 kiểu tóc 3D)] as SCUnity
+  [Bộ xử lý cục bộ tự xây dựng\n(Hình học 25 thông số + Chiếu ngược PyTorch3D\n+ Khử bóng đối xứng Lab, tắt HRN & IC-Light)] as SCPy
+  SCUnity <--> SCPy : trao đổi thông số & bản đồ da
 }
 
 Raycast ..|> InPort
 NetCtrl ..|> InPort
-RLBot ..|> InPort
-NMxBot ..|> InPort
-NNUEBot ..|> InPort
+HybridBot ..|> InPort
 LLMBot ..|> InPort
 
-InPort --> MatchMgr : UniTask<MoveCommand>
-Locator ..> MatchMgr : inject Ports
-MatchMgr --> OutPort : GameEventBatch
+InPort --> MatchMgr : lệnh nước đi
+Locator ..> MatchMgr : cấp phát cổng giao tiếp
+MatchMgr --> OutPort : đợt sự kiện tuần tự
 
 VisualQ ..|> OutPort
 AuxList ..|> OutPort

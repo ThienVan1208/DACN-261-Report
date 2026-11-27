@@ -1,56 +1,74 @@
 \subsection{Thiết kế và hiện thực phân hệ lõi luật chơi}
 
-\subsubsection{Nguyên lý tách rời lõi xử lý và quản lý cấu hình tập trung}
-Toàn bộ các thực thể và quy tắc cốt lõi của trò chơi (trạng thái bàn cờ, thông tin quân cờ, kiểm định nước đi, quản lý kỹ năng và kiểm tra đội hình) được thiết kế tách biệt hoàn toàn khỏi hệ thống đồ họa 3D của Unity, chỉ đọc các tham số cân bằng từ một nguồn cấu hình tập trung duy nhất. Mọi trạng thái của một ván đấu đều được lưu trữ thống nhất trong một cấu trúc dữ liệu trung tâm, bao gồm: mảng $36$ ô lưu vị trí quân cờ, mảng $36$ ô đánh dấu $1$--$2$ vật cản sinh ngẫu nhiên trong vùng trung tuyến (ô $12$ đến ô $23$) theo hạt giống xác định, lượng điểm hành động hiện có của hai bên (tối đa $5$ AP), phụ phí hợp thể (hiện đặt bằng $0$), vị trí quân cờ đang kích hoạt đòn bồi Surge, số lượt bỏ lượt còn lại của mỗi phe và bộ đếm tổng số lượt đã đi.
-
-Để đạt tốc độ tính toán cao trong hàng triệu bước duyệt cây trò chơi và mô phỏng huấn luyện AI, toàn bộ $9$ kỹ năng di chuyển và kỹ năng thức tỉnh (đã trình bày ở Bảng \ref{tab:piece_roster}, Chương 1) được mã hóa gọn bằng $9$ bit trạng thái trong một giá trị số nguyên $16$-bit thay vì dùng danh sách đối tượng nặng nề. Nhờ cách biểu diễn này, phép hợp thể giữa quân nguồn và quân đích chỉ cần một phép gộp bit tức thời ở mức phần cứng; đồng thời thao tác sao chép trạng thái bàn cờ, đi thử và hoàn tác nước đi trong quá trình tìm kiếm diễn ra cực nhanh mà không phát sinh gánh nặng cấp phát bộ nhớ tạm.
-
-\subsubsection{Kiểm định nước đi, điều phối trận đấu và cô lập theo từng bàn đấu}
+\subsubsection{Tổ chức kiến trúc lõi tách rời và cấu hình cân bằng tập trung}
+Từ phân tích đánh đổi giữa các hướng triển khai trên Unity ở Mục 3.2, toàn bộ phần xử lý luật chơi của \textit{Convergence Chess} được thiết kế tách rời hoàn toàn khỏi đồ họa 3D và tổ chức quanh ba khối thành phần chính (minh họa tổ chức đối tượng và tài nguyên cấu hình trong Unity tại Hình \ref{fig:unity_core_config}):
 \begin{itemize}
-    \item \textbf{Bộ thẩm định luật chơi:} Đảm nhận kiểm tra đồng bộ mọi điều kiện hợp lệ của một nước đi, bao gồm tính toán lượng AP cần thiết, kiểm tra đường trượt bị chặn bởi quân cờ hoặc vật cản, áp dụng hai khóa cân bằng hợp thể (cấm hợp thể hai quân cùng loại gốc và mỗi quân chỉ hợp thể tối đa một lần), cấm quân Vua tham gia hợp thể, giới hạn chỉ quân vừa hợp thể mới được hành động trong giai đoạn đòn bồi Surge, cũng như kiểm tra trạng thái chiếu Vua và điều kiện hết nước đi hợp lệ.
-    \item \textbf{Bộ điều phối vòng lặp trận đấu và gom sự kiện:} Vận hành theo cơ chế bất đồng bộ theo từng lượt: đầu lượt kiểm tra xem phe tới lượt còn hành động hợp lệ hay không (nếu không còn thì xử thua), chờ nhận nước đi từ nguồn điều khiển tương ứng (người chơi, mạng trực tuyến hoặc tác nhân AI), chuyển cho lõi luật cập nhật trạng thái rồi gom toàn bộ các thay đổi phát sinh trong nước đi đó (di chuyển, hợp thể, vỡ khiên, tiêu diệt quân, phong cấp Tốt, kích hoạt Surge, tiêu hao AP, đổi lượt hoặc kết thúc trận) thành một đợt sự kiện tuần tự gửi ra bên ngoài. Riêng trong quá trình duyệt cây tìm kiếm AI, lõi luật hỗ trợ đi thử và hoàn tác trực tiếp mà không tạo sự kiện hình ảnh để tối đa hóa tốc độ.
-    \item \textbf{Cô lập hoàn toàn giữa các bàn đấu:} Mỗi bàn đấu sở hữu một vùng quản lý dịch vụ độc lập, được lắp ráp linh hoạt theo từng chế độ chơi (đấu với máy, đấu hai người cùng máy, đấu trực tuyến hoặc mô phỏng huấn luyện). Khi chạy huấn luyện AI, tầng diễn hoạt đồ họa được thay thế bằng bộ tiếp nhận rỗng, cho phép chạy song song hàng chục bàn cờ cùng lúc mà không gây xung đột dữ liệu dùng chung.
+    \item \textbf{Nguồn cấu hình cân bằng tập trung:} Lưu toàn bộ tham số trò chơi (ngân sách $12$ điểm đội hình, chi phí điểm và chi phí AP của từng loại quân, mức hồi $+2$ AP mỗi lượt, trần tích lũy $5$ AP, phụ phí hợp thể hiện đặt bằng $0$, giới hạn $3$ lượt bỏ và $60$ lượt đấu) trong một tài nguyên dữ liệu tĩnh độc lập (\texttt{ScriptableObject} của Unity). Cách tổ chức này giúp nhóm điều chỉnh cân bằng lối chơi nhanh chóng mà không phải sửa trực tiếp logic xử lý.
+    \item \textbf{Cấu trúc trạng thái ván đấu thống nhất:} Lưu tập trung toàn bộ dữ liệu của một trận đấu trong cùng một cấu trúc duy nhất, gồm vị trí quân cờ trên lưới $36$ ô, $1$--$2$ vật cản vùng trung tuyến (ô $12$ đến ô $23$) sinh theo hạt giống xác định, tập $9$ kỹ năng nội tại của từng quân cờ (được biểu diễn gọn dưới dạng tập cờ trạng thái giúp thao tác hợp thể và sao chép bàn cờ diễn ra tức thời), điểm hành động hai bên, trạng thái đòn bồi Surge và số lượt còn lại.
+    \item \textbf{Cô lập hoàn toàn theo từng bàn đấu:} Thay vì dùng bộ quản lý toàn cục dễ gây xung đột dữ liệu, mỗi bàn đấu sở hữu một vùng quản lý dịch vụ riêng được lắp ráp linh hoạt theo từng chế độ chơi (đấu với máy, đấu hai người cùng máy, đấu trực tuyến hoặc mô phỏng huấn luyện AI). Ở chế độ huấn luyện AI, tầng diễn hoạt đồ họa được tắt hoàn toàn để chạy song song hàng chục bàn cờ cùng lúc.
 \end{itemize}
 
-\textbf{Đánh giá ưu và nhược điểm của kiến trúc lõi tách rời:}
+\begin{figure}[H]
+    \centering
+    \screenshotplaceholder{Content/Core và AI/images/unity\_core\_config\_hierarchy.png}{Chụp ảnh cấu trúc bàn đấu mẫu (Prefab Arena) trong cửa sổ Hierarchy cùng tài nguyên cấu hình cân bằng trò chơi (ScriptableObject) trong Unity Editor.}
+    \caption{Tổ chức bàn đấu độc lập và nguồn cấu hình cân bằng tập trung trong Unity 6}
+    \label{fig:unity_core_config}
+\end{figure}
+
+\subsubsection{Luồng vận hành một lượt đấu và kiểm định luật chơi}
+Vòng lặp trận đấu vận hành theo cơ chế bất đồng bộ từng lượt, kết nối với bên ngoài qua hai cổng thống nhất (cổng tiếp nhận hành động và cổng phát sự kiện). Một lượt chơi diễn ra tuần tự qua bốn bước:
+\begin{enumerate}
+    \item \textbf{Khởi tạo đầu lượt:} Hệ thống cộng điểm hành động đầu lượt ($+2$ AP cơ bản và cộng thêm từ kỹ năng đặc biệt, tối đa $5$ AP) và kiểm tra xem phe tới lượt còn ít nhất một nước đi hoặc quyền bỏ lượt hợp lệ hay không; nếu không còn hành động nào, trận đấu kết thúc và xử thua cho phe đó.
+    \item \textbf{Tiếp nhận nước đi theo chế độ chơi:} Hệ thống chờ nhận lệnh hành động (di chuyển, tấn công, hợp thể hoặc bỏ lượt) từ đúng nguồn điều khiển của phe đang tới lượt, bao gồm thao tác chuột của người chơi, dữ liệu từ đối thủ trực tuyến hoặc quyết định từ tác nhân AI.
+    \item \textbf{Thẩm định toàn diện tính hợp lệ:} Bộ thẩm định luật chơi kiểm tra đồng thời mọi điều kiện của nước đi:
+    \begin{itemize}
+        \item Đủ lượng AP cần thiết theo loại quân và khoảng cách di chuyển; đường trượt không bị chặn bởi quân cờ khác hoặc vật cản trung tuyến (ngoại trừ quân có kỹ năng nhảy chữ L).
+        \item Tuân thủ đầy đủ quy tắc hợp thể: cấm hợp thể hai quân cùng loại gốc, mỗi quân chỉ tham gia hợp thể tối đa một lần trong trận và không cho phép quân Vua tham gia hợp thể.
+        \item Khi đang ở giai đoạn đòn bồi Surge, chỉ cho phép quân cờ vừa hợp thể thực hiện hành động hoặc chọn kết thúc lượt để giữ lại AP.
+        \item Kiểm tra trạng thái chiếu Vua, xử lý tương tác giữa Khiên hộ mệnh với Phá khiên và phong cấp Tốt khi tiến tới hàng cuối sân đối phương.
+    \end{itemize}
+    \item \textbf{Cập nhật trạng thái và phát đợt sự kiện:} Sau khi nước đi hợp lệ được áp dụng lên trạng thái bàn cờ, lõi xử lý gom toàn bộ các hệ quả phát sinh trong nước đi đó (di chuyển, hợp thể, vỡ khiên, tiêu diệt quân, phong cấp Tốt, kích hoạt Surge, tiêu hao AP, đổi lượt hoặc kết thúc trận) thành một đợt sự kiện tuần tự gửi sang tầng hiển thị. Riêng trong quá trình duyệt cây tìm kiếm của AI, lõi luật hỗ trợ đi thử và hoàn tác trực tiếp mà không tạo sự kiện hình ảnh để tối đa hóa tốc độ mô phỏng.
+\end{enumerate}
+
+\subsubsection{Đánh giá ưu và nhược điểm của kiến trúc lõi tách rời}
 \begin{itemize}
-    \item \textbf{Ưu điểm:} Bảo đảm tính nhất quán tuyệt đối giữa mọi chế độ chơi (đấu máy, đấu cùng máy, đấu trực tuyến); đạt tốc độ mô phỏng hàng trăm trận đấu trong vài chục giây cho huấn luyện AI nhờ chạy không đồ họa và mã hóa kỹ năng bằng bit; dễ viết kiểm thử tự động cho từng quy tắc biên.
-    \item \textbf{Nhược điểm:} Độ phức tạp thiết kế ban đầu cao hơn so với cách viết trực tiếp vào đối tượng 3D của Unity; đòi hỏi xây dựng thêm lớp cầu nối gom sự kiện và hàng đợi diễn hoạt ở tầng hiển thị, làm tăng khối lượng công việc đồng bộ trạng thái hình ảnh khi bổ sung cơ chế mới.
+    \item \textbf{Ưu điểm:} Bảo đảm tính nhất quán tuyệt đối giữa mọi chế độ chơi (đấu máy, đấu hai người cùng máy và đấu trực tuyến); đạt tốc độ mô phỏng hàng trăm ván đấu trong vài chục giây cho huấn luyện AI nhờ chạy không đồ họa và biểu diễn trạng thái gọn nhẹ; thuận lợi khi viết kiểm thử tự động cho các tình huống biên của luật chơi.
+    \item \textbf{Nhược điểm và đánh đổi:} Chi phí thiết kế ban đầu cao hơn so với cách viết trực tiếp vào đối tượng 3D của Unity; mỗi khi bổ sung một cơ chế luật mới, nhóm phải đồng bộ thêm loại sự kiện tương ứng ở lớp cầu nối sang tầng hiển thị.
 \end{itemize}
 
 \subsection{Thiết kế và hiện thực hệ thống trí tuệ nhân tạo}
 
-Đóng góp nghiên cứu trọng tâm của Giai đoạn 1 là xây dựng và kiểm chứng hai dòng tác nhân AI chính là \textbf{Hybrid Bot} và \textbf{LLM Bot}, cùng giao tiếp với lõi trò chơi thông qua một giao diện nhận nước đi thống nhất.
+Kế thừa phân tích các hướng tiếp cận AI ở Mục 3.4, đóng góp trọng tâm của Giai đoạn 1 là xây dựng và kiểm chứng hai dòng tác nhân AI chính là \textbf{Hybrid Bot} và \textbf{LLM Bot}. Cả hai đều giao tiếp với lõi trò chơi thông qua cùng một cổng nhận nước đi thống nhất, cho phép thay thế linh hoạt ở chế độ đấu với máy hoặc chạy đối kháng tự động.
 
-\subsubsection{Bộ mã hóa trạng thái bàn cờ}
-Từ phiên bản đầu tiên sử dụng $438$ đặc trưng số thực, nhóm nâng cấp lên bộ mã hóa thế hệ mới gồm \textbf{654 đặc trưng số thực} ($36\text{ ô} \times 18\text{ kênh} + 6\text{ biến toàn cục}$), luôn được chuẩn hóa theo góc nhìn của phe đang tới lượt:
+\subsubsection{Biểu diễn trạng thái bàn cờ và không gian hành động}
+Để tác nhân học máy nắm bắt trọn vẹn đặc thù của luật hợp thể và điểm hành động, nhóm nâng cấp bộ mã hóa từ phiên bản đầu ($438$ đặc trưng) lên \textbf{654 đặc trưng số thực} ($36\text{ ô} \times 18\text{ kênh} + 6\text{ biến toàn cục}$), luôn chuẩn hóa theo góc nhìn của phe đang tới lượt:
 \begin{itemize}
-    \item Mỗi ô trên bàn cờ $6 \times 6$ được mô tả bằng $18$ kênh thông tin: $1$ kênh đánh dấu ô vật cản, $6$ kênh loại quân cờ có dấu ($+1$ với quân mình, $-1$ với quân địch cho 6 loại quân từ Tốt đến Vua), $9$ kênh tương ứng với $9$ kỹ năng nội tại có dấu theo phe sở hữu, $1$ kênh trạng thái đã từng hợp thể và $1$ kênh đánh dấu ô đang kích hoạt Surge.
-    \item Sáu biến toàn cục biểu diễn lượng AP hiện có của hai bên, số lượt bỏ lượt còn lại của hai bên, tiến độ trận đấu so với giới hạn $60$ lượt và cờ báo hiệu đang ở giai đoạn Surge.
+    \item \textbf{18 kênh thông tin cho mỗi ô cờ:} Gồm $1$ kênh đánh dấu ô vật cản, $6$ kênh loại quân cờ có dấu ($+1$ cho quân mình, $-1$ cho quân địch ứng với 6 loại quân từ Tốt đến Vua), $9$ kênh ứng với $9$ kỹ năng nội tại có dấu theo phe sở hữu, $1$ kênh đánh dấu trạng thái đã từng hợp thể và $1$ kênh đánh dấu ô đang kích hoạt đòn bồi Surge.
+    \item \textbf{6 biến toàn cục:} Biểu diễn lượng AP hiện có của hai bên, số lượt bỏ lượt còn lại của hai bên, tiến độ trận đấu so với giới hạn $60$ lượt và cờ báo hiệu đang ở giai đoạn Surge.
+    \item \textbf{Không gian hành động hợp lệ:} Gồm $36 \times 36 + 1 = 1{,}297$ lựa chọn (ánh xạ mọi cặp ô xuất phát -- ô đích và hành động cuối cùng là bỏ lượt). Ở mỗi lượt, toàn bộ lựa chọn sai luật đều bị loại bỏ trước qua bộ thẩm định của lõi trò chơi để tác nhân không bao giờ sinh nước đi phạm luật.
 \end{itemize}
-Không gian hành động rời rạc gồm $36 \times 36 + 1 = 1{,}297$ lựa chọn (ánh xạ mọi cặp ô xuất phát -- ô đích và hành động cuối cùng là bỏ lượt). Toàn bộ không gian hành động được lọc chặt qua bộ thẩm định luật chơi ở từng lượt để tác nhân AI không bao giờ chọn nước đi phạm luật.
 
 \subsubsection{Hướng tác nhân 1: Hybrid Bot}
-\textbf{Hybrid Bot} là tác nhân AI chủ lực có sức mạnh chiến thuật cao nhất của dự án, được xây dựng theo hướng kết hợp giữa tìm kiếm cây trò chơi cổ điển và học sâu hiện đại nhằm khắc phục cả tầm nhìn ngắn hạn của mạng chính sách thuần túy lẫn giới hạn của hàm đánh giá viết tay. Hybrid Bot hội tụ ba trụ cột thành phần được phát triển và huấn luyện nối tiếp:
+\textbf{Hybrid Bot} là tác nhân AI chủ lực có sức mạnh chiến thuật cao nhất của dự án, kết hợp thế mạnh nhìn xa của tìm kiếm cây trò chơi với khả năng nhận diện mẫu hình chiến thuật của học sâu. Hybrid Bot gồm ba trụ cột phát triển và huấn luyện nối tiếp:
 \begin{enumerate}
-    \item \textbf{Khung tìm kiếm Minimax Alpha-Beta tối ưu:} Cài đặt tìm kiếm cây trò chơi với cắt tỉa Alpha-Beta, bảng hoán vị 64-bit Zobrist, ghi nhớ nước cắt tỉa tốt theo độ sâu, bảng điểm lịch sử cho nước đi tĩnh, ưu tiên duyệt nước ăn quân hoặc hợp thể và tự động gia hạn tối đa $2$ tầng tìm kiếm khi xuất hiện đòn bồi Surge. Khung tìm kiếm này vừa đóng vai trò khung tư duy chiến thuật cho Hybrid Bot, vừa đóng vai trò thầy dạy độ sâu 4 (có hỗ trợ lấy mẫu đa dạng) để sinh dữ liệu huấn luyện ban đầu.
-    \item \textbf{Mạng chính sách gợi ý nước đi (Học bắt chước và PPO tự đấu):} Được khởi tạo trọng số thông qua học bắt chước (Behavioral Cloning và DAgger \cite{dagger}) từ hàng chục nghìn thế cờ mẫu, sau đó tinh chỉnh bằng thuật toán học tăng cường PPO tự đấu \cite{ppo} trên nhiều bàn cờ chạy song song, kết hợp định hình phần thưởng theo hàm thế năng của mạng NNUE \cite{potential_shaping}:
+    \item \textbf{Khung tìm kiếm Minimax Alpha-Beta tối ưu:} Cài đặt tìm kiếm cây trò chơi có cắt tỉa Alpha-Beta, bảng hoán vị 64-bit Zobrist tránh tính lại thế cờ lặp, ưu tiên duyệt nước ăn quân hoặc hợp thể, ghi nhớ các nước cắt tỉa hiệu quả và tự động gia hạn thêm tối đa $2$ tầng tìm kiếm khi xuất hiện đòn bồi Surge. Khung này vừa làm bộ khung tư duy chiến thuật cho Hybrid Bot, vừa đóng vai trò thầy dạy độ sâu 4 (có lấy mẫu đa dạng) để tạo tập dữ liệu huấn luyện khởi đầu.
+    \item \textbf{Mạng chính sách gợi ý nước đi (Học bắt chước và PPO tự đấu):} Được khởi tạo trọng số qua học bắt chước (Behavioral Cloning và DAgger \cite{dagger}) từ hàng chục nghìn thế cờ mẫu, sau đó tinh chỉnh bằng thuật toán học tăng cường PPO tự đấu \cite{ppo} trên nhiều bàn cờ chạy song song, kết hợp định hình phần thưởng theo hàm thế năng của mạng NNUE \cite{potential_shaping}:
     \[
         \Delta V_{\text{NNUE}} = \text{hệ số} \cdot \left(\gamma \Phi(s_{t+1}, p) - \Phi(s_t, p)\right)
     \]
-    Trong trận đấu, mạng chính sách cung cấp phân phối xác suất ưu tiên nước đi giúp khung tìm kiếm tập trung duyệt sâu vào các nhánh triển vọng và giảm độ sâu thăm dò đối với các nước tĩnh ít tiềm năng (có kiểm chứng lại ở độ sâu đầy đủ nếu xuất hiện điểm vượt trội).
-    \item \textbf{Mạng đánh giá nhanh NNUE và biến thể dạng dư (Residual NNUE):} Để chấm điểm nhanh các thế cờ ở nút lá mà không chịu độ trễ cao của mạng sâu lớn, Hybrid Bot sử dụng bộ đánh giá NNUE 3 tầng ($654 \to 128 \to 64 \to 1$) \cite{nnue} khai thác tính thưa của bàn cờ $6 \times 6$ (chỉ tính cộng dồn trọng số tại các ô có quân hoặc vật cản). Ở chế độ NNUE chuẩn, điểm đại cục được kết hợp thêm điểm kiểm tra chiếu Vua tường minh; ở biến thể \textbf{Residual NNUE}, điểm đánh giá cơ sở đóng vai trò mốc neo và mạng nơ-ron học phần hiệu chỉnh dư bị giới hạn trong khoảng $[-3.0, +3.0]$. Sự kết hợp khép kín giữa mạng chính sách (sinh dữ liệu tự đấu đa thế hệ) và mạng đánh giá NNUE (định hình phần thưởng ngược lại cho mạng chính sách) tạo nên vòng lặp đồng huấn luyện nâng dần sức mạnh của Hybrid Bot qua từng thế hệ.
+    Trong thực chiến, mạng chính sách cung cấp phân phối xác suất ưu tiên giúp khung tìm kiếm tập trung duyệt sâu vào các nhánh triển vọng và giảm độ sâu thăm dò đối với các nước tĩnh ít tiềm năng (tự kiểm chứng lại ở độ sâu đầy đủ nếu xuất hiện điểm vượt trội).
+    \item \textbf{Mạng đánh giá nhanh NNUE và biến thể dạng dư (Residual NNUE):} Thay vì dùng mạng sâu lớn gây độ trễ cao ở nút lá, Hybrid Bot dùng mạng NNUE 3 tầng ($654 \to 128 \to 64 \to 1$) \cite{nnue} khai thác tính thưa của bàn cờ $6 \times 6$ (chỉ cộng dồn trọng số tại các ô có quân hoặc vật cản). Ở biến thể \textbf{Residual NNUE}, điểm đánh giá vật chất cơ sở đóng vai trò mốc neo và mạng nơ-ron chỉ học phần hiệu chỉnh chiến thuật dư trong khoảng $[-3.0, +3.0]$. Sự kết hợp khép kín giữa mạng chính sách (sinh dữ liệu tự đấu đa thế hệ) và mạng NNUE (định hình phần thưởng ngược lại cho mạng chính sách) tạo thành vòng lặp đồng huấn luyện nâng dần sức mạnh qua từng thế hệ.
 \end{enumerate}
 
 \subsubsection{Hướng tác nhân 2: LLM Bot (tiến hóa tập luật biểu tượng)}
-Song song với Hybrid Bot dựa trên mạng nơ-ron, nhóm phát triển \textbf{LLM Bot} theo hướng trí tuệ nhân tạo biểu tượng có thể giải thích được (lấy cảm hứng từ FunSearch \cite{funsearch}):
+Song song với Hybrid Bot dựa trên mạng nơ-ron, nhóm phát triển \textbf{LLM Bot} theo hướng trí tuệ nhân tạo biểu tượng minh bạch (lấy cảm hứng từ FunSearch \cite{funsearch}):
 \begin{itemize}
-    \item Toàn bộ trạng thái bàn cờ $6 \times 6$ được biểu diễn gọn bằng các mặt nạ bit $36$-bit siêu nhẹ, cho phép Gemini API sinh và tiến hóa từng mô-đun quy tắc đánh giá ngắn gọn ($15$--$35$ dòng mã) ứng với $8$ ngữ cảnh chiến thuật riêng biệt: luôn áp dụng, khai cuộc chưa hợp thể, trung cuộc đã hợp thể, tàn cuộc ít quân, tranh chấp khiên hộ mệnh, Vua bị đe dọa, đua phong cấp Tốt và trạng thái tích trữ AP cao. Mỗi mô-đun đều được bọc cơ chế đánh giá đối xứng giữa hai phe để bảo đảm công bằng.
-    \item Mỗi quy tắc mới do LLM đề xuất đều phải vượt qua \textbf{4 cổng kiểm định tự động}: (1) kiểm tra cú pháp an toàn và không gây cấp phát bộ nhớ động; (2) biên dịch thực tế kèm tối đa $1$ lượt tự sửa lỗi nếu biên dịch thất bại; (3) đo tốc độ thực thi và kiểm chứng tính đối xứng phản chiếu giữa hai phe; (4) thi đấu đối chứng cặp (đảo vai đi trước/đi sau trên cùng hạt giống bàn cờ) kết hợp lọc loại trừ để giữ lại các mô-đun thực sự mang lại lợi ích. Hiện tại ngân hàng luật của LLM Bot đã kiểm định và lưu giữ $5$ mô-đun chiến thuật hoạt động ổn định.
+    \item \textbf{Sinh tập luật theo ngữ cảnh chiến thuật:} Biểu diễn gọn trạng thái bàn cờ $6 \times 6$ để Gemini API sinh và tiến hóa từng mô-đun quy tắc đánh giá ngắn gọn ($15$--$35$ dòng mã) ứng với $8$ ngữ cảnh chiến thuật riêng biệt: luôn áp dụng, khai cuộc chưa hợp thể, trung cuộc đã hợp thể, tàn cuộc ít quân, tranh chấp khiên hộ mệnh, Vua bị đe dọa, đua phong cấp Tốt và trạng thái tích trữ AP cao. Mỗi mô-đun đều áp dụng phép đánh giá đối xứng giữa hai phe để bảo đảm công bằng.
+    \item \textbf{Sàng lọc qua 4 cổng kiểm định tự động:} Mọi quy tắc mới do LLM đề xuất đều phải vượt qua: (1) kiểm tra cú pháp an toàn; (2) biên dịch thực tế (kèm tối đa $1$ lượt tự sửa lỗi nếu biên dịch thất bại); (3) đo tốc độ thực thi và kiểm chứng tính đối xứng phản chiếu giữa hai phe; (4) thi đấu đối chứng cặp (đảo vai đi trước/đi sau trên cùng hạt giống bàn cờ) kết hợp lọc loại trừ để chỉ giữ lại các mô-đun mang lại cải thiện thực sự. Hiện tại ngân hàng luật của LLM Bot đã kiểm định và lưu giữ $5$ mô-đun hoạt động ổn định.
 \end{itemize}
 
 \subsubsection{Đánh giá ưu và nhược điểm của Hybrid Bot và LLM Bot}
-Bảng \ref{tab:ai_pros_cons} tổng hợp trực diện ưu điểm và hạn chế của hai dòng tác nhân AI chính do nhóm triển khai:
+Bảng \ref{tab:ai_pros_cons} đối chiếu trực diện ưu điểm và đánh đổi của hai dòng tác nhân AI chính mà nhóm đã triển khai:
 
 \begin{table}[H]
     \centering
@@ -60,33 +78,41 @@ Bảng \ref{tab:ai_pros_cons} tổng hợp trực diện ưu điểm và hạn c
         \toprule
         \textbf{Dòng tác nhân} & \textbf{Ưu điểm nổi bật} & \textbf{Nhược điểm và đánh đổi} \\
         \midrule
-        \textbf{Hybrid Bot} & Sức mạnh chiến thuật cao, khắc phục được lỗi tầm nhìn ngắn của mạng chính sách thuần túy; tốc độ phản hồi nhanh trong trận thực tế (khoảng $66$ mili-giây mỗi nước với thành phần Residual NNUE ở độ sâu 4); có khả năng tự cải thiện qua vòng lặp đồng huấn luyện đa thế hệ. & Quy trình huấn luyện nhiều tầng phức tạp (học bắt chước $\to$ PPO tự đấu $\to$ NNUE); quyết định của mạng nơ-ron mang tính ``hộp đen'' khó giải thích trực tiếp bằng lời; cần huấn luyện lại khi thay đổi mạnh tham số cân bằng luật chơi. \\
-        \textbf{LLM Bot} & Tri thức đánh giá ở dạng tập luật biểu tượng minh bạch, đọc hiểu và kiểm chứng được; không tốn chi phí gọi API trong lúc thi đấu vì luật đã được biên dịch sẵn; dễ bật/tắt hoặc tinh chỉnh theo $8$ ngữ cảnh chiến thuật riêng biệt. & Quá trình tiến hóa luật phụ thuộc vào chất lượng gợi ý và chi phí gọi API ngoại tuyến; sức mạnh trần khó theo kịp mạng đánh giá học sâu trên các thế cờ phức tạp nhiều biến thể; hiện mới dừng ở $5$ mô-đun kiểm định và cần mở rộng đánh giá đối kháng trực tiếp với Hybrid Bot ở Giai đoạn 2. \\
+        \textbf{Hybrid Bot} & Sức mạnh chiến thuật cao, khắc phục được lỗi tầm nhìn ngắn của mạng chính sách thuần túy; tốc độ phản hồi thực tế nhanh (khoảng $66$ mili-giây mỗi nước với biến thể Residual NNUE ở độ sâu 4); có khả năng tự cải thiện qua vòng lặp đồng huấn luyện đa thế hệ. & Quy trình huấn luyện nhiều tầng phức tạp (học bắt chước $\to$ PPO tự đấu $\to$ NNUE); quyết định của mạng nơ-ron mang tính ``hộp đen'' khó giải thích trực tiếp bằng lời; cần huấn luyện lại khi thay đổi mạnh bộ tham số cân bằng luật chơi. \\
+        \textbf{LLM Bot} & Tri thức đánh giá ở dạng tập luật biểu tượng minh bạch, đọc hiểu và kiểm chứng được; không tốn chi phí gọi API trong lúc thi đấu vì luật đã được biên dịch sẵn; dễ bật/tắt hoặc tinh chỉnh theo từng nhóm ngữ cảnh chiến thuật. & Quá trình tiến hóa luật phụ thuộc vào chất lượng gợi ý và chi phí gọi API ngoại tuyến; sức mạnh trần khó theo kịp mạng đánh giá học sâu ở các thế cờ phức tạp nhiều biến thể; hiện mới có $5$ mô-đun kiểm định và cần mở rộng đối kháng trực tiếp với Hybrid Bot ở Giai đoạn 2. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
 \subsection{Thiết kế và hiện thực phân hệ tùy biến nhân vật 3D (Smart Customization)}
 
-Phân hệ tùy biến nhân vật 3D (Smart Customization) được thiết kế theo định hướng \textbf{tự chủ thuật toán và sẵn sàng thương mại hóa}: nhóm đã chủ động \textbf{tắt hoàn toàn các mô hình có giấy phép phi thương mại (như HRN và IC-Light)} khỏi luồng chạy chính thức, chỉ sử dụng quy trình tự xây dựng chạy cục bộ trên máy trạm (NVIDIA GeForce RTX 4050 Laptop, bộ nhớ đồ họa 6 GB) và áp trực tiếp lên bộ khung nhân vật chuẩn giải phẫu \textbf{MPFB v2} \cite{mpfb2} (Blender 4.2) trong Unity 6.
+\subsubsection{Định hướng tự chủ và kiến trúc hai nhánh sẵn sàng thương mại hóa}
+Như đã phân tích ở Mục 3.5, nhằm hướng tới sản phẩm có thể phát hành thương mại công khai, nhóm chủ động \textbf{tắt và loại bỏ hoàn toàn các mô hình có giấy phép phi thương mại (HRN và IC-Light)} khỏi luồng chạy chính thức. Toàn bộ phân hệ Smart Customization sử dụng quy trình do nhóm tự xây dựng, chạy cục bộ trên máy trạm (NVIDIA GeForce RTX 4050 Laptop, bộ nhớ đồ họa 6 GB) và áp trực tiếp kết quả lên bộ khung nhân vật chuẩn giải phẫu \textbf{MPFB v2} \cite{mpfb2} (Blender 4.2) trong Unity 6.
 
 \subsubsection{Nhánh tái tạo hình học khuôn mặt 3D}
-Qua thực nghiệm giai đoạn đầu, nhóm xác nhận việc dùng trực tiếp tọa độ chiều sâu ước lượng từ MediaPipe \cite{mediapipe} gây sai số rất lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt, gấp $2.5$ lần sai số theo chiều ngang). Do đó, nhóm tự xây dựng quy trình tái tạo hình học gồm ba bước:
+Qua thực nghiệm giai đoạn đầu, nhóm phát hiện việc dùng trực tiếp tọa độ chiều sâu ước lượng từ MediaPipe \cite{mediapipe} gây sai số rất lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt, gấp $2.5$ lần sai số theo chiều ngang). Vì vậy, nhóm tự xây dựng quy trình tái tạo hình học ba bước:
 \begin{enumerate}
-    \item Tinh gọn từ $40$ xuống còn \textbf{25 thông số hình thái khuôn mặt độc lập}, loại bỏ các thông số gây chồng chéo hoặc xung đột tỷ lệ hộp sọ và vùng thái dương.
-    \item Dùng \textbf{PyTorch3D} \cite{pytorch3d} kết xuất tập dữ liệu ảnh phối cảnh tổng hợp trực tiếp từ chính mô hình MPFB v2 gồm $12{,}000$ mẫu Nam và $12{,}000$ mẫu Nữ trong vùng góc chụp kiểm soát (góc nghiêng dọc $\pm 4^\circ$, góc xoay ngang $\pm 6^\circ$, góc mở ống kính $12.5^\circ$--$18^\circ$), đạt $100\%$ tỷ lệ nhận diện điểm mốc khuôn mặt.
-    \item Huấn luyện mô hình hồi quy gọn trong $80$ chu kỳ và xuất sang định dạng ONNX để suy luận nhanh, kết hợp bước tinh chỉnh tối ưu có giới hạn biên độ ($\pm 0.08$) và đặt các khóa an toàn giải phẫu cho vùng môi nhằm giữ dáng môi khép tự nhiên, tránh lỗi hở khe môi.
+    \item \textbf{Tinh gọn không gian tham số:} Rút gọn từ $40$ xuống còn \textbf{25 thông số hình thái khuôn mặt độc lập}, loại bỏ các thông số chồng chéo gây xung đột tỷ lệ hộp sọ và vùng thái dương.
+    \item \textbf{Sinh dữ liệu phối cảnh tổng hợp:} Dùng \textbf{PyTorch3D} \cite{pytorch3d} kết xuất bộ dữ liệu tổng hợp trực tiếp từ chính mô hình MPFB v2 gồm $12{,}000$ mẫu Nam và $12{,}000$ mẫu Nữ trong vùng góc chụp kiểm soát (nghiêng dọc $\pm 4^\circ$, xoay ngang $\pm 6^\circ$, góc mở ống kính $12.5^\circ$--$18^\circ$), đạt $100\%$ tỷ lệ nhận diện điểm mốc khuôn mặt.
+    \item \textbf{Hồi quy nhanh kết hợp tinh chỉnh an toàn:} Huấn luyện mô hình hồi quy gọn trong $80$ chu kỳ và xuất sang định dạng ONNX để suy luận nhanh, kết hợp bước tinh chỉnh tối ưu giới hạn biên độ ($\pm 0.08$) cùng các khóa an toàn giải phẫu cho vùng môi nhằm giữ dáng môi khép tự nhiên, tránh lỗi hở khe môi.
 \end{enumerate}
 
-\subsubsection{Nhánh xử lý bề mặt da, vật liệu mắt và hệ thống tóc 3D}
+\subsubsection{Nhánh xử lý bề mặt da, vật liệu mắt và hệ thống 6 kiểu tóc 3D}
 \begin{itemize}
-    \item \textbf{Chiếu ngược kết cấu da và khử bóng đối xứng tự cài đặt:} Tham khảo ý tưởng chiếu tam giác từ nghiên cứu \textbf{MeInGame} \cite{meingame}, nhóm tự hiện thực phép chiếu ngược trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D (kèm hiệu chỉnh vùng môi), sau đó áp dụng thuật toán khử bóng và khử che khuất theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab. Cách làm này trung hòa hiệu quả bóng đổ gắt hoặc tóc mái che một bên trong khi vẫn giữ được lỗ chân lông, lông mày và râu, hoàn toàn không phụ thuộc mô hình khử bóng phi thương mại \textbf{IC-Light} \cite{iclight} hay mô hình tái tạo chi tiết phi thương mại \textbf{HRN} \cite{hrn}.
-    \item \textbf{Tách hốc mắt, khử vệt răng và hòa trộn biên cổ:} Hệ thống dùng mặt nạ tách bỏ vùng hốc mắt để giữ nguyên $100\%$ cấu trúc nhãn cầu 3D có khả năng xoay độc lập; áp dụng bộ lọc nhận diện men răng để loại bỏ vệt răng trắng nếu ảnh gốc đang cười; cân bằng sắc tố da trong không gian màu Lab kết hợp hòa trộn tháp đa tần số và cửa sổ chuyển tiếp mượt ($64$ điểm ảnh) giúp xóa viền ghép giữa mặt và cổ.
-    \item \textbf{Vật liệu mắt phản sáng và hệ thống 6 kiểu tóc 3D:} Bề mặt mống mắt và củng mạc được cấu hình độ bóng cao ($0.96$) kèm lớp phủ màng nước mắt tạo đốm sáng tự nhiên trên giác mạc, đồng thời chuẩn hóa ngưỡng sáng tối thiểu của mống mắt ở mức $0.38$ để vân mắt luôn rõ nét. Sáu kiểu tóc 3D (tóc ngắn kiểu 1, tóc ngắn kiểu 2, tóc ngắn ngang vai, tóc dài, tóc đuôi ngựa và tóc tết ở độ phân giải kết cấu $2048 \times 2048$) được định vị khớp chuẩn vào da đầu bằng công cụ chuẩn hóa của MPFB v2 \cite{mpfb2}, quản lý tách biệt theo giới tính và tự động lấy mẫu màu tóc từ vùng viền trán của ảnh chân dung đầu vào.
+    \item \textbf{Chiếu ngược kết cấu da và khử bóng đối xứng tự cài đặt:} Tham khảo ý tưởng chiếu tam giác từ nghiên cứu \textbf{MeInGame} \cite{meingame}, nhóm tự hiện thực phép chiếu ngược trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D (kèm hiệu chỉnh vùng môi), sau đó áp dụng thuật toán khử bóng và khử che khuất theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab. Cách làm này trung hòa hiệu quả bóng đổ gắt hoặc tóc mái che một bên trong khi vẫn giữ được lỗ chân lông, lông mày và râu, hoàn toàn không phụ thuộc \textbf{IC-Light} \cite{iclight} hay \textbf{HRN} \cite{hrn}.
+    \item \textbf{Tách hốc mắt, khử vệt răng và hòa trộn biên cổ:} Sử dụng mặt nạ tách bỏ vùng hốc mắt để giữ nguyên $100\%$ cấu trúc nhãn cầu 3D xoay độc lập; dùng bộ lọc nhận diện men răng để loại bỏ vệt răng trắng nếu ảnh gốc đang cười; cân bằng sắc tố da trong không gian màu Lab kết hợp hòa trộn tháp đa tần số và cửa sổ chuyển tiếp mượt ($64$ điểm ảnh) nhằm xóa viền ghép giữa mặt và cổ.
+    \item \textbf{Vật liệu mắt phản sáng và hệ thống 6 kiểu tóc 3D:} Cấu hình độ bóng cao ($0.96$) kèm lớp phủ màng nước mắt tạo đốm sáng tự nhiên trên giác mạc và chuẩn hóa ngưỡng sáng tối thiểu của mống mắt ở mức $0.38$ để vân mắt luôn rõ nét. Sáu kiểu tóc 3D (tóc ngắn kiểu 1, tóc ngắn kiểu 2, tóc ngắn ngang vai, tóc dài, tóc đuôi ngựa và tóc tết ở độ phân giải kết cấu $2048 \times 2048$) được định vị khớp chuẩn vào da đầu bằng công cụ chuẩn hóa của MPFB v2 \cite{mpfb2}, quản lý tách biệt theo giới tính và tự động lấy mẫu màu tóc từ vùng viền trán của ảnh chân dung (giao diện thao tác minh họa tại Hình \ref{fig:unity_sc_ui}).
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \screenshotplaceholder{Content/Core và AI/images/unity\_sc\_customization\_ui.png}{Chụp ảnh màn hình tùy biến nhân vật 3D trong Unity 6 thể hiện ảnh chân dung đầu vào, nhân vật 3D đã áp khuôn mặt/tóc và bảng thanh trượt tinh chỉnh thủ công.}
+    \caption{Giao diện tùy biến nhân vật 3D và tinh chỉnh hình thái thủ công trong Unity 6}
+    \label{fig:unity_sc_ui}
+\end{figure}
 
 \subsubsection{Đánh giá ưu và nhược điểm của giải pháp Smart Customization tự xây dựng}
 \begin{itemize}
-    \item \textbf{Ưu điểm:} Tự chủ hoàn toàn về quy trình và an toàn pháp lý để thương mại hóa do không dùng các mô hình phi thương mại (HRN, IC-Light); bảo toàn $100\%$ hệ khung xương hoạt họa của MPFB v2; giữ trung thực nét nhận dạng khuôn mặt gốc (không bị biến dạng như mô hình sinh khuếch tán) với tốc độ xử lý nhanh (khoảng $5.9$ giây mỗi ảnh).
-    \item \textbf{Nhược điểm:} Do tắt mô hình tái tạo nếp nhăn sâu HRN, độ chi tiết vi mô ở vùng da có nhiều nếp nhăn chưa nổi bật bằng các mô hình nghiên cứu chuyên sâu; chất lượng đầu ra còn nhạy với ảnh chân dung chụp nghiêng góc quá lớn hoặc ngược sáng cực đoan; ở Giai đoạn 1 vẫn cần máy có cạc đồ họa rời cục bộ và cần đóng gói thành dịch vụ máy chủ ở Giai đoạn 2.
+    \item \textbf{Ưu điểm:} Tự chủ hoàn toàn về thuật toán và an toàn pháp lý để thương mại hóa do không dùng các mô hình phi thương mại (HRN, IC-Light); bảo toàn $100\%$ hệ khung xương hoạt họa của MPFB v2; giữ trung thực nét nhận dạng khuôn mặt gốc (không bị biến dạng như mô hình sinh khuếch tán) với thời gian xử lý nhanh (khoảng $5.9$ giây mỗi ảnh).
+    \item \textbf{Nhược điểm và đánh đổi:} Do tắt mô hình tái tạo nếp nhăn sâu HRN, độ chi tiết vi mô ở vùng da có nhiều nếp nhăn chưa sắc nét bằng các mô hình nghiên cứu chuyên sâu; chất lượng đầu ra còn nhạy với ảnh chân dung chụp nghiêng góc lớn hoặc ngược sáng cực đoan; ở Giai đoạn 1 vẫn yêu cầu máy tính có cạc đồ họa rời cục bộ và cần đóng gói thành dịch vụ máy chủ ở Giai đoạn 2.
 \end{itemize}
