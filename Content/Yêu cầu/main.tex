@@ -1,52 +1,52 @@
 \section{Yêu cầu của đề tài}
 
-\subsection{Các bên liên quan và câu chuyện người dùng (Stakeholders và User stories)}
-Để bảo đảm hệ thống đáp ứng đúng cả góc độ trải nghiệm người chơi lẫn yêu cầu kỹ thuật của một đồ án nghiên cứu AI và Multiplayer, nhóm xác định các bên liên quan (Stakeholders) chính:
+\subsection{Các bên liên quan và câu chuyện người dùng}
+Để bảo đảm hệ thống đáp ứng đúng cả góc độ trải nghiệm người chơi lẫn yêu cầu nghiên cứu AI và Multiplayer của một đồ án chuyên ngành, nhóm xác định bốn nhóm đối tượng liên quan chính:
 \begin{itemize}
-    \item \textbf{Người chơi (Player):} Đối tượng trực tiếp xây dựng đội hình, trải nghiệm các chế độ đấu PvE, PvP Offline, PvP Online và tùy biến nhân vật 3D.
-    \item \textbf{Khán giả (Spectator):} Người tham gia phòng Online ở vai trò quan sát trực tiếp diễn biến ván đấu của hai người chơi chính mà không can thiệp vào luồng điều khiển.
-    \item \textbf{Nhà phát triển và nghiên cứu AI (Developer / AI Researcher):} Nhóm phát triển sử dụng chính lõi trò chơi ở chế độ không đồ họa (Headless) để chạy hàng nghìn ván mô phỏng tự động, huấn luyện mô hình máy học và xuất dữ liệu kiểm chuẩn.
-    \item \textbf{Giảng viên hướng dẫn và Hội đồng đánh giá:} Đánh giá tính đúng đắn của kiến trúc, mức độ hoàn thiện của nguyên mẫu giai đoạn 1 và độ tin cậy của các số liệu thực nghiệm.
+    \item \textbf{Người chơi:} Đối tượng trực tiếp xây dựng đội hình, trải nghiệm các chế độ đấu với máy, đấu hai người trên cùng máy, đấu trực tuyến và tùy biến nhân vật 3D.
+    \item \textbf{Khán giả:} Người tham gia phòng trực tuyến ở vai trò quan sát trực tiếp diễn biến ván đấu của hai người chơi chính mà không can thiệp vào luồng điều khiển.
+    \item \textbf{Nhóm phát triển và nghiên cứu AI:} Sử dụng chính lõi trò chơi ở chế độ mô phỏng không hiển thị đồ họa để chạy hàng nghìn ván đấu tự động, huấn luyện các thành phần của Hybrid Bot và LLM Bot cũng như thu thập số liệu đánh giá.
+    \item \textbf{Giảng viên hướng dẫn và Hội đồng đánh giá:} Đánh giá tính đúng đắn của kiến trúc, mức độ hoàn thiện của nguyên mẫu giai đoạn 1 và độ tin cậy của các kết quả thực nghiệm.
 \end{itemize}
 
-Bảng \ref{tab:user_stories} tổng hợp các câu chuyện người dùng (User stories) cốt lõi làm đầu vào cho việc đặc tả yêu cầu chức năng và lược đồ Use-case ở Chương 4.
+Bảng \ref{tab:user_stories} tổng hợp các câu chuyện người dùng cốt lõi làm đầu vào cho việc đặc tả yêu cầu chức năng và lược đồ ca sử dụng (Use-case) ở Chương 4.
 
 \begin{table}[H]
     \centering
-    \caption{Danh sách User stories cốt lõi của hệ thống Convergence Chess}
+    \caption{Danh sách câu chuyện người dùng cốt lõi của hệ thống Convergence Chess}
     \label{tab:user_stories}
     \begin{tabularx}{\textwidth}{C{1.3cm} L{2.4cm} Y C{2.0cm}}
         \toprule
-        \textbf{Mã} & \textbf{Vai trò} & \textbf{Nội dung User story} & \textbf{Ưu tiên} \\
+        \textbf{Mã} & \textbf{Vai trò} & \textbf{Nội dung nhu cầu người dùng} & \textbf{Ưu tiên} \\
         \midrule
-        US-01 & Người chơi & Tôi muốn tự chọn và sắp xếp quân cờ trong ngân sách cấu hình (hiện hành 12 Slot Points) tại Main Menu và lưu lại để sử dụng ngay khi vào trận. & Cao \\
-        US-02 & Người chơi & Tôi muốn khi chọn một quân cờ trên bàn 6x6, hệ thống tự động tô sáng rõ các ô di chuyển, tấn công và hợp thể hợp lệ kèm bảng thông tin quân cờ. & Cao \\
-        US-03 & Người chơi & Tôi muốn thực hiện hợp thể hai quân cờ khác loại để thức tỉnh kỹ năng nội tại mới và tung đòn bồi trong Surge Phase nếu còn đủ AP. & Cao \\
-        US-04 & Người chơi & Tôi muốn đấu PvE với nhiều cấp độ Bot AI khác nhau (từ Minimax đến ML-Agents/NNUE) để luyện tập chiến thuật. & Cao \\
+        US-01 & Người chơi & Tôi muốn tự chọn và sắp xếp quân cờ trong ngân sách 12 điểm đội hình tại màn hình chính và lưu lại để sử dụng ngay khi vào trận. & Cao \\
+        US-02 & Người chơi & Tôi muốn khi chọn một quân cờ trên bàn $6 \times 6$, hệ thống tự động tô sáng rõ các ô di chuyển, tấn công và hợp thể hợp lệ kèm bảng thông tin quân cờ. & Cao \\
+        US-03 & Người chơi & Tôi muốn thực hiện hợp thể hai quân cờ khác loại để thức tỉnh kỹ năng đặc biệt mới và tung đòn bồi trong giai đoạn Surge nếu còn đủ điểm hành động. & Cao \\
+        US-04 & Người chơi & Tôi muốn đấu với máy thông qua các tác nhân AI có chiều sâu chiến thuật (Hybrid Bot và LLM Bot) để luyện tập. & Cao \\
         US-05 & Người chơi & Tôi muốn đấu PvP Offline với bạn bè trên cùng một máy và bàn cờ tự xoay góc nhìn sau mỗi lượt chơi. & Trung bình \\
         US-06 & Người chơi & Tôi muốn chọn khu vực máy chủ (Region), tạo phòng Online bằng mã phòng, đồng bộ đội hình với đối thủ và thi đấu trực tuyến ổn định. & Cao \\
         US-07 & Khán giả & Tôi muốn tham gia phòng Online ở vị trí Spectator để theo dõi diễn biến từng nước đi theo thời gian thực mà không làm ảnh hưởng đến trận đấu. & Trung bình \\
-        US-08 & Người chơi & Tôi muốn tải lên ảnh chân dung 2D để hệ thống tự tái tạo hình học khuôn mặt, màu da, màu mắt và cho phép thay đổi kiểu tóc 3D trong game. & Trung bình \\
-        US-09 & Nhà nghiên cứu & Tôi muốn khởi chạy nhiều bàn cờ song song ở chế độ Headless (tắt đồ họa) và ghi tự động tỷ lệ thắng cùng thời gian suy nghĩ của các mô hình AI ra tệp log. & Cao \\
+        US-08 & Người chơi & Tôi muốn tải lên ảnh chân dung 2D để hệ thống tự tái tạo hình học khuôn mặt, màu da, màu mắt và cho phép thay đổi kiểu tóc 3D trong trò chơi. & Trung bình \\
+        US-09 & Nhà nghiên cứu & Tôi muốn khởi chạy nhiều bàn cờ song song ở chế độ không hiển thị đồ họa và tự động ghi nhận tỷ lệ thắng cùng thời gian suy nghĩ của các mô hình AI để phân tích. & Cao \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
 \subsection{Yêu cầu chức năng}
-Các yêu cầu chức năng được phân tách thành năm phân hệ chính tương ứng với cấu trúc mã nguồn của dự án:
+Các yêu cầu chức năng được phân tách thành năm nhóm lớn tương ứng với các phân hệ chính của dự án:
 
-\subsubsection{Nhóm chức năng thiết lập đội hình và vòng lặp gameplay cốt lõi}
+\subsubsection{Nhóm chức năng thiết lập đội hình và vòng lặp lối chơi cốt lõi}
 \begin{itemize}
-    \item \textbf{FR-01 (Quản lý đội hình):} Cung cấp màn hình Squad Builder cho phép kéo thả hoặc đặt quân cờ vào 12 ô sân nhà (ngoại trừ ô Vua cố định tại chỉ số $3$), tự động kiểm tra ràng buộc ngân sách theo \texttt{GameplayConfig.MaxSlotsInSquad} (hiện cấu hình $12$ Slot Points) và trạng thái mở khóa quân (\texttt{ActivePieces}) thông qua \texttt{SquadValidator}, đồng thời lưu trữ cục bộ xuống đĩa bằng \texttt{SaveLoadManager} (\texttt{SquadSLO}).
-    \item \textbf{FR-02 (Khởi tạo bàn cờ và vật cản):} Tự động nạp đội hình hai bên theo \texttt{ISquadProvider}, đặt hai quân Vua cố định và sinh ngẫu nhiên $1$--$2$ ô vật cản tại vùng trung tuyến (hàng 2--3) theo hạt giống \texttt{Seed} xác định.
-    \item \textbf{FR-03 (Thẩm định và thực thi nước đi):} Kiểm tra chính xác tính hợp lệ của di chuyển, tấn công, vượt vật cản, hợp thể (khóa \textit{Anti-Same-Type} và \textit{Single-Merge Lock}), phong cấp Tốt, tương tác khiên \texttt{DivineShield}/\texttt{ShieldBreaker}, hồi/trừ AP và trạng thái \texttt{Surge}.
-    \item \textbf{FR-04 (Điều kiện kết thúc và bỏ lượt):} Hỗ trợ lệnh bỏ lượt (\texttt{Pass}) có kiểm soát số lần tối đa (\texttt{MaxPassTurn}), tự động kết thúc trận khi Vua bị tiêu diệt, xử thua khi phe tới lượt không còn hành động hợp lệ nào (\texttt{!HasAnyLegalActionForPlayer}) hoặc xử hòa khi đạt \texttt{TurnCount >= MaxTurns}. Phần khung bản tin đầu hàng (\texttt{MSG\_SURRENDER}) đã được định nghĩa ở tầng truyền tải và sẽ nối mạch UI hoàn chỉnh ở Giai đoạn 2.
+    \item \textbf{FR-01 (Quản lý đội hình):} Cung cấp màn hình xây dựng đội hình cho phép kéo thả hoặc đặt quân cờ vào 12 ô sân nhà (ngoại trừ ô Vua đứng cố định), tự động kiểm tra ràng buộc ngân sách 12 điểm đội hình và danh sách quân cờ được phép sử dụng, đồng thời lưu trữ cấu hình đội hình trên máy để tái sử dụng cho các trận sau.
+    \item \textbf{FR-02 (Khởi tạo bàn cờ và vật cản):} Tự động nạp đội hình hai bên, đặt hai quân Vua tại vị trí cố định và sinh ngẫu nhiên $1$--$2$ ô vật cản tại vùng trung tuyến (hàng 2 và hàng 3) theo hạt giống ngẫu nhiên xác định.
+    \item \textbf{FR-03 (Thẩm định và thực thi nước đi):} Kiểm tra chính xác tính hợp lệ của nước di chuyển, tấn công, vượt vật cản, hợp thể (áp dụng khóa cấm hợp thể cùng loại và khóa mỗi quân chỉ hợp thể một lần), phong cấp Tốt, tương tác Khiên hộ mệnh với Phá khiên, cộng trừ điểm hành động và kích hoạt giai đoạn đòn bồi Surge.
+    \item \textbf{FR-04 (Điều kiện kết thúc và bỏ lượt):} Hỗ trợ hành động bỏ lượt có giới hạn tối đa $3$ lần mỗi trận, tự động kết thúc trận khi Vua bị tiêu diệt, xử thua khi phe tới lượt không còn hành động hợp lệ nào hoặc xử hòa khi vượt quá giới hạn $60$ lượt đi lẻ. Tính năng đầu hàng đã được chuẩn bị ở tầng giao thức mạng và sẽ nối hoàn chỉnh lên giao diện ở Giai đoạn 2.
 \end{itemize}
 
-\subsubsection{Nhóm chức năng trí tuệ nhân tạo và kiểm chuẩn (PvE và AI Research)}
+\subsubsection{Nhóm chức năng trí tuệ nhân tạo và đánh giá đối kháng}
 \begin{itemize}
-    \item \textbf{FR-05 (Hỗ trợ đa tác nhân AI):} Cho phép gắn linh hoạt bất kỳ loại Bot nào vào vị trí người chơi 1 hoặc người chơi 2 thông qua cùng một giao diện \texttt{IMoveInputProvider}: \texttt{RandomBotController}, \texttt{AgentBotController} (vừa chạy suy luận ML-Agents \texttt{.onnx}, vừa chạy Heuristic/Minimax khi bật \texttt{BehaviorType.HeuristicOnly} kết hợp lớp tĩnh \texttt{MinimaxSearch}), \texttt{NeuralMinimaxBotController}, \texttt{NNUEBotController}, \texttt{HybridAgentBotController} và \texttt{LLMBotController}.
-    \item \textbf{FR-06 (Hạ tầng huấn luyện và đối kháng tự động):} Cung cấp các Scene Bootstrapper chuyên biệt (\texttt{BehaviourCloneBootstrapper}, \texttt{DaggerBootstrapper}, \texttt{NNUEBootstrapper}, \texttt{BenchmarkBootstrapper}) để thu thập tập dữ liệu chuyên gia, huấn luyện tự đấu đa bàn cờ và ghi nhận tự động kết quả đối kháng (thắng/thua/hòa, thời gian trung bình mỗi nước đi).
+    \item \textbf{FR-05 (Hỗ trợ hai dòng tác nhân AI chính):} Cho phép gắn linh hoạt hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (kết hợp tìm kiếm cây trò chơi, học tăng cường PPO và mạng đánh giá nhanh NNUE) và \textbf{LLM Bot} (đánh giá thế cờ bằng tập luật biểu tượng tiến hóa từ Mô hình Ngôn ngữ Lớn) vào vị trí Người chơi 1 hoặc Người chơi 2 thông qua cùng một giao diện nhận nước đi thống nhất.
+    \item \textbf{FR-06 (Hạ tầng huấn luyện và đối kháng tự động):} Cung cấp môi trường mô phỏng chuyên biệt phục vụ thu thập dữ liệu chuyên gia, huấn luyện tự đấu đa bàn cờ song song và tự động ghi nhận kết quả đối kháng (tỷ lệ thắng, thua, hòa và thời gian trung bình mỗi nước đi).
 \end{itemize}
 
 \subsubsection{Nhóm chức năng nhiều người chơi (PvP Offline và PvP Online)}
@@ -58,30 +58,30 @@ Các yêu cầu chức năng được phân tách thành năm phân hệ chính 
 
 \subsubsection{Nhóm chức năng tầng hiển thị, giao diện và âm thanh}
 \begin{itemize}
-    \item \textbf{FR-10 (Diễn hoạt tách rời logic):} Toàn bộ sự kiện thay đổi trạng thái ván đấu được gom thành \texttt{GameEventBatch} và phát lần lượt qua hàng đợi trực quan \texttt{VisualQueueManager} để kích hoạt chuyển động, hoạt họa 3D, hiệu ứng rung/zoom camera, VFX và âm thanh mà không làm đơ luồng logic.
-    \item \textbf{FR-11 (HUD và cài đặt):} Hiển thị trực quan lượng AP hiện có, lượng AP dự kiến hồi lượt sau, số lượt Pass còn lại, lượt đi hiện tại, nghĩa địa quân cờ bị tiêu diệt (Graveyard) và hộp thoại cài đặt \texttt{UIPopupSettings} (Giai đoạn 1 đã hoàn thiện tab General lưu tên người chơi qua \texttt{GeneralSettingsSLO}; các tab Sound/Graphics/Input đã dựng khung \texttt{UIPopupSettingsTab} chờ mở rộng ở Giai đoạn 2).
+    \item \textbf{FR-10 (Diễn hoạt tách rời logic):} Toàn bộ các sự kiện thay đổi trạng thái trong một nước đi được gom thành từng đợt và đưa vào hàng đợi trực quan để phát tuần tự hoạt họa 3D, hiệu ứng rung hoặc phóng cận cảnh góc quay, hiệu ứng va chạm và âm thanh mà không làm gián đoạn luồng xử lý luật chơi.
+    \item \textbf{FR-11 (Bảng thông số trong trận và cài đặt):} Hiển thị trực quan lượng điểm hành động hiện có, lượng điểm dự kiến hồi ở lượt sau, số lượt bỏ lượt còn lại, lượt đi hiện tại, danh sách quân cờ đã bị tiêu diệt và hộp thoại cài đặt (Giai đoạn 1 đã hoàn thiện mục cài đặt chung lưu tên người chơi; các mục âm thanh, đồ họa và phím điều khiển đã dựng sẵn khung giao diện để mở rộng ở Giai đoạn 2).
 \end{itemize}
 
 \subsubsection{Nhóm chức năng mở rộng tùy biến nhân vật 3D (Smart Customization)}
 \begin{itemize}
-    \item \textbf{FR-12 (Tái tạo khuôn mặt và tóc 3D từ ảnh 2D):} Cho phép người dùng chọn ảnh chân dung 2D và giới tính (Nam/Nữ) trên \texttt{SCCanvasUI}; \texttt{SCCharacterCreator} khởi chạy tiến trình suy luận cục bộ \texttt{infer\_onnx.py} (CLI subprocess qua \texttt{ProcessStartInfo}) và nạp tệp kết quả \texttt{sc\_result.json}, ảnh da khử bóng cùng bản đồ pháp tuyến (Normal Map) để áp 25 trọng số hình thái khuôn mặt trực giao (BlendShapes), màu mống mắt và màu tóc tự động; đồng thời hỗ trợ tinh chỉnh thủ công bằng thanh trượt và chuyển đổi giữa 7 lựa chọn kiểu tóc 3D (6 mẫu tóc MPFB v2 và không tóc).
+    \item \textbf{FR-12 (Tái tạo khuôn mặt và tóc 3D từ ảnh 2D):} Cho phép người dùng chọn ảnh chân dung 2D và giới tính (Nam/Nữ) trực tiếp trên giao diện trong game; hệ thống gọi mô-đun suy luận AI cục bộ để phân tích ảnh, sau đó tự động áp $25$ thông số hình thái khuôn mặt, kết cấu da đã khử bóng, bản đồ chi tiết bề mặt, màu mắt và màu tóc lên nhân vật 3D; đồng thời hỗ trợ người chơi tinh chỉnh thủ công bằng thanh trượt và chuyển đổi giữa 7 lựa chọn kiểu tóc 3D (6 mẫu tóc 3D và chế độ không tóc).
 \end{itemize}
 
 \subsection{Yêu cầu phi chức năng}
 \begin{itemize}
-    \item \textbf{Tính tách biệt và khả năng bảo trì (Decoupling và Maintainability):} Các lớp thực thể và thẩm định luật cốt lõi (\texttt{GameState}, \texttt{Piece}, \texttt{MoveValidator}, \texttt{PassiveFlags}, \texttt{SquadValidator}) phải tách khỏi vòng đời \texttt{MonoBehaviour} và đồ họa 3D, chỉ đọc tham số tập trung qua \texttt{GameConfig}, bảo đảm cùng một trạng thái $S_t$ và lệnh $C_t$ luôn sinh ra trạng thái $S_{t+1}$ giống hệt nhau (Deterministic) trên mọi máy khách và môi trường huấn luyện.
-    \item \textbf{Hiệu năng tính toán (Performance):}
+    \item \textbf{Tính tách biệt và khả năng bảo trì:} Phần lõi quy tắc và trạng thái bàn cờ phải tách hoàn toàn khỏi đồ họa 3D, chỉ đọc tham số cân bằng từ nguồn cấu hình tập trung, bảo đảm cùng một trạng thái bàn cờ và cùng một nước đi luôn cho ra kết quả giống hệt nhau trên mọi máy người chơi cũng như trong môi trường huấn luyện AI.
+    \item \textbf{Hiệu năng tính toán:}
     \begin{itemize}
-        \item Chế độ chơi thực tế duy trì khung hình ổn định ($\ge 60$ FPS trên cấu hình PC tầm trung GPU RTX 4050 Laptop).
-        \item Thời gian phản hồi trung bình của Bot AI trong trận đấu thực tế dưới $0.5$ giây/nước đi (mục tiêu dưới $100$ ms với Minimax/NeuralMinimax/Residual NNUE ở độ sâu 4).
-        \item Chế độ Headless training tắt toàn bộ render cho phép mô phỏng hàng trăm trận đấu trong vài chục giây mà không phát sinh rò rỉ bộ nhớ.
+        \item Chế độ chơi thực tế duy trì tốc độ khung hình ổn định từ $60$ khung hình/giây trở lên trên máy tính cá nhân tầm trung (cạc đồ họa RTX 4050 Laptop).
+        \item Thời gian phản hồi trung bình của tác nhân AI trong trận đấu thực tế dưới $0.5$ giây mỗi nước đi (mục tiêu dưới $100$ mili-giây đối với thành phần đánh giá nhanh ở độ sâu 4).
+        \item Chế độ mô phỏng không hiển thị đồ họa cho phép chạy hàng trăm ván đấu trong vài chục giây mà không gây rò rỉ bộ nhớ.
     \end{itemize}
     \item \textbf{Hiệu quả băng thông mạng (Network Efficiency):} Tối ưu kích thước gói tin đồng bộ nước đi xuống mức tối thiểu (dưới $100$ bytes cho chuỗi 10 lần thăm dò) để bảo đảm tính ổn định kể cả trên đường truyền mạng thông thường.
-    \item \textbf{Độ trễ xử lý Smart Customization:} Thời gian suy luận toàn trình trên GPU cục bộ (trích mốc MediaPipe + hồi quy ONNX B1 v2 + BVLS + chiếu Barycentric PyTorch3D + Bilateral Symmetry Delighting) cần hoàn tất trong vài giây (đo thực tế khoảng $5.9$ giây toàn trình cho ảnh chân dung đầu vào) để người dùng xem trước trực tiếp trong game.
+    \item \textbf{Thời gian xử lý tùy biến nhân vật 3D:} Toàn bộ quy trình phân tích ảnh chân dung 2D, giải hình học khuôn mặt, chiếu kết cấu và khử bóng da trên máy tính cục bộ cần hoàn tất trong vài giây (thực tế đo được khoảng $5.9$ giây mỗi ảnh) để người chơi xem trước thuận tiện ngay trong game.
 \end{itemize}
 
 \subsection{Yêu cầu kỹ thuật và trải nghiệm người dùng}
 \begin{itemize}
-    \item \textbf{Nền tảng mục tiêu:} Hệ điều hành Windows (PC Standalone 64-bit), sử dụng Unity 6 (URP -- Universal Render Pipeline) \cite{unity6}, ngôn ngữ C\# (.NET Standard 2.1) kết hợp thư viện bất đồng bộ UniTask và môi trường Python 3.10+ (PyTorch, PyTorch3D \cite{pytorch3d}, ONNX Runtime, MediaPipe \cite{mediapipe}, OpenCV/SciPy) cho huấn luyện AI và pipeline suy luận cục bộ Smart Customization.
-    \item \textbf{Trải nghiệm người dùng (UX):} Phản hồi thị giác và thính giác tức thời khi di chuột qua ô cờ, chọn quân, di chuyển, va chạm khiên hoặc hợp thể; bố cục UI thích ứng theo độ phân giải màn hình (\texttt{CanvasScaler}) và hiển thị rõ ràng trạng thái kinh tế AP để giảm tải nhận thức cho người mới tiếp cận luật hợp thể.
+    \item \textbf{Nền tảng mục tiêu:} Hệ điều hành Windows (ứng dụng PC 64-bit), xây dựng trên nền tảng Unity 6 \cite{unity6} với ngôn ngữ C\# kết hợp môi trường Python (PyTorch, PyTorch3D \cite{pytorch3d}, ONNX Runtime, MediaPipe \cite{mediapipe}) phục vụ huấn luyện AI và quy trình tái tạo nhân vật 3D cục bộ.
+    \item \textbf{Trải nghiệm người dùng:} Cung cấp phản hồi hình ảnh và âm thanh tức thời khi di chuột qua ô cờ, chọn quân, di chuyển, va chạm khiên hoặc hợp thể; bố cục giao diện tự co giãn theo độ phân giải màn hình và trình bày rõ ràng trạng thái điểm hành động để giảm bớt độ phức tạp cho người mới làm quen với luật hợp thể.
 \end{itemize}

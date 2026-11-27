@@ -1,61 +1,61 @@
 \section{Đặc tả chi tiết các lược đồ hệ thống}
 
-Khắc phục hạn chế thiếu trực quan hóa kiến trúc thường gặp ở các báo cáo giai đoạn đầu, chương này trình bày đầy đủ hệ thống lược đồ UML và luồng xử lý của \textit{Convergence Chess} ở các mức độ từ nghiệp vụ người dùng (Use-case) đến thiết kế lớp (Class), tương tác tuần tự (Sequence), máy trạng thái (State) và quy trình dữ liệu (Pipeline). Toàn bộ lược đồ nguồn dạng \texttt{.drawio} và \texttt{.puml} được lưu đồng bộ tại thư mục \texttt{Diagrams/} của kho mã nguồn báo cáo để thuận tiện bảo trì sang Giai đoạn 2 (DATN).
+Nhằm trực quan hóa đầy đủ thiết kế kiến trúc ngay từ giai đoạn đầu, chương này trình bày hệ thống các lược đồ chuẩn UML và sơ đồ quy trình của \textit{Convergence Chess}, đi từ góc nhìn nghiệp vụ người dùng (lược đồ ca sử dụng) đến kiến trúc tổng thể, cấu trúc thành phần theo từng phân hệ, tương tác tuần tự, vòng đời trạng thái và quy trình xử lý dữ liệu cho AI cùng Smart Customization. Toàn bộ lược đồ nguồn được lưu trữ đồng bộ kèm báo cáo để thuận tiện cập nhật ở Giai đoạn 2 (DATN).
 
-\subsection{Lược đồ Use-case tổng thể và đặc tả kịch bản chính}
-Hình \ref{fig:usecase_overview} mô tả tổng thể các tác nhân (Người chơi chính, Đối thủ Online/Offline, Khán giả và Bot AI) cùng 12 ca sử dụng (Use-case) trải dài từ khâu chuẩn bị đội hình, quản lý phòng chơi trực tuyến đến vòng lặp thi đấu $6 \times 6$.
+\subsection{Lược đồ ca sử dụng tổng thể và đặc tả kịch bản chính}
+Hình \ref{fig:usecase_overview} mô tả tổng thể các tác nhân tham gia hệ thống (Người chơi chính, Đối thủ trực tuyến/cùng máy, Khán giả và Tác nhân AI) cùng 12 ca sử dụng chính trải dài từ khâu chuẩn bị đội hình, quản lý phòng chơi trực tuyến đến vòng lặp thi đấu trên bàn cờ $6 \times 6$.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.72\textwidth,height=0.72\textheight,keepaspectratio]{Diagrams/images/01_usecase_overview.png}
-    \caption{Lược đồ Use-case tổng thể hệ thống Convergence Chess}
+    \caption{Lược đồ ca sử dụng tổng thể hệ thống Convergence Chess}
     \label{fig:usecase_overview}
 \end{figure}
 
 {\small
 \begin{longtable}{L{2.5cm} L{2.4cm} L{5.3cm} L{4.7cm}}
-    \caption{Đặc tả kịch bản cho các Use-case trọng tâm của hệ thống}
+    \caption{Đặc tả kịch bản cho các ca sử dụng trọng tâm của hệ thống}
     \label{tab:usecase_specs} \\
     \toprule
-    \textbf{Use-case} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
+    \textbf{Ca sử dụng} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
     \midrule
     \endfirsthead
     \toprule
-    \textbf{Use-case} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
+    \textbf{Ca sử dụng} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
     \midrule
     \endhead
     \bottomrule
     \endfoot
-        UC01: Xây dựng và lưu đội hình (Squad Builder) & Người chơi chính; đang ở màn hình Main Menu. & (1) Mở \texttt{UIPopupSquadBuilder}; (2) Kéo thả quân cờ vào 12 ô sân nhà (trừ ô Vua cố định tại chỉ số 3); (3) Hệ thống tính tổng Slot Points thời gian thực theo \texttt{GameplayConfig.MaxSlotsInSquad} (hiện hành $12$ Slot Points) qua \texttt{SquadValidator}; (4) Nhấn Lưu để ghi ra \texttt{SquadSLO} qua \texttt{SaveLoadManager}. & Nếu tổng Slot Points vượt quá hạn mức cấu hình ($12$), chọn quân bị khóa (\texttt{Queen}) hoặc ô đã có quân/Vua, thao tác đặt quân bị chặn và hiển thị thông báo. \\
+        UC01: Xây dựng và lưu đội hình & Người chơi chính; đang ở màn hình chính. & (1) Mở màn hình xây dựng đội hình; (2) Kéo thả quân cờ vào 12 ô sân nhà (ngoại trừ ô Vua cố định); (3) Hệ thống tự động tính tổng điểm đội hình theo thời gian thực trong hạn mức $12$ điểm; (4) Nhấn Lưu để lưu cấu hình đội hình xuống bộ nhớ máy. & Nếu tổng điểm vượt quá hạn mức $12$, chọn quân đang bị khóa mua trước trận (Hậu) hoặc đặt vào ô đã có quân/Vua, thao tác sẽ bị chặn kèm thông báo rõ ràng. \\
         \midrule
         UC05--UC06: Tạo/Vào phòng Online, phân vai và Sẵn sàng & Người chơi chính, Đối thủ Online, Khán giả; có kết nối Internet. & (1) Chọn Photon Region và nhập Room ID tại \texttt{UIPopupLobby}; (2) Host mở phòng ở chế độ \texttt{GameMode.Shared} và chiếm vị trí Trắng; (3) Client tham gia, gửi tên người chơi (\texttt{MSG\_MAP\_PLAYER\_NAME}) và yêu cầu đồng bộ slot (\texttt{MSG\_REQUEST\_SLOT\_SYNC}); (4) Chọn vị trí Trắng/Đen/Khán giả, chọn Squad và bật Ready; (5) Khi cả Trắng và Đen sẵn sàng, Host sinh \texttt{MatchSeed} + vật cản và phát \texttt{MSG\_MATCH\_INIT} để đồng loạt tải \texttt{PvPOnlScene}. & Nếu phòng đầy 2 người chơi chính, người vào sau tự động xếp vào danh sách Khán giả (\texttt{Spectator}). Nếu mất kết nối Photon Cloud, hiển thị trạng thái lỗi trên \texttt{OnConnectionStatusChanged}. \\
         \midrule
-        UC10--UC11: Thực hiện nước đi, Hợp thể và Surge Phase & Người chơi đang tới lượt hoặc Bot AI; trận đấu đang ở trạng thái \texttt{WaitingInput}. & (1) Chọn quân đồng minh, hệ thống highlight ô hợp lệ; (2) Chọn ô đích để Di chuyển, Tấn công hoặc Hợp thể; (3) \texttt{MoveValidator.ValidateAction} xác thực, \texttt{GameEventHandler.ExecuteCommand} cập nhật \texttt{GameState} và phát \texttt{GameEventBatch}; (4) Nếu vừa Hợp thể và còn đủ AP, mở \texttt{Surge Sub-phase} cho phép đánh bồi hoặc kết thúc lượt giữ AP; (5) Chuyển lượt. & Không đủ AP, chọn ô vật cản với quân trượt, hợp thể 2 quân cùng loại hoặc hợp thể quân đã có \texttt{HasMerged = true} đều bị từ chối. Bỏ lượt bị chặn khi \texttt{PassChargesLeft == 0}; nếu không còn nước đi hợp lệ nào, phe tới lượt bị xử thua. \\
+        UC10--UC11: Thực hiện nước đi, hợp thể và đòn bồi Surge & Người chơi đang tới lượt hoặc Tác nhân AI; trận đấu đang ở trạng thái chờ nước đi. & (1) Chọn quân đồng minh, hệ thống tô sáng các ô di chuyển, tấn công và hợp thể hợp lệ; (2) Chọn ô đích để thực hiện hành động; (3) Lõi luật chơi thẩm định tính hợp lệ, cập nhật trạng thái bàn cờ và phát đợt sự kiện cho tầng hiển thị; (4) Nếu vừa hợp thể và còn đủ AP, mở giai đoạn đòn bồi Surge cho phép đi thêm hoặc kết thúc lượt giữ AP; (5) Chuyển lượt. & Không đủ AP, đi xuyên vật cản với quân trượt, hợp thể hai quân cùng loại hoặc hợp thể quân đã từng hợp thể đều bị từ chối. Hành động bỏ lượt bị chặn khi đã dùng hết lượt cho phép; nếu không còn nước đi hợp lệ nào, phe tới lượt bị xử thua. \\
         \midrule
-        UC03: Tùy biến nhân vật 3D từ ảnh chân dung (SC) & Người chơi chính; môi trường Python cục bộ chứa \texttt{infer\_onnx.py} và trọng số ONNX/HRN sẵn sàng. & (1) Mở giao diện \texttt{SCCanvasUI}, chọn giới tính (Nam/Nữ), chế độ texture (\texttt{TexNet}/\texttt{HRN}) và ảnh chân dung 2D; (2) \texttt{SCCharacterCreator} khởi chạy tiến trình con \texttt{infer\_onnx.py} qua \texttt{ProcessStartInfo}; (3) Đọc \texttt{sc\_result.json}, ảnh da khử bóng và Normal Map trên ổ đĩa; (4) Tự động áp 25 BlendShapes, màu mắt, màu tóc và cho phép tinh chỉnh thanh trượt hoặc đổi 7 kiểu tóc 3D. & Nếu ảnh không phát hiện khuôn mặt qua MediaPipe hoặc tiến trình Python trả mã lỗi, Unity giữ nguyên nhân vật cơ sở và hiển thị thông báo lỗi mà không treo ứng dụng. \\
+        UC03: Tùy biến nhân vật 3D từ ảnh chân dung & Người chơi chính; mô-đun suy luận AI cục bộ và trọng số mô hình đã sẵn sàng. & (1) Mở giao diện tùy biến nhân vật, chọn giới tính (Nam/Nữ), chế độ xử lý kết cấu da và ảnh chân dung 2D; (2) Trò chơi gọi bộ xử lý ảnh cục bộ thực hiện phân tích hình học và khử bóng da; (3) Nạp dữ liệu hình thái, ảnh da và bản đồ chi tiết bề mặt trả về; (4) Tự động áp 25 thông số khuôn mặt, màu mắt, màu tóc và cho phép tinh chỉnh thủ công hoặc đổi giữa 7 lựa chọn kiểu tóc 3D. & Nếu ảnh đầu vào không phát hiện được khuôn mặt hoặc quá trình phân tích gặp sự cố, hệ thống giữ nguyên nhân vật mặc định và hiển thị thông báo lỗi mà không gây treo ứng dụng. \\
 \end{longtable}
 }
 
-\subsection{Lược đồ kiến trúc tổng thể (Hexagonal Architecture -- Ports \& Adapters)}
-Hình \ref{fig:arch_hexagonal} minh họa kiến trúc lục giác (Ports \& Adapters) \cite{cockburn} là xương sống của toàn bộ dự án. Toàn bộ thực thể và quy tắc thẩm định nằm trong khối \textbf{Core Domain} tách khỏi đồ họa, được điều phối vòng lặp bởi \texttt{MatchManager}. Mọi nguồn điều khiển (chuột người chơi, Photon Fusion mạng, các họ Bot AI) đều giao tiếp qua cổng \texttt{IMoveInputProvider}, còn mọi thành phần tiêu thụ kết quả (diễn hoạt 3D, xoay bàn PvP Offline, ghi nhận trận benchmark qua \texttt{BenchmarkGameEventManager}, định hình thưởng \texttt{AgentRewardHandler} hoặc \texttt{NullGameEventListener} cho huấn luyện Headless) đều đi qua cổng \texttt{IGameEventListener} dưới sự điều phối cục bộ của \texttt{ArenaServiceLocator}.
+\subsection{Lược đồ kiến trúc tổng thể}
+Hình \ref{fig:arch_hexagonal} minh họa kiến trúc lục giác tách biệt giữa lõi xử lý và các thành phần bên ngoài \cite{cockburn}, đóng vai trò xương sống cho toàn bộ dự án. Toàn bộ thực thể bàn cờ và quy tắc thẩm định nằm gọn trong khối lõi độc lập khỏi đồ họa 3D, được điều phối vòng lặp theo từng bàn đấu. Mọi nguồn điều khiển (chuột người chơi, kết nối mạng Photon Fusion, Hybrid Bot và LLM Bot) đều đi qua cùng một cổng tiếp nhận nước đi, còn mọi thành phần nhận kết quả (tầng diễn hoạt 3D, xoay bàn đấu hai người trên cùng máy, bộ ghi nhận đối kháng tự động, bộ tính thưởng huấn luyện hay chế độ chạy không đồ họa) đều kết nối qua cùng một cổng sự kiện.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Diagrams/images/02_architecture_hexagonal.png}
-    \caption{Sơ đồ kiến trúc tổng thể theo mô hình Ports \& Adapters và ArenaServiceLocator}
+    \caption{Sơ đồ kiến trúc tổng thể tách biệt lõi xử lý và các thành phần bên ngoài}
     \label{fig:arch_hexagonal}
 \end{figure}
 
-\subsection{Lược đồ lớp (Class diagrams) theo từng phân hệ}
-Để bảo đảm khả năng đọc rõ ràng trên khổ giấy A4, lược đồ lớp toàn hệ thống được phân tách thành ba phân hệ chính khớp trực tiếp với cấu trúc thư mục mã nguồn trong \texttt{Assets/Scripts/}.
+\subsection{Lược đồ lớp theo từng phân hệ}
+Để bảo đảm dễ quan sát trên khổ giấy A4, lược đồ lớp toàn hệ thống được chia thành ba phân hệ chính tương ứng với cấu trúc thiết kế của dự án.
 
-\subsubsection{Lược đồ lớp phân hệ Core Logic và các bộ điều khiển AI}
-Hình \ref{fig:class_core_ai} thể hiện quan hệ giữa \texttt{MatchManager}, \texttt{GameEventHandler}, \texttt{GameState}, \texttt{Piece}, \texttt{MoveValidator} và các lớp thực thi \texttt{IMoveInputProvider} phục vụ AI (\texttt{AgentBotController}, \texttt{NeuralMinimaxBotController}, \texttt{HybridAgentBotController}, \texttt{NNUEBotController}, \texttt{LLMBotController}) kết nối tới \texttt{ObservationEncoderV2}, \texttt{MinimaxSearch}, \texttt{NNUEFastEvaluator}/\texttt{NNUEModelWeights} và \texttt{LLMSymbolicEvaluator}.
+\subsubsection{Lược đồ lớp phân hệ lõi luật chơi và các tác nhân AI}
+Hình \ref{fig:class_core_ai} thể hiện mối quan hệ giữa bộ điều phối trận đấu, bộ xử lý sự kiện, trạng thái bàn cờ, quân cờ, bộ thẩm định nước đi và các thành phần của hệ thống AI (gồm bộ mã hóa trạng thái bàn cờ, bộ tìm kiếm Minimax, bộ đánh giá nhanh NNUE phục vụ Hybrid Bot và bộ đánh giá biểu tượng phục vụ LLM Bot).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Diagrams/images/03_class_core_ai.png}
-    \caption{Lược đồ lớp phân hệ Core Domain và các tác nhân AI}
+    \caption{Lược đồ lớp phân hệ lõi luật chơi và hệ thống tác nhân AI}
     \label{fig:class_core_ai}
 \end{figure}
 
@@ -69,13 +69,13 @@ Hình \ref{fig:class_network} trình bày kiến trúc mạng tách lớp: \text
     \label{fig:class_network}
 \end{figure}
 
-\subsubsection{Lược đồ lớp phân hệ View Layer và giao diện người dùng (UI)}
-Hình \ref{fig:class_view_ui} minh họa luồng trình diễn tách biệt hoàn toàn khỏi Core: \texttt{VisualQueueManager} lắng nghe \texttt{GameEventBatch}, sử dụng \texttt{VisualSequenceBuilder} theo phong cách chuỗi lệnh (\texttt{Then}/\texttt{PlayAsync}) để điều phối các nút diễn hoạt \texttt{IVisualNode} (\texttt{PieceMoveNode}, \texttt{PieceAttackVisualNode}...) tác động lên \texttt{BoardView}, \texttt{TileView} và \texttt{PieceView}. Sự kiện khung hình từ Animator được gom về một đầu mối duy nhất \texttt{PieceAnimationRelay}. Hệ thống giao diện sử dụng \texttt{UIManager} tra cứu prefab tập trung thông qua ScriptableObject \texttt{UIMapper} (Single Source of Truth).
+\subsubsection{Lược đồ lớp phân hệ hiển thị và giao diện người dùng}
+Hình \ref{fig:class_view_ui} minh họa luồng trình diễn tách biệt hoàn toàn khỏi lõi luật chơi: hàng đợi trực quan lắng nghe từng đợt sự kiện từ lõi, ghép nối thành chuỗi các bước diễn hoạt độc lập (di chuyển quân, tấn công, rung và phóng cận cảnh góc quay, xoay bàn cờ) tác động lên bàn cờ, ô cờ và quân cờ 3D. Các sự kiện phát sinh từ khung hình hoạt họa được gom về một đầu mối trung chuyển thống nhất, còn hệ thống giao diện quản lý tập trung toàn bộ màn hình và hộp thoại qua một bảng ánh xạ duy nhất.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Diagrams/images/05_class_view_ui.png}
-    \caption{Lược đồ lớp phân hệ View Layer, VisualQueueManager và UIManager/UIMapper}
+    \caption{Lược đồ lớp phân hệ hiển thị 3D, hàng đợi diễn hoạt và quản lý giao diện}
     \label{fig:class_view_ui}
 \end{figure}
 
@@ -100,27 +100,27 @@ Hình \ref{fig:seq_move} mô tả cơ chế đồng bộ nước đi khép kín 
     \label{fig:seq_move}
 \end{figure}
 
-\subsection{Lược đồ trạng thái (State diagrams) của ván đấu và quân cờ 3D}
-Hình \ref{fig:state_machine} tổng hợp hai máy trạng thái quan trọng nhất: (i) vòng đời một trận đấu trong \texttt{MatchManager}/\texttt{GameEventHandler}/\texttt{GameState} thể hiện rõ nhánh chuyển sang \texttt{SurgeSubPhase} sau khi hợp thể cùng đầy đủ các điều kiện kết thúc trận; và (ii) máy trạng thái 5 pha của \texttt{PieceView} (\texttt{IdleStateBase}, \texttt{MoveStateBase}, \texttt{AttackStateBase}, \texttt{GetHitStateBase}, \texttt{DeathStateBase} cùng các lớp con theo từng quân cờ).
+\subsection{Lược đồ trạng thái của ván đấu và quân cờ 3D}
+Hình \ref{fig:state_machine} tổng hợp hai máy trạng thái quan trọng nhất của trò chơi: (i) vòng đời một trận đấu thể hiện rõ luồng chuyển sang giai đoạn đòn bồi Surge ngay sau khi hợp thể cùng đầy đủ các điều kiện kết thúc ván; và (ii) máy trạng thái 5 pha hoạt họa của mỗi quân cờ 3D (đứng chờ, di chuyển, tấn công, bị đánh trúng và bị tiêu diệt).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.96\textwidth]{Diagrams/images/08_state_piece_and_match.png}
-    \caption{Lược đồ trạng thái vòng đời trận đấu (MatchManager) và diễn hoạt quân cờ (PieceView FSM)}
+    \caption{Lược đồ trạng thái vòng đời trận đấu và diễn hoạt quân cờ 3D}
     \label{fig:state_machine}
 \end{figure}
 
-\subsection{Sơ đồ quy trình huấn luyện AI đa thế hệ và Smart Customization}
-Hình \ref{fig:pipeline_ai} khái quát hóa hệ sinh thái 5 tầng huấn luyện và kiểm chuẩn AI trong dự án, thể hiện vòng lặp đồng huấn luyện (Iterative Co-training) giữa ML-Agents PPO và mạng giá trị NNUE/Residual NNUE cùng nhánh tiến hóa luật biểu tượng bằng LLM.
+\subsection{Sơ đồ quy trình huấn luyện AI và tùy biến nhân vật 3D}
+Hình \ref{fig:pipeline_ai} khái quát hóa chuỗi quy trình huấn luyện và đánh giá AI trong dự án, thể hiện vòng lặp đồng huấn luyện giữa học tăng cường PPO và mạng đánh giá nhanh NNUE/Residual NNUE để xây dựng \textbf{Hybrid Bot}, song song với nhánh tiến hóa tập luật biểu tượng cho \textbf{LLM Bot}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.96\textwidth]{Diagrams/images/09_pipeline_ai_training.png}
-    \caption{Sơ đồ quy trình huấn luyện AI đa thế hệ (Minimax, BC/DAgger, PPO, NNUE, Hybrid và LLM)}
+    \caption{Sơ đồ quy trình huấn luyện hệ thống AI (Hybrid Bot và LLM Bot)}
     \label{fig:pipeline_ai}
 \end{figure}
 
-Hình \ref{fig:pipeline_sc} trình bày kiến trúc tích hợp cục bộ giữa Unity 6 URP Client (\texttt{SCCharacterCreator}) và tiến trình Python \texttt{infer\_onnx.py} (chạy qua CLI subprocess và trao đổi tệp JSON/PNG) xử lý đồng thời hai nhánh Hình học khuôn mặt (Method B1 v2) và Chiếu Texture UV -- Khử bóng đối xứng (PyTorch3D Barycentric + Bilateral Symmetry Delighting + Multi-Band Pyramid + HRN).
+Hình \ref{fig:pipeline_sc} trình bày kiến trúc tích hợp cục bộ giữa ứng dụng Unity 6 và bộ xử lý ảnh Python, thực hiện song song hai nhánh: tái tạo hình học khuôn mặt 3D (25 thông số hình thái độc lập) và chiếu kết cấu bề mặt da kết hợp khử bóng đối xứng, hòa trộn đa tầng cùng bản đồ chi tiết bề mặt từ HRN.
 
 \begin{figure}[H]
     \centering
