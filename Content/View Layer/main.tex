@@ -3,10 +3,18 @@
 Tầng hiển thị được xây dựng theo nguyên tắc \textbf{thụ động theo sự kiện}: hoàn toàn không tự tính toán luật di chuyển hay trừ điểm hành động, mà chỉ tiếp nhận từng đợt sự kiện từ lõi luật chơi để diễn hoạt hình ảnh 3D, phát âm thanh và cập nhật giao diện người dùng.
 
 \subsubsection{Hàng đợi diễn hoạt bất đồng bộ}
-Do một nước đi duy nhất (như hợp thể quân cờ, tấn công làm vỡ khiên hộ mệnh hoặc tiêu diệt quân kích hoạt kỹ năng rút AP) có thể kéo theo nhiều hiệu ứng nối tiếp nhau, tầng hiển thị sử dụng cơ chế hàng đợi trực quan gồm hai thành phần chính:
+Trong nhiều trò chơi theo lượt thông thường, lập trình viên thường gọi trực tiếp hoạt họa di chuyển hoặc tấn công ngay bên trong hàm xử lý nước đi. Cách làm đó tuy đơn giản ban đầu nhưng dễ làm đơ vòng lặp luật chơi, gây chồng chéo hiệu ứng khi một nước đi kéo theo nhiều hệ quả liên tiếp (như hợp thể quân cờ, tấn công làm vỡ khiên hộ mệnh hoặc tiêu diệt quân kích hoạt kỹ năng rút AP) và không thể tắt riêng đồ họa khi huấn luyện AI.
+
+Để giải quyết bài toán này, tầng hiển thị sử dụng cơ chế hàng đợi trực quan tách rời gồm hai thành phần chính:
 \begin{itemize}
     \item \textbf{Bộ điều phối hàng đợi sự kiện:} Tiếp nhận từng đợt sự kiện từ lõi trò chơi và cho phát tuần tự theo cơ chế bất đồng bộ (kèm cơ chế tự hủy an toàn khi chuyển màn chơi để tránh rò rỉ tài nguyên). Giai đoạn 1 đã hoàn thiện diễn hoạt cho $8$ loại sự kiện trọng tâm gồm: khởi tạo trận đấu, di chuyển quân, vỡ khiên hộ mệnh, tiêu diệt quân, hợp thể quân, tiêu hao AP, chuyển lượt và kết thúc trận đấu (hiệu ứng riêng cho phong cấp Tốt và kích hoạt đòn bồi Surge được quy hoạch bổ sung ở Giai đoạn 2). Đồng thời, bộ điều phối này phát tín hiệu cập nhật tức thời cho bảng thông số trong trận mà không cần gắn kết trực tiếp với lõi điều phối ván đấu.
     \item \textbf{Chuỗi bước diễn hoạt độc lập:} Cho phép ghép nối tuần tự hoặc chạy song song các đơn vị diễn hoạt riêng lẻ như di chuyển quân kèm hiệu ứng vệt bóng mờ, lao vào tấn công tạo phản hồi va chạm, phóng cận cảnh góc quay khi tiêu diệt quân, rung góc quay tạo cảm giác lực đánh và xoay bàn cờ $180^\circ$ trong chế độ đấu hai người trên cùng máy.
+\end{itemize}
+
+\textbf{Ưu và nhược điểm của cơ chế hàng đợi diễn hoạt:}
+\begin{itemize}
+    \item \textbf{Ưu điểm:} Tách biệt hoàn toàn nhịp diễn hoạt hình ảnh khỏi lõi tính toán; bảo đảm chuỗi hiệu ứng nhiều bước phát đúng thứ tự, không chồng chéo và dễ bật/tắt đồ họa khi chuyển sang chế độ huấn luyện AI.
+    \item \textbf{Nhược điểm:} Cần cân chỉnh thời lượng từng bước diễn hoạt hợp lý để tránh cảm giác chờ lâu khi chuỗi sự kiện dài, đồng thời phải quản lý chặt việc hủy hàng đợi an toàn nếu người chơi thoát trận đột ngột giữa lúc hiệu ứng đang chạy.
 \end{itemize}
 
 \subsubsection{Hệ thống bàn cờ, bộ quân cờ 3D phong cách Trung cổ và điều phối hoạt họa}

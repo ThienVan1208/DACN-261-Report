@@ -64,12 +64,13 @@ Các yêu cầu chức năng được phân tách thành năm nhóm lớn tươn
 
 \subsubsection{Nhóm chức năng mở rộng tùy biến nhân vật 3D (Smart Customization)}
 \begin{itemize}
-    \item \textbf{FR-12 (Tái tạo khuôn mặt và tóc 3D từ ảnh 2D):} Cho phép người dùng chọn ảnh chân dung 2D và giới tính (Nam/Nữ) trực tiếp trên giao diện trong game; hệ thống gọi mô-đun suy luận AI cục bộ để phân tích ảnh, sau đó tự động áp $25$ thông số hình thái khuôn mặt, kết cấu da đã khử bóng, bản đồ chi tiết bề mặt, màu mắt và màu tóc lên nhân vật 3D; đồng thời hỗ trợ người chơi tinh chỉnh thủ công bằng thanh trượt và chuyển đổi giữa 7 lựa chọn kiểu tóc 3D (6 mẫu tóc 3D và chế độ không tóc).
+    \item \textbf{FR-12 (Tái tạo khuôn mặt và tóc 3D từ ảnh 2D theo định hướng thương mại hóa):} Cho phép người dùng chọn ảnh chân dung 2D và giới tính (Nam/Nữ) trực tiếp trên giao diện trong game; hệ thống gọi mô-đun xử lý tự xây dựng cục bộ để phân tích ảnh (không phụ thuộc các mô hình nghiên cứu phi thương mại), sau đó tự động áp $25$ thông số hình thái khuôn mặt, kết cấu da đã khử bóng đối xứng, màu mắt và màu tóc lên nhân vật 3D; đồng thời hỗ trợ người chơi tinh chỉnh thủ công bằng thanh trượt và chuyển đổi giữa 7 lựa chọn kiểu tóc 3D (6 mẫu tóc 3D và chế độ không tóc).
 \end{itemize}
 
 \subsection{Yêu cầu phi chức năng}
 \begin{itemize}
     \item \textbf{Tính tách biệt và khả năng bảo trì:} Phần lõi quy tắc và trạng thái bàn cờ phải tách hoàn toàn khỏi đồ họa 3D, chỉ đọc tham số cân bằng từ nguồn cấu hình tập trung, bảo đảm cùng một trạng thái bàn cờ và cùng một nước đi luôn cho ra kết quả giống hệt nhau trên mọi máy người chơi cũng như trong môi trường huấn luyện AI.
+    \item \textbf{Tính sẵn sàng thương mại hóa cho Smart Customization:} Quy trình tạo nhân vật 3D chính thức phải tự chủ về thuật toán và không tích hợp các mô hình có giấy phép phi thương mại (như HRN hoặc IC-Light), bảo đảm an toàn pháp lý khi phát hành sản phẩm công khai.
     \item \textbf{Hiệu năng tính toán:}
     \begin{itemize}
         \item Chế độ chơi thực tế duy trì tốc độ khung hình ổn định từ $60$ khung hình/giây trở lên trên máy tính cá nhân tầm trung (cạc đồ họa RTX 4050 Laptop).

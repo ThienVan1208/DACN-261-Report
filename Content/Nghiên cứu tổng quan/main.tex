@@ -10,8 +10,17 @@ Các công cụ hỗ trợ quản lý và triển khai gồm:
     \item \textbf{Python, PyTorch, ONNX Runtime và Blender 4.2 (MPFB v2):} Hệ sinh thái tiêu chuẩn để huấn luyện các mô hình học máy cho Hybrid Bot, chạy vòng lặp tiến hóa luật cho LLM Bot bằng Gemini API và xây dựng quy trình tái tạo khuôn mặt cùng tóc 3D cho Smart Customization \cite{mpfb2}.
 \end{itemize}
 
-\subsection{Các nguyên tắc và mẫu thiết kế kiến trúc áp dụng}
-Để giữ cấu trúc phần mềm gọn gàng và dễ mở rộng trong suốt hai giai đoạn thực hiện, hệ thống vận dụng có chọn lọc năm mẫu thiết kế kiến trúc sau:
+\subsection{Bài toán kiến trúc phần mềm và các hướng tiếp cận}
+\subsubsection{Bài toán đặt ra và các cách triển khai phổ biến trên Unity}
+Đối với một trò chơi chiến thuật 3D trên Unity tích hợp đồng thời đấu trực tuyến và huấn luyện AI, thách thức lớn nhất là làm sao dùng chung một bộ luật duy nhất cho cả người chơi (có đồ họa, hoạt họa) lẫn môi trường huấn luyện AI (cần chạy song song hàng chục bàn cờ không đồ họa ở tốc độ cao). Trong thực tế phát triển game Unity, các dự án thường tiếp cận theo ba hướng phổ biến:
+\begin{itemize}
+    \item \textbf{Gắn trực tiếp luật chơi vào các đối tượng 3D trên màn chơi:} Cách làm mặc định và nhanh nhất khi dựng nguyên mẫu nhỏ. Tuy nhiên, trạng thái bàn cờ bị phân tán vào từng quân cờ 3D, không thể chạy mô phỏng không đồ họa để huấn luyện AI và rất dễ phát sinh lệch trạng thái giữa hình ảnh với luật chơi.
+    \item \textbf{Sử dụng đối tượng quản lý dùng chung toàn cục:} Giúp các thành phần truy cập nhanh vào trạng thái ván đấu, nhưng phá vỡ khả năng chạy đồng thời nhiều bàn đấu độc lập trong cùng một không gian huấn luyện AI do xung đột dữ liệu dùng chung.
+    \item \textbf{Kiến trúc hướng dữ liệu hiệu năng cao (như Unity DOTS/ECS):} Cho tốc độ mô phỏng rất lớn với hàng nghìn thực thể, nhưng có độ phức tạp triển khai cao và kén tương thích với hệ sinh thái giao diện, hoạt họa truyền thống và các gói AI/mạng sẵn có trong phạm vi thời gian đồ án.
+\end{itemize}
+
+\subsubsection{Kiến trúc và các mẫu thiết kế nhóm lựa chọn}
+Để khắc phục hạn chế của ba hướng trên mà vẫn giữ tốc độ phát triển hợp lý, nhóm lựa chọn kết hợp kiến trúc tách biệt lõi xử lý khỏi đồ họa cùng cơ chế cô lập dịch vụ theo từng bàn đấu, vận dụng có chọn lọc năm mẫu thiết kế sau:
 \begin{itemize}
     \item \textbf{Kiến trúc lục giác tách biệt lõi và giao diện \cite{cockburn}:} Đặt toàn bộ thực thể và quy tắc cờ trong vùng lõi độc lập khỏi đồ họa 3D. Mọi tương tác vào ra của ván đấu đều đi qua hai cổng giao tiếp chuẩn: một cổng tiếp nhận nước đi (từ người chơi, từ mạng hoặc từ AI) và một cổng phát sự kiện diễn biến ván đấu cho phần hiển thị hoặc bộ ghi nhận thực nghiệm.
     \item \textbf{Cô lập dịch vụ theo từng bàn đấu:} Thay vì dùng biến dùng chung toàn cục dễ gây xung đột khi chạy song song nhiều bàn cờ huấn luyện AI, mỗi bàn đấu sở hữu một vùng quản lý dịch vụ riêng được cấu hình độc lập tùy theo chế độ chơi (đấu với máy, đấu hai người hay chạy mô phỏng huấn luyện).
@@ -42,8 +51,30 @@ Trong giai đoạn phác thảo đề cương ban đầu, nhóm từng cân nh�
 
 \textbf{Kết luận lựa chọn giai đoạn 1:} Nhóm quyết định chuyển từ Unity NGO sang \textbf{Photon Fusion 2} \cite{photon_fusion} (chạy thống nhất ở mô hình \texttt{GameMode.Shared} trên Photon Cloud, trong đó máy chủ phòng là Shared Mode Master Client) và đặc biệt chọn cơ chế truyền luồng dữ liệu tin cậy \textbf{Fusion Reliable Data Stream} thay cho đồng bộ trạng thái quân cờ bằng \texttt{Fusion Network Object}. Lựa chọn này giải quyết đồng thời hai yêu cầu sống còn: (i) cho phép triển khai nhanh chế độ PvP Online đa khu vực mà không phải vận hành máy chủ riêng ở giai đoạn DACN; và (ii) bảo toàn kiến trúc Decoupled Core vì các quân cờ trên bàn không bị biến thành \texttt{NetworkObject}. Số liệu đo đạc thực nghiệm so sánh trực tiếp giữa \texttt{Fusion Network Object} và \texttt{Fusion Reliable Data} sẽ được trình bày chi tiết tại Chương 5 và Chương 6.
 
-\subsection{Cơ sở lý thuyết về trí tuệ nhân tạo trong game chiến thuật}
-Bàn cờ $6 \times 6$ của \textit{Convergence Chess} có số ô ít hơn cờ vua $8 \times 8$, nhưng độ phức tạp rẽ nhánh lại mang nét đặc thù do tổ hợp 9 kỹ năng nội tại, kinh tế điểm hành động biến thiên theo khoảng cách di chuyển, cơ chế hợp thể và chuỗi đòn bồi Surge. Vì vậy, để xây dựng hai dòng tác nhân chính là \textbf{Hybrid Bot} và \textbf{LLM Bot}, nhóm nghiên cứu bốn nền tảng lý thuyết bổ trợ cho nhau:
+\subsection{Cơ sở lý thuyết và khảo sát các hướng tiếp cận trí tuệ nhân tạo}
+Bàn cờ $6 \times 6$ của \textit{Convergence Chess} có số ô ít hơn cờ vua $8 \times 8$, nhưng độ phức tạp rẽ nhánh lại mang nét đặc thù do tổ hợp 9 kỹ năng nội tại, kinh tế điểm hành động biến thiên theo khoảng cách di chuyển, cơ chế hợp thể và chuỗi đòn bồi Surge.
+
+\subsubsection{Khảo sát các cách giải bài toán AI cờ chiến thuật hiện nay}
+Trong cộng đồng nghiên cứu và phát triển game chiến thuật, bài toán xây dựng tác nhân AI thường được giải quyết theo năm hướng phổ biến. Bảng \ref{tab:ai_approaches_compare} đối chiếu các hướng này nhằm làm rõ cơ sở cho thiết kế hai dòng tác nhân \textbf{Hybrid Bot} và \textbf{LLM Bot} của nhóm.
+
+\begin{table}[H]
+    \centering
+    \caption{So sánh các hướng tiếp cận AI cờ chiến thuật phổ biến và mức độ phù hợp với đề tài}
+    \label{tab:ai_approaches_compare}
+    \begin{tabularx}{\textwidth}{L{2.8cm} Y Y L{2.8cm}}
+        \toprule
+        \textbf{Hướng tiếp cận} & \textbf{Cách triển khai phổ biến} & \textbf{Ưu và nhược điểm chính} & \textbf{Đánh giá cho dự án} \\
+        \midrule
+        Tìm kiếm cây cổ điển + hàm đánh giá viết tay & Dùng Minimax Alpha-Beta với bảng điểm cố định (kiểu máy cờ truyền thống). & Rất nhanh, dễ kiểm soát; nhưng phụ thuộc lớn vào tri thức viết tay, khó tự phát hiện chiến thuật hợp thể phức tạp. & Dùng làm nền tảng tìm kiếm và thầy dạy ban đầu. \\
+        Học tăng cường thuần túy (không tìm kiếm) & Huấn luyện mạng chính sách chọn nước đi trực tiếp bằng PPO tự đấu. & Phản hồi rất nhanh (vài chục mili-giây); nhưng tầm nhìn chỉ $1$ nước, dễ bỏ sót chuỗi ăn quân Surge nhiều bước. & Dùng làm thành phần gợi ý nước đi cho Hybrid Bot. \\
+        MCTS kết hợp mạng nơ-ron sâu lớn & Phong cách AlphaZero / Leela Chess Zero dùng mạng tích chập sâu chấm từng nút. & Sức mạnh đỉnh cao ở cờ vua chuẩn; nhưng chi phí huấn luyện và suy luận nặng, vượt quá phần cứng máy cá nhân. & Không khả thi với giới hạn phần cứng đồ án. \\
+        Gọi trực tiếp LLM chọn nước đi mỗi lượt & Đưa trạng thái bàn cờ thành văn bản hỏi Mô hình Ngôn ngữ Lớn qua API. & Có thể giải thích tự nhiên; nhưng độ trễ lớn (nhiều giây/nước), tốn chi phí gọi API liên tục và dễ chọn nước phạm luật. & Không dùng trực tiếp trong trận đấu. \\
+        Tìm kiếm lai mạng nhẹ (NNUE) và tiến hóa luật LLM & Kết hợp tìm kiếm + học tăng cường + NNUE (kiểu Stockfish NNUE \cite{nnue}) và tiến hóa hàm đánh giá ngoại tuyến (kiểu FunSearch \cite{funsearch}). & Cân bằng tốt giữa sức mạnh, tốc độ phản hồi thời gian thực và khả năng giải thích tri thức chiến thuật. & \textbf{Lựa chọn cho Hybrid Bot và LLM Bot}. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Từ phân tích trên, để xây dựng hai dòng tác nhân chính là \textbf{Hybrid Bot} và \textbf{LLM Bot}, nhóm ứng dụng bốn nền tảng lý thuyết bổ trợ cho nhau:
 
 \subsubsection{Tìm kiếm cây trò chơi Minimax với cắt tỉa Alpha-Beta và bảng băm Zobrist}
 Thuật toán Minimax tìm nước đi tối ưu trong trò chơi đối kháng hai người theo nguyên lý cực đại hóa lợi thế trong kịch bản đối thủ phản ứng tốt nhất. Để giảm mạnh số trạng thái phải duyệt, nền tảng tìm kiếm của Hybrid Bot kết hợp các kỹ thuật tối ưu kinh điển:
@@ -74,9 +105,19 @@ Lấy cảm hứng từ kiến trúc \textbf{NNUE} trong máy đánh cờ Stockf
 \subsubsection{Tiến hóa hàm đánh giá biểu tượng bằng Mô hình Ngôn ngữ Lớn (nền tảng LLM Bot)}
 Song song với hướng học sâu của Hybrid Bot, nhóm nghiên cứu hướng \textbf{LLM Bot} theo phương pháp \textbf{FunSearch} \cite{funsearch} nhằm tạo ra tri thức chiến thuật có thể đọc hiểu và kiểm chứng được. Hệ thống sử dụng Gemini API để sinh và tiến hóa trực tiếp các đoạn quy tắc đánh giá ngắn gọn, phân loại theo 8 tình huống chiến thuật của ván đấu (khai cuộc chưa hợp thể, trung cuộc đã hợp thể, tàn cuộc ít quân, tranh chấp khiên, Vua bị đe dọa, đua phong cấp Tốt, dự trữ AP cao...). Mỗi quy tắc sinh ra đều trải qua 4 bước sàng lọc tự động về tính hợp lệ, tốc độ, tính đối xứng và tỷ lệ thắng đối kháng trước khi được lưu vào ngân hàng luật của LLM Bot.
 
-\subsection{Cơ sở lý thuyết cho phân hệ tùy biến nhân vật 3D (Smart Customization)}
-Bài toán tái tạo nhân vật 3D có sẵn khung xương để hoạt họa từ một bức ảnh chân dung 2D đơn lẻ đòi hỏi giải quyết đồng thời hai bài toán con:
+\subsection{Bài toán tùy biến nhân vật 3D (Smart Customization) và khảo sát hướng tiếp cận}
+\subsubsection{Bài toán đặt ra và các phương pháp triển khai trên mạng hiện nay}
+Bài toán đặt ra là tái tạo một nhân vật 3D có sẵn khung xương để hoạt họa trong Unity 6 từ một bức ảnh chân dung 2D đơn lẻ, vừa giữ được nét nhận dạng khuôn mặt, vừa chạy nhanh trên máy cá nhân và \textbf{đáp ứng điều kiện pháp lý để thương mại hóa sản phẩm}. Qua khảo sát các giải pháp phổ biến ngoài thực tế và trong cộng đồng nghiên cứu, có bốn hướng tiếp cận tiêu biểu:
 \begin{itemize}
-    \item \textbf{Tái tạo hình học khuôn mặt 3D:} Sử dụng \textbf{MediaPipe} \cite{mediapipe} trích xuất 478 điểm mốc giải phẫu trên ảnh 2D, sau đó ánh xạ sang hệ thống thông số biến dạng khuôn mặt của bộ khung chuẩn giải phẫu \textbf{MPFB v2} trên Blender \cite{mpfb2}. Thực nghiệm cho thấy việc dùng trực tiếp chiều sâu ước lượng từ MediaPipe gây sai số lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt). Do đó, nhóm áp dụng phương pháp sinh dữ liệu ảnh phối cảnh tổng hợp trực tiếp từ mô hình MPFB v2 bằng \textbf{PyTorch3D} \cite{pytorch3d} để huấn luyện bộ hồi quy gọn trên $25$ thông số hình thái độc lập, kết hợp bước tinh chỉnh tối ưu bình phương tối thiểu có giới hạn.
-    \item \textbf{Tái tạo kết cấu bề mặt da, khử bóng và chi tiết nếp nhăn:} Kế thừa ý tưởng từ nghiên cứu \textbf{MeInGame} \cite{meingame}, hệ thống dùng phép chiếu ngược tam giác trên \textbf{PyTorch3D} \cite{pytorch3d} để ánh xạ trực tiếp màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D. Tiếp đó, hệ thống khử bóng đổ định hướng bằng kỹ thuật đối xứng hai bên khuôn mặt trong không gian màu Lab (tận dụng cấu trúc đối xứng tự nhiên để trung hòa vùng tối lệch hoặc tóc mái che một bên nhưng vẫn giữ được lỗ chân lông, lông mày và râu), kết hợp tách riêng vùng hốc mắt, lọc loại bỏ vệt răng trắng khi ảnh gốc đang cười, hòa trộn biên đa tầng làm mịn vùng chuyển tiếp gò má -- cổ và trích xuất bản đồ chi tiết bề mặt nếp nhăn từ mô hình \textbf{HRN} \cite{hrn}. Hướng khử bóng bằng mô hình khuếch tán \textbf{IC-Light} \cite{iclight} cũng đã được khảo sát thử nghiệm nhưng tạm dừng sử dụng do chi phí tính toán cao và nguy cơ làm biến đổi nét nhận dạng khuôn mặt gốc.
+    \item \textbf{Dịch vụ tạo nhân vật đóng sẵn (như Ready Player Me, Avatar SDK):} Cho phép tích hợp nhanh vào trò chơi và ít tốn công nghiên cứu, nhưng phụ thuộc dịch vụ bên thứ ba, đóng mã nguồn, tốn chi phí bản quyền theo lượt sử dụng và khó đồng bộ phong cách tạo hình cũng như khung xương riêng của trò chơi.
+    \item \textbf{Tái tạo lưới 3D tự do từ ảnh đơn lẻ (như DECA, FLAME, HRN \cite{hrn}):} Cho chi tiết hình học và nếp nhăn khuôn mặt sắc nét, tuy nhiên lưới 3D sinh ra mang cấu trúc khác biệt nên khó gắn trực tiếp vào khung xương hoạt họa chuẩn của game; đặc biệt các mô hình nghiên cứu như \textbf{HRN} có ràng buộc giấy phép phi thương mại.
+    \item \textbf{Ánh xạ thông số hình thái trên khung nhân vật sẵn có và chiếu ngược kết cấu (kiểu MeInGame \cite{meingame}):} Thay vì sinh lưới tự do, phương pháp này dự đoán bộ thanh trượt biến dạng khuôn mặt trên mô hình game có sẵn và chiếu ngược màu da từ ảnh chụp sang bản đồ bề mặt 3D. Hướng này giữ nguyên hoàn toàn khả năng hoạt họa, nhưng vẫn cần xử lý bài toán bóng đổ lệch trên ảnh chụp thực tế.
+    \item \textbf{Khử bóng ảnh chân dung bằng mô hình sinh khuếch tán (như IC-Light \cite{iclight}):} Có khả năng cân bằng ánh sáng ấn tượng, nhưng đòi hỏi trọng số lớn, tốn thời gian suy luận, tiềm ẩn nguy cơ làm biến đổi nét khuôn mặt gốc và cũng gặp ràng buộc giấy phép phi thương mại.
+\end{itemize}
+
+\subsubsection{Định hướng tự xây dựng sẵn sàng thương mại hóa của nhóm}
+Tham khảo ý tưởng ánh xạ hình thái và chiếu ngược bề mặt từ các nghiên cứu trên (MeInGame, HRN, IC-Light) nhưng kiên quyết \textbf{tắt và loại bỏ toàn bộ các mô hình phi thương mại (HRN, IC-Light)} khỏi luồng sản phẩm chính thức, nhóm tự xây dựng trọn vẹn quy trình xử lý nội bộ trên bộ khung chuẩn giải phẫu \textbf{MPFB v2} (Blender) \cite{mpfb2}:
+\begin{itemize}
+    \item \textbf{Tái tạo hình học khuôn mặt 3D:} Sử dụng \textbf{MediaPipe} \cite{mediapipe} trích xuất 478 điểm mốc giải phẫu trên ảnh 2D, sau đó ánh xạ sang hệ thống thông số biến dạng của MPFB v2. Do thực nghiệm chứng minh việc dùng trực tiếp chiều sâu ước lượng từ MediaPipe gây sai số lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt), nhóm tự xây dựng phương pháp sinh dữ liệu ảnh phối cảnh tổng hợp từ chính mô hình MPFB v2 bằng \textbf{PyTorch3D} \cite{pytorch3d} để huấn luyện bộ hồi quy gọn trên $25$ thông số hình thái độc lập, kết hợp bước tinh chỉnh tối ưu bình phương tối thiểu có giới hạn.
+    \item \textbf{Tái tạo kết cấu da và khử bóng đối xứng tự cài đặt:} Tham khảo ý tưởng chiếu tam giác ngược từ \textbf{MeInGame} \cite{meingame}, nhóm tự hiện thực quy trình chiếu ngược trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D, sau đó tự xây dựng bộ khử bóng theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab (trung hòa vùng tối lệch hoặc tóc mái che một bên trong khi bảo toàn lỗ chân lông, lông mày và râu), kết hợp tách riêng vùng hốc mắt, lọc loại bỏ vệt răng trắng khi ảnh gốc đang cười và hòa trộn biên đa tầng làm mịn vùng chuyển tiếp gò má -- cổ.
 \end{itemize}

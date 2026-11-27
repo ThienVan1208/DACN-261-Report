@@ -67,13 +67,13 @@ Thay vì cho phép mọi quân cờ di chuyển miễn phí với cự ly bất 
     \item \textbf{Kiến trúc phần mềm:} Xây dựng phần lõi xử lý luật chơi tách rời hoàn toàn khỏi đồ họa 3D, cho phép tái sử dụng nguyên vẹn trên cả 3 chế độ chơi (đấu với máy, đấu 2 người trên cùng máy, đấu trực tuyến) và chạy mô phỏng không hiển thị đồ họa ở tốc độ cao để phục vụ huấn luyện AI.
     \item \textbf{Khảo sát và thực nghiệm AI:} Tập trung xây dựng và đánh giá định lượng hai hướng tác nhân AI chủ lực là \textbf{Hybrid Bot} (phát triển qua chuỗi thành phần nền tảng gồm tìm kiếm Minimax Alpha-Beta, học bắt chước, học tăng cường PPO \cite{mlagents} và mạng đánh giá nhanh NNUE \cite{nnue}) và \textbf{LLM Bot} (tiến hóa hàm đánh giá biểu tượng bằng Mô hình Ngôn ngữ Lớn theo hướng FunSearch \cite{funsearch}).
     \item \textbf{Khảo sát và nguyên mẫu Multiplayer:} Đánh giá các giải pháp mạng, đo đạc thực nghiệm giữa cơ chế đồng bộ đối tượng (\texttt{Fusion Network Object}) và luồng dữ liệu tin cậy (\texttt{Fusion Reliable Data Stream}), hoàn thiện nguyên mẫu phòng chơi Lobby trên \texttt{GameMode.Shared} (tạo/vào phòng, chọn region, phân vai Trắng/Đen/Khán giả, đồng bộ đội hình và nước đi 4 bytes).
-    \item \textbf{Khảo sát và nguyên mẫu tùy biến nhân vật 3D (Smart Customization):} Thử nghiệm trọn vẹn hai nhánh xử lý hình học khuôn mặt 3D (sử dụng MediaPipe cùng mô hình hồi quy 25 thông số hình thái độc lập) và xử lý bề mặt da, mắt, tóc (kỹ thuật chiếu ngược kết cấu kiểu MeInGame, khử bóng đối xứng hai bên khuôn mặt, hòa trộn đa tầng, bản đồ chi tiết bề mặt từ HRN và 6 kiểu tóc 3D) tích hợp trực tiếp vào Unity 6.
+    \item \textbf{Khảo sát và nguyên mẫu tùy biến nhân vật 3D (Smart Customization):} Khảo sát các phương pháp tái tạo khuôn mặt 3D từ ảnh chân dung hiện có và tự xây dựng trọn vẹn quy trình sẵn sàng thương mại hóa (loại bỏ các mô hình phi thương mại), gồm nhánh tái tạo hình học khuôn mặt 25 thông số độc lập và nhánh xử lý bề mặt da, khử bóng đối xứng, vật liệu mắt cùng 6 kiểu tóc 3D tích hợp trực tiếp vào Unity 6.
     \item \textbf{Hoàn thiện bản chơi thử:} Kết nối toàn bộ luồng trải nghiệm từ màn hình chính, màn hình xây dựng đội hình, chọn chế độ chơi đến bàn cờ 3D $6 \times 6$ với bộ quân cờ phong cách Trung cổ, hoạt họa, hiệu ứng hình ảnh và âm thanh cơ bản.
 \end{itemize}
 
 Các hạng mục mang tính sản phẩm hóa và vận hành công khai như hệ thống đăng nhập tài khoản (Google/Facebook), lưu trữ đám mây, tự động ghép trận theo điểm xếp hạng Elo, hệ thống bạn bè, xử lý khôi phục kết nối nâng cao, hoàn thiện xử lý hết giờ/đầu hàng/cài đặt âm thanh và thử nghiệm người dùng quy mô lớn được quy hoạch rõ ràng sang \textbf{Giai đoạn 2 (DATN)}.
 
-\subsection{So sánh với các sản phẩm tương tự trên thị trường}
+\subsection{So sánh với các sản phẩm tương tự và đánh giá ưu, nhược điểm của thiết kế lối chơi}
 Bảng \ref{tab:market_comparison} đối chiếu \textit{Convergence Chess} với ba đại diện tiêu biểu trên thị trường nhằm làm rõ giá trị khác biệt của đề tài.
 
 \begin{table}[H]
@@ -92,6 +92,12 @@ Bảng \ref{tab:market_comparison} đối chiếu \textit{Convergence Chess} v�
         \bottomrule
     \end{tabularx}
 \end{table}
+
+Bên cạnh giá trị khác biệt, thiết kế lối chơi của \textit{Convergence Chess} cũng đi kèm những ưu điểm và đánh đổi rõ rệt:
+\begin{itemize}
+    \item \textbf{Ưu điểm:} Bàn cờ $6 \times 6$ rút ngắn thời gian mỗi ván đấu và đẩy nhanh nhịp độ giao tranh ngay từ các lượt đầu; cơ chế tự chọn đội hình kết hợp hợp thể khác loại và đòn bồi Surge tạo ra không gian chiến thuật phong phú, hạn chế tình trạng học thuộc khai cuộc; vật cản sinh ngẫu nhiên ở trung tuyến giúp mỗi ván đấu mang tính biến hóa cao.
+    \item \textbf{Nhược điểm và thách thức:} Nhiều cơ chế mới chồng lên nhau (kinh tế điểm hành động, $9$ kỹ năng thức tỉnh, khóa hợp thể, đòn bồi Surge) tạo rào cản tiếp cận ban đầu cao hơn cờ vua truyền thống đối với người chơi mới; không gian $6 \times 6$ hẹp hơn nên dễ xảy ra tình trạng mất cân bằng lợi thế đi trước/đi sau nếu bộ tham số điểm hành động và chi phí đội hình chưa được hiệu chỉnh qua mô phỏng số lượng lớn.
+\end{itemize}
 
 \subsection{Phân công trách nhiệm trong nhóm thực hiện}
 Dự án được thực hiện bởi 2 thành viên với ranh giới phân hệ rõ ràng, kết nối với nhau qua các giao diện trao đổi dữ liệu thống nhất:

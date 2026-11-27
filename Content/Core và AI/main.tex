@@ -12,6 +12,12 @@ Toàn bộ các thực thể và quy tắc cốt lõi của trò chơi (trạng 
     \item \textbf{Cô lập hoàn toàn giữa các bàn đấu:} Mỗi bàn đấu sở hữu một vùng quản lý dịch vụ độc lập, được lắp ráp linh hoạt theo từng chế độ chơi (đấu với máy, đấu hai người cùng máy, đấu trực tuyến hoặc mô phỏng huấn luyện). Khi chạy huấn luyện AI, tầng diễn hoạt đồ họa được thay thế bằng bộ tiếp nhận rỗng, cho phép chạy song song hàng chục bàn cờ cùng lúc mà không gây xung đột dữ liệu dùng chung.
 \end{itemize}
 
+\textbf{Đánh giá ưu và nhược điểm của kiến trúc lõi tách rời:}
+\begin{itemize}
+    \item \textbf{Ưu điểm:} Bảo đảm tính nhất quán tuyệt đối giữa mọi chế độ chơi (đấu máy, đấu cùng máy, đấu trực tuyến); đạt tốc độ mô phỏng hàng trăm trận đấu trong vài chục giây cho huấn luyện AI nhờ chạy không đồ họa và mã hóa kỹ năng bằng bit; dễ viết kiểm thử tự động cho từng quy tắc biên.
+    \item \textbf{Nhược điểm:} Độ phức tạp thiết kế ban đầu cao hơn so với cách viết trực tiếp vào đối tượng 3D của Unity; đòi hỏi xây dựng thêm lớp cầu nối gom sự kiện và hàng đợi diễn hoạt ở tầng hiển thị, làm tăng khối lượng công việc đồng bộ trạng thái hình ảnh khi bổ sung cơ chế mới.
+\end{itemize}
+
 \subsection{Thiết kế và hiện thực hệ thống trí tuệ nhân tạo}
 
 Đóng góp nghiên cứu trọng tâm của Giai đoạn 1 là xây dựng và kiểm chứng hai dòng tác nhân AI chính là \textbf{Hybrid Bot} và \textbf{LLM Bot}, cùng giao tiếp với lõi trò chơi thông qua một giao diện nhận nước đi thống nhất.
@@ -43,12 +49,29 @@ Song song với Hybrid Bot dựa trên mạng nơ-ron, nhóm phát triển \text
     \item Mỗi quy tắc mới do LLM đề xuất đều phải vượt qua \textbf{4 cổng kiểm định tự động}: (1) kiểm tra cú pháp an toàn và không gây cấp phát bộ nhớ động; (2) biên dịch thực tế kèm tối đa $1$ lượt tự sửa lỗi nếu biên dịch thất bại; (3) đo tốc độ thực thi và kiểm chứng tính đối xứng phản chiếu giữa hai phe; (4) thi đấu đối chứng cặp (đảo vai đi trước/đi sau trên cùng hạt giống bàn cờ) kết hợp lọc loại trừ để giữ lại các mô-đun thực sự mang lại lợi ích. Hiện tại ngân hàng luật của LLM Bot đã kiểm định và lưu giữ $5$ mô-đun chiến thuật hoạt động ổn định.
 \end{itemize}
 
+\subsubsection{Đánh giá ưu và nhược điểm của Hybrid Bot và LLM Bot}
+Bảng \ref{tab:ai_pros_cons} tổng hợp trực diện ưu điểm và hạn chế của hai dòng tác nhân AI chính do nhóm triển khai:
+
+\begin{table}[H]
+    \centering
+    \caption{So sánh ưu điểm và nhược điểm của Hybrid Bot và LLM Bot}
+    \label{tab:ai_pros_cons}
+    \begin{tabularx}{\textwidth}{L{2.4cm} Y Y}
+        \toprule
+        \textbf{Dòng tác nhân} & \textbf{Ưu điểm nổi bật} & \textbf{Nhược điểm và đánh đổi} \\
+        \midrule
+        \textbf{Hybrid Bot} & Sức mạnh chiến thuật cao, khắc phục được lỗi tầm nhìn ngắn của mạng chính sách thuần túy; tốc độ phản hồi nhanh trong trận thực tế (khoảng $66$ mili-giây mỗi nước với thành phần Residual NNUE ở độ sâu 4); có khả năng tự cải thiện qua vòng lặp đồng huấn luyện đa thế hệ. & Quy trình huấn luyện nhiều tầng phức tạp (học bắt chước $\to$ PPO tự đấu $\to$ NNUE); quyết định của mạng nơ-ron mang tính ``hộp đen'' khó giải thích trực tiếp bằng lời; cần huấn luyện lại khi thay đổi mạnh tham số cân bằng luật chơi. \\
+        \textbf{LLM Bot} & Tri thức đánh giá ở dạng tập luật biểu tượng minh bạch, đọc hiểu và kiểm chứng được; không tốn chi phí gọi API trong lúc thi đấu vì luật đã được biên dịch sẵn; dễ bật/tắt hoặc tinh chỉnh theo $8$ ngữ cảnh chiến thuật riêng biệt. & Quá trình tiến hóa luật phụ thuộc vào chất lượng gợi ý và chi phí gọi API ngoại tuyến; sức mạnh trần khó theo kịp mạng đánh giá học sâu trên các thế cờ phức tạp nhiều biến thể; hiện mới dừng ở $5$ mô-đun kiểm định và cần mở rộng đánh giá đối kháng trực tiếp với Hybrid Bot ở Giai đoạn 2. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
 \subsection{Thiết kế và hiện thực phân hệ tùy biến nhân vật 3D (Smart Customization)}
 
-Phân hệ tùy biến nhân vật 3D (Smart Customization) được tích hợp trực tiếp vào ứng dụng Unity 6 theo cơ chế xử lý cục bộ: giao diện trong trò chơi tiếp nhận ảnh chân dung và lựa chọn của người chơi, gọi bộ suy luận Python chạy trên cạc đồ họa máy trạm (NVIDIA GeForce RTX 4050 Laptop, bộ nhớ đồ họa 6 GB) rồi nạp lại kết quả hình thái, kết cấu da và bản đồ chi tiết bề mặt lên mô hình nhân vật chuẩn giải phẫu \textbf{MPFB v2} \cite{mpfb2} (xây dựng từ Blender 4.2).
+Phân hệ tùy biến nhân vật 3D (Smart Customization) được thiết kế theo định hướng \textbf{tự chủ thuật toán và sẵn sàng thương mại hóa}: nhóm đã chủ động \textbf{tắt hoàn toàn các mô hình có giấy phép phi thương mại (như HRN và IC-Light)} khỏi luồng chạy chính thức, chỉ sử dụng quy trình tự xây dựng chạy cục bộ trên máy trạm (NVIDIA GeForce RTX 4050 Laptop, bộ nhớ đồ họa 6 GB) và áp trực tiếp lên bộ khung nhân vật chuẩn giải phẫu \textbf{MPFB v2} \cite{mpfb2} (Blender 4.2) trong Unity 6.
 
 \subsubsection{Nhánh tái tạo hình học khuôn mặt 3D}
-Qua thực nghiệm giai đoạn đầu, nhóm xác nhận việc dùng trực tiếp tọa độ chiều sâu ước lượng từ MediaPipe \cite{mediapipe} gây sai số rất lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt, gấp $2.5$ lần sai số theo chiều ngang). Do đó, nhóm xây dựng quy trình tái tạo hình học mới gồm ba bước:
+Qua thực nghiệm giai đoạn đầu, nhóm xác nhận việc dùng trực tiếp tọa độ chiều sâu ước lượng từ MediaPipe \cite{mediapipe} gây sai số rất lớn (sai số trung bình bình phương đạt $0.1415$ theo khoảng cách hai mắt, gấp $2.5$ lần sai số theo chiều ngang). Do đó, nhóm tự xây dựng quy trình tái tạo hình học gồm ba bước:
 \begin{enumerate}
     \item Tinh gọn từ $40$ xuống còn \textbf{25 thông số hình thái khuôn mặt độc lập}, loại bỏ các thông số gây chồng chéo hoặc xung đột tỷ lệ hộp sọ và vùng thái dương.
     \item Dùng \textbf{PyTorch3D} \cite{pytorch3d} kết xuất tập dữ liệu ảnh phối cảnh tổng hợp trực tiếp từ chính mô hình MPFB v2 gồm $12{,}000$ mẫu Nam và $12{,}000$ mẫu Nữ trong vùng góc chụp kiểm soát (góc nghiêng dọc $\pm 4^\circ$, góc xoay ngang $\pm 6^\circ$, góc mở ống kính $12.5^\circ$--$18^\circ$), đạt $100\%$ tỷ lệ nhận diện điểm mốc khuôn mặt.
@@ -57,7 +80,13 @@ Qua thực nghiệm giai đoạn đầu, nhóm xác nhận việc dùng trực t
 
 \subsubsection{Nhánh xử lý bề mặt da, vật liệu mắt và hệ thống tóc 3D}
 \begin{itemize}
-    \item \textbf{Chiếu ngược kết cấu da và khử bóng đối xứng:} Kế thừa phương pháp \textbf{MeInGame} \cite{meingame}, bộ xử lý dùng phép chiếu ngược tam giác trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu sắc từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D (kèm hiệu chỉnh vùng môi), sau đó áp dụng kỹ thuật khử bóng và khử che khuất theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab. Cách làm này giúp trung hòa bóng đổ gắt hoặc tóc mái che một bên mà vẫn giữ lại chi tiết lỗ chân lông, lông mày và râu. Hệ thống cung cấp hai chế độ xử lý kết cấu: chế độ tiêu chuẩn (chiếu ngược kết hợp khử bóng đối xứng) và chế độ tăng cường chi tiết nếp nhăn từ mô hình \textbf{HRN} \cite{hrn}. Hướng khử bóng bằng mô hình khuếch tán \textbf{IC-Light} \cite{iclight} cũng đã được khảo sát nhưng tạm dừng sử dụng để ưu tiên tốc độ xử lý và giữ độ giống khuôn mặt gốc.
-    \item \textbf{Tách hốc mắt, khử vệt răng và hòa trộn biên cổ:} Hệ thống dùng mặt nạ tách bỏ vùng hốc mắt để giữ nguyên $100\%$ cấu trúc nhãn cầu 3D có khả năng xoay độc lập; áp dụng bộ lọc nhận diện men răng để loại bỏ vệt răng trắng nếu ảnh gốc đang cười; cân bằng sắc tố da trong không gian màu Lab kết hợp hòa trộn tháp đa tần số và cửa sổ chuyển tiếp mượt ($64$ điểm ảnh cho lớp màu, $72$ điểm ảnh cho lớp chi tiết bề mặt) cùng bản đồ chi tiết bề mặt từ HRN (mức cường độ riêng cho Nam và Nữ, cho phép chỉnh trực tiếp độ nổi chi tiết trong trò chơi).
+    \item \textbf{Chiếu ngược kết cấu da và khử bóng đối xứng tự cài đặt:} Tham khảo ý tưởng chiếu tam giác từ nghiên cứu \textbf{MeInGame} \cite{meingame}, nhóm tự hiện thực phép chiếu ngược trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D (kèm hiệu chỉnh vùng môi), sau đó áp dụng thuật toán khử bóng và khử che khuất theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab. Cách làm này trung hòa hiệu quả bóng đổ gắt hoặc tóc mái che một bên trong khi vẫn giữ được lỗ chân lông, lông mày và râu, hoàn toàn không phụ thuộc mô hình khử bóng phi thương mại \textbf{IC-Light} \cite{iclight} hay mô hình tái tạo chi tiết phi thương mại \textbf{HRN} \cite{hrn}.
+    \item \textbf{Tách hốc mắt, khử vệt răng và hòa trộn biên cổ:} Hệ thống dùng mặt nạ tách bỏ vùng hốc mắt để giữ nguyên $100\%$ cấu trúc nhãn cầu 3D có khả năng xoay độc lập; áp dụng bộ lọc nhận diện men răng để loại bỏ vệt răng trắng nếu ảnh gốc đang cười; cân bằng sắc tố da trong không gian màu Lab kết hợp hòa trộn tháp đa tần số và cửa sổ chuyển tiếp mượt ($64$ điểm ảnh) giúp xóa viền ghép giữa mặt và cổ.
     \item \textbf{Vật liệu mắt phản sáng và hệ thống 6 kiểu tóc 3D:} Bề mặt mống mắt và củng mạc được cấu hình độ bóng cao ($0.96$) kèm lớp phủ màng nước mắt tạo đốm sáng tự nhiên trên giác mạc, đồng thời chuẩn hóa ngưỡng sáng tối thiểu của mống mắt ở mức $0.38$ để vân mắt luôn rõ nét. Sáu kiểu tóc 3D (tóc ngắn kiểu 1, tóc ngắn kiểu 2, tóc ngắn ngang vai, tóc dài, tóc đuôi ngựa và tóc tết ở độ phân giải kết cấu $2048 \times 2048$) được định vị khớp chuẩn vào da đầu bằng công cụ chuẩn hóa của MPFB v2 \cite{mpfb2}, quản lý tách biệt theo giới tính và tự động lấy mẫu màu tóc từ vùng viền trán của ảnh chân dung đầu vào.
+\end{itemize}
+
+\subsubsection{Đánh giá ưu và nhược điểm của giải pháp Smart Customization tự xây dựng}
+\begin{itemize}
+    \item \textbf{Ưu điểm:} Tự chủ hoàn toàn về quy trình và an toàn pháp lý để thương mại hóa do không dùng các mô hình phi thương mại (HRN, IC-Light); bảo toàn $100\%$ hệ khung xương hoạt họa của MPFB v2; giữ trung thực nét nhận dạng khuôn mặt gốc (không bị biến dạng như mô hình sinh khuếch tán) với tốc độ xử lý nhanh (khoảng $5.9$ giây mỗi ảnh).
+    \item \textbf{Nhược điểm:} Do tắt mô hình tái tạo nếp nhăn sâu HRN, độ chi tiết vi mô ở vùng da có nhiều nếp nhăn chưa nổi bật bằng các mô hình nghiên cứu chuyên sâu; chất lượng đầu ra còn nhạy với ảnh chân dung chụp nghiêng góc quá lớn hoặc ngược sáng cực đoan; ở Giai đoạn 1 vẫn cần máy có cạc đồ họa rời cục bộ và cần đóng gói thành dịch vụ máy chủ ở Giai đoạn 2.
 \end{itemize}

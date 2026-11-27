@@ -59,11 +59,11 @@ Hình \ref{fig:chart_net_bench} trực quan hóa sự đánh đổi giữa băng
 \end{figure}
 
 \subsection{Đánh giá thực nghiệm phân hệ tùy biến nhân vật 3D (Smart Customization)}
-Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nhớ đồ họa 6 GB), quy trình tùy biến nhân vật 3D đã đạt được các kết quả kiểm chứng thực tế sau:
+Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nhớ đồ họa 6 GB), quy trình tùy biến nhân vật 3D tự xây dựng (đã tắt hoàn toàn các mô hình phi thương mại HRN và IC-Light để bảo đảm khả năng thương mại hóa) đã đạt được các kết quả kiểm chứng thực tế sau:
 \begin{itemize}
     \item \textbf{Độ chính xác hình học khuôn mặt:} Sau khi tinh gọn về $25$ thông số hình thái độc lập và kiểm soát góc chụp khi sinh $24{,}000$ mẫu tổng hợp ($12{,}000$ Nam và $12{,}000$ Nữ), sai số tuyệt đối trung bình trên tập kiểm định sau $80$ chu kỳ huấn luyện giảm từ $0.0749$ ở phiên bản đầu xuống còn \textbf{0.0621} đối với mẫu Nam và \textbf{0.0616} đối với mẫu Nữ.
-    \item \textbf{Chất lượng bề mặt da, khử bóng và thời gian xử lý:} Kết hợp chiếu ngược tam giác trên PyTorch3D kiểu MeInGame \cite{meingame}, khử bóng đối xứng hai bên trong không gian màu Lab, tách vùng hốc mắt, lọc bỏ vệt men răng và hòa trộn biên đa tầng (vùng chuyển tiếp $64$ điểm ảnh) giúp loại bỏ viền ghép gò má -- cổ và tránh hiện tượng bề mặt da bị bệt mờ như tượng sáp. Tổng thời gian xử lý toàn trình cho một ảnh chân dung ở chế độ tiêu chuẩn đạt khoảng \textbf{5.9 giây} trên máy tính cục bộ.
-    \item \textbf{Hiệu quả hiển thị 3D trong Unity 6:} Hệ thống $6$ kiểu tóc 3D khớp chính xác vào da đầu, vật liệu mắt tạo đốm sáng tự nhiên trên giác mạc và bản đồ chi tiết nếp nhăn HRN có thể tinh chỉnh độ sâu trực tiếp trong trò chơi như minh họa tại Hình \ref{fig:sc_results}.
+    \item \textbf{Chất lượng bề mặt da, khử bóng đối xứng và thời gian xử lý:} Kết hợp chiếu ngược tam giác tự cài đặt trên PyTorch3D (tham khảo ý tưởng MeInGame \cite{meingame}), khử bóng đối xứng hai bên trong không gian màu Lab, tách vùng hốc mắt, lọc bỏ vệt men răng và hòa trộn biên đa tầng (vùng chuyển tiếp $64$ điểm ảnh) giúp loại bỏ viền ghép gò má -- cổ và tránh hiện tượng bề mặt da bị bệt mờ như tượng sáp. Tổng thời gian xử lý toàn trình cho một ảnh chân dung đạt khoảng \textbf{5.9 giây} trên máy tính cục bộ.
+    \item \textbf{Hiệu quả hiển thị 3D trong Unity 6:} Hệ thống $6$ kiểu tóc 3D khớp chính xác vào da đầu và vật liệu mắt tạo đốm sáng tự nhiên trên giác mạc hiển thị ổn định trong trò chơi như minh họa tại Hình \ref{fig:sc_results}.
 \end{itemize}
 
 \begin{figure}[H]
@@ -89,13 +89,12 @@ Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nh�
     \label{fig:sc_results}
 \end{figure}
 
-\begin{notebox}{Các hướng tiếp cận đã kiểm chứng loại bỏ hoặc tạm dừng trong giai đoạn 1}
-Một giá trị thực nghiệm quan trọng của giai đoạn Đồ án chuyên ngành là sớm phát hiện và loại bỏ các phương án kém hiệu quả để tránh lãng phí nguồn lực ở Giai đoạn 2:
+\begin{notebox}{Các hướng tiếp cận đã khảo sát và loại bỏ khỏi luồng sản phẩm}
+Một giá trị thực nghiệm quan trọng của giai đoạn Đồ án chuyên ngành là sớm phát hiện và loại bỏ các phương án kém hiệu quả hoặc không phù hợp mục tiêu thương mại hóa để tránh lãng phí nguồn lực ở Giai đoạn 2:
 \begin{enumerate}
     \item \textbf{Dùng trực tiếp chiều sâu ước lượng từ MediaPipe:} Gây sai số trung bình bình phương tới $0.1415$ theo khoảng cách hai mắt (gấp $2.5$ lần sai số chiều ngang), buộc phải chuyển sang phương pháp sinh dữ liệu phối cảnh tổng hợp trực tiếp từ mô hình 3D gốc.
     \item \textbf{Huấn luyện mạng sinh kết cấu da trên dữ liệu tổng hợp:} Gây hiện tượng loang màu hồng nhân tạo quanh miệng và làm bề mặt da bệt mờ như tượng sáp; đã loại bỏ khỏi quy trình chính.
-    \item \textbf{Khử bóng bằng mô hình khuếch tán IC-Light \cite{iclight}:} Dù khử bóng tốt (tốn khoảng $1.8$ giây riêng bước khuếch tán), mô hình này phụ thuộc bộ trọng số nặng và có nguy cơ làm thay đổi nét nhận dạng khuôn mặt gốc, do đó đã được tạm dừng để thay bằng chiếu ngược PyTorch3D kết hợp khử bóng đối xứng thuần giải phẫu.
-    \item \textbf{Chuyển đổi trực tiếp bản đồ chi tiết bề mặt giữa hai chuẩn khuôn mặt khác nhau:} Gây đảo hướng ánh sáng tiếp tuyến do khác biệt góc xoay hệ tọa độ bề mặt; đã khắc phục bằng cách chuyển đổi bản đồ độ cao trước rồi mới tính lại độ dốc bề mặt trên hệ tọa độ của nhân vật đích.
+    \item \textbf{Tắt mô hình khử bóng khuếch tán IC-Light \cite{iclight} và mô hình tái tạo chi tiết HRN \cite{hrn} vì ràng buộc phi thương mại:} Dù các mô hình nghiên cứu này hỗ trợ khử bóng và tăng chi tiết nếp nhăn tốt ở giai đoạn khảo sát, cả hai đều có ràng buộc giấy phép phi thương mại (và IC-Light còn tiềm ẩn nguy cơ làm biến đổi nét chân dung gốc). Để bảo đảm sản phẩm có thể thương mại hóa, nhóm quyết định tắt hoàn toàn HRN và IC-Light khỏi luồng chính thức, chỉ giữ lại làm phương pháp tham khảo nghiên cứu và sử dụng trọn vẹn quy trình tự xây dựng.
     \item \textbf{Gắn trực tiếp mô hình tóc rời bằng khung xương mặc định hoặc dịch tọa độ thủ công:} Gây lệch tư thế gốc khiến tóc bị rơi xuống thấp hoặc chìm $4$--$5$ cm vào trong hộp sọ; đã chuẩn hóa hoàn toàn bằng công cụ định vị da đầu của MPFB v2.
 \end{enumerate}
 \end{notebox}
