@@ -75,13 +75,14 @@ Bảng \ref{tab:ai_pros_cons} tổng hợp trực diện ưu điểm và hạn c
     \centering
     \caption{So sánh ưu điểm và nhược điểm của Hybrid Bot và LLM Bot}
     \label{tab:ai_pros_cons}
-    \begin{tabularx}{\textwidth}{L{2.4cm} Y Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{2.4cm}|Y|Y|}
+        \hline
         \textbf{Dòng tác nhân} & \textbf{Ưu điểm nổi bật} & \textbf{Nhược điểm và đánh đổi} \\
-        \midrule
+        \hline
         \textbf{Hybrid Bot} & Sức mạnh chiến thuật cao nhờ kết hợp tìm kiếm và Residual NNUE (cấu hình Minimax cùng Residual NNUE thắng $51\%$ trước Minimax độ sâu 4 với khoảng $66$ mili-giây mỗi nước); có vòng lặp đồng huấn luyện đa thế hệ giúp tự cải thiện. & Quy trình huấn luyện nhiều tầng phức tạp; quyết định của mạng nơ-ron mang tính ``hộp đen'' khó giải thích bằng lời; thế hệ 8 tốn khoảng $200$ mili-giây mỗi nước ở độ sâu 4; ở thực nghiệm hiện tại phần mạng chính sách chưa vượt cấu hình Minimax cùng Residual NNUE thuần; cần huấn luyện lại khi đổi mạnh tham số cân bằng. \\
+        \hline
         \textbf{LLM Bot} & Tri thức đánh giá ở dạng tập luật biểu tượng minh bạch, đọc hiểu và kiểm chứng được; không tốn chi phí gọi API khi thi đấu vì luật đã biên dịch sẵn; rất nhanh (khoảng $13$ mili-giây mỗi nước) mà vẫn thắng $42\%$ trước Minimax độ sâu 4; dễ bật/tắt hoặc tinh chỉnh theo từng ngữ cảnh chiến thuật. & Quá trình tiến hóa luật phụ thuộc chất lượng gợi ý và chi phí gọi API ngoại tuyến; sức mạnh trần khó theo kịp mạng đánh giá học sâu trên các thế cờ phức tạp; mới có $4$ mô-đun được giữ lại; chưa có đối đầu trực tiếp với Hybrid Bot nên chưa thể kết luận hơn kém giữa hai hướng. \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 

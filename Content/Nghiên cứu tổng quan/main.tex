@@ -51,15 +51,18 @@ Trong giai đoạn phác thảo đề cương ban đầu, nhóm từng cân nh�
     \centering
     \caption{So sánh các giải pháp Networking cho game chiến thuật theo lượt trên Unity}
     \label{tab:net_solutions}
-    \begin{tabularx}{\textwidth}{L{2.5cm} Y Y Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{2.5cm}|Y|Y|Y|}
+        \hline
         \textbf{Tiêu chí} & \textbf{Unity NGO} & \textbf{Mirror Networking} & \textbf{Photon Fusion 2} \\
-        \midrule
+        \hline
         Hạ tầng kết nối & Cần tích hợp thêm Unity Lobby và Unity Relay để vượt NAT & Tự quản lý máy chủ hoặc dùng Transport trung gian (KCP/Telepathy) & Tích hợp sẵn Photon Cloud toàn cầu, chọn Region trực tiếp, không cần dựng server riêng \\
+        \hline
         Mức độ phụ thuộc GameObject & Mạnh (yêu cầu gắn \texttt{NetworkObject} và \texttt{NetworkBehaviour}) & Mạnh (yêu cầu \texttt{NetworkIdentity} trên các đối tượng đồng bộ) & Hỗ trợ cả \texttt{NetworkObject} lẫn truyền luồng byte thuần qua \texttt{SendReliableDataToPlayer} \\
+        \hline
         Phù hợp với Core tách đồ họa & Khó tách rời nếu dùng đồng bộ đối tượng & Cần tự xây lớp cầu nối & Rất cao nhờ cơ chế \texttt{ReliableData} gửi trực tiếp struct/byte payload \\
+        \hline
         Chi phí giai đoạn phát triển & Miễn phí theo hạn mức Unity Gaming Services & Mã nguồn mở miễn phí (tự tốn chi phí thuê VPS/Server) & Miễn phí gói phát triển lên đến 20 CCU trên Photon Cloud \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -75,16 +78,20 @@ Trong cộng đồng nghiên cứu và phát triển game chiến thuật, bài 
     \centering
     \caption{So sánh các hướng tiếp cận AI cờ chiến thuật phổ biến và mức độ phù hợp với đề tài}
     \label{tab:ai_approaches_compare}
-    \begin{tabularx}{\textwidth}{L{2.8cm} Y Y L{2.8cm}}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{2.8cm}|Y|Y|L{2.8cm}|}
+        \hline
         \textbf{Hướng tiếp cận} & \textbf{Cách triển khai phổ biến} & \textbf{Ưu và nhược điểm chính} & \textbf{Đánh giá cho dự án} \\
-        \midrule
+        \hline
         Tìm kiếm cây cổ điển + hàm đánh giá viết tay & Dùng Minimax Alpha-Beta với bảng điểm cố định (kiểu máy cờ truyền thống). & Rất nhanh, dễ kiểm soát; nhưng phụ thuộc lớn vào tri thức viết tay, khó tự phát hiện chiến thuật hợp thể phức tạp. & Dùng làm nền tảng tìm kiếm và đối thủ chuẩn. \\
+        \hline
         Học tăng cường thuần túy (mạng tự quyết định nước đi) & Huấn luyện mạng chính sách chọn nước đi trực tiếp bằng PPO tự đấu. & Phản hồi rất nhanh (vài chục mili-giây); nhưng tầm nhìn chỉ $1$ nước, dễ bỏ sót chuỗi ăn quân Surge nhiều bước. & Dùng làm mốc đối chứng truyền thống và làm thành phần gợi ý nước đi cho Hybrid Bot. \\
+        \hline
         MCTS kết hợp mạng nơ-ron sâu lớn & Phong cách AlphaZero / Leela Chess Zero dùng mạng tích chập sâu chấm từng nút. & Sức mạnh đỉnh cao ở cờ vua chuẩn; nhưng chi phí huấn luyện và suy luận nặng, vượt quá phần cứng máy cá nhân. & Không khả thi với giới hạn phần cứng đồ án. \\
+        \hline
         Gọi trực tiếp LLM chọn nước đi mỗi lượt & Đưa trạng thái bàn cờ thành văn bản hỏi Mô hình Ngôn ngữ Lớn qua API. & Có thể giải thích tự nhiên; nhưng độ trễ lớn (nhiều giây/nước), tốn chi phí gọi API liên tục và dễ chọn nước phạm luật. & Không dùng trực tiếp trong trận đấu. \\
+        \hline
         Tìm kiếm lai mạng nhẹ (NNUE) và tiến hóa luật LLM & Kết hợp tìm kiếm + học tăng cường + NNUE (kiểu Stockfish NNUE \cite{nnue}) và tiến hóa hàm đánh giá ngoại tuyến (kiểu FunSearch \cite{funsearch}). & Cân bằng tốt giữa sức mạnh, tốc độ phản hồi thời gian thực và khả năng giải thích tri thức chiến thuật. & \textbf{Lựa chọn cho Hybrid Bot và LLM Bot}. \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -131,7 +138,7 @@ Bài toán đặt ra là tái tạo một nhân vật 3D có sẵn khung xương
 \end{itemize}
 
 \subsubsection{Định hướng tự xây dựng sẵn sàng thương mại hóa của nhóm}
-Tham khảo ý tưởng ánh xạ hình thái và chiếu ngược bề mặt từ các nghiên cứu trên, nhóm tự xây dựng quy trình xử lý nội bộ trên bộ khung chuẩn giải phẫu \textbf{MPFB v2} (Blender) \cite{mpfb2}, trong đó bản phát hành \textbf{không gọi các mô hình phi thương mại (HRN, IC-Light)} khi chạy:
+Tham khảo ý tưởng ánh xạ hình thái và chiếu ngược bề mặt từ các nghiên cứu trên, nhóm tự xây dựng quy trình xử lý nội bộ trên bộ khung chuẩn giải phẫu \textbf{MPFB v2} (Blender) \cite{mpfb2} như sau:
 \begin{itemize}
     \item \textbf{Tái tạo hình học khuôn mặt 3D bằng mạng học sinh hai nhánh:} Sử dụng \textbf{MediaPipe} \cite{mediapipe} trích xuất 478 điểm mốc giải phẫu trên ảnh 2D. Một mạng nơ-ron hai nhánh gồm nhánh thị giác (mạng tích chập ResNet34 \cite{resnet} đọc ảnh khuôn mặt đã căn chỉnh) và nhánh hình học (đọc đặc trưng điểm mốc 2D) được huấn luyện để dự đoán trực tiếp $60$ thông số hình thái 3D của MPFB v2. Nhãn huấn luyện được sinh ngoại tuyến bằng phương pháp chưng cất tri thức từ một giáo viên 3D (HRN) trên tập ảnh chân dung thật FairFace \cite{fairface}; sau huấn luyện, mạng học sinh chạy độc lập hoàn toàn khỏi giáo viên.
     \item \textbf{Tái tạo kết cấu da và khử bóng đối xứng tự cài đặt:} Tham khảo ý tưởng chiếu tam giác ngược từ \textbf{MeInGame} \cite{meingame}, nhóm tự hiện thực quy trình chiếu ngược trên \textbf{PyTorch3D} \cite{pytorch3d} để chuyển màu da từ ảnh chân dung sang bản đồ bề mặt của nhân vật 3D, sau đó tự xây dựng bộ khử bóng theo tính đối xứng hai bên khuôn mặt trong không gian màu Lab (trung hòa vùng tối lệch hoặc tóc mái che một bên trong khi bảo toàn lỗ chân lông, lông mày và râu), kết hợp tách riêng vùng hốc mắt, lọc loại bỏ vệt răng trắng khi ảnh gốc đang cười và hòa trộn biên đa tầng làm mịn vùng chuyển tiếp gò má -- cổ.

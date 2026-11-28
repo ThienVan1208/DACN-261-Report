@@ -13,15 +13,18 @@ Cần lưu ý về độ tin cậy: với $100$ trận, khoảng tin cậy $95\%
     \footnotesize
     \caption{Kết quả đối kháng của các cấu hình AI trước Minimax thuần}
     \label{tab:ai_benchmark_full}
-    \begin{tabularx}{\textwidth}{L{4.6cm} L{2.8cm} C{0.9cm} C{1.1cm} C{1.0cm} C{1.1cm} Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{4.6cm}|L{2.8cm}|C{0.9cm}|C{1.1cm}|C{1.0cm}|C{1.1cm}|Y|}
+        \hline
         \textbf{Cấu hình thử nghiệm (P1)} & \textbf{Đối thủ chuẩn (P2)} & \textbf{Số trận} & \textbf{P1 thắng} & \textbf{Hòa} & \textbf{P2 thắng} & \textbf{Thời gian/nước (P1 vs P2)} \\
-        \midrule
+        \hline
         Mạng chính sách thuần, thế hệ 7 (không tìm kiếm) & Minimax độ sâu 3 & 100 & 9.00\% & 9.00\% & 82.00\% & 21 ms vs 11 ms \\
+        \hline
         Minimax kết hợp Residual NNUE, thế hệ 7 (độ sâu 4) & Minimax độ sâu 4 & 100 & \textbf{51.00\%} & 28.00\% & 21.00\% & 66 ms vs 4 ms \\
+        \hline
         Hybrid Bot, thế hệ 8 (chính sách + Residual NNUE, độ sâu 4) & Minimax độ sâu 4 & 100 & 45.00\% & 27.00\% & 28.00\% & 202 ms vs 11 ms \\
+        \hline
         LLM Bot, 4 mô-đun (độ sâu 4) & Minimax độ sâu 4 & 100 & 42.00\% & 34.00\% & 24.00\% & 13 ms vs 10 ms \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -41,14 +44,16 @@ Ghi chú: nhóm chưa đo mạng chính sách thuần ở độ sâu 4 và chưa
     \footnotesize
     \caption{Hybrid Bot thế hệ 8 đối đầu trực tiếp với Minimax kết hợp Residual NNUE thế hệ 8}
     \label{tab:ai_depth_compare}
-    \begin{tabularx}{\textwidth}{C{2.0cm} C{1.4cm} C{2.2cm} C{1.4cm} C{2.6cm} Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|C{2.0cm}|C{1.4cm}|C{2.2cm}|C{1.4cm}|C{2.6cm}|Y|}
+        \hline
         \textbf{Độ sâu} & \textbf{Số trận} & \textbf{Hybrid Bot thắng} & \textbf{Hòa} & \textbf{Residual NNUE thuần thắng} & \textbf{Thời gian/nước (Hybrid vs thuần)} \\
-        \midrule
+        \hline
         4 & 100 & 31.00\% & 26.00\% & 43.00\% & 206 ms vs 204 ms \\
+        \hline
         5 & 20 & 20.00\% & 35.00\% & 45.00\% & 377 ms vs 368 ms \\
+        \hline
         6 & 20 & 15.00\% & 45.00\% & 40.00\% & 1.90 s vs 1.70 s \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 

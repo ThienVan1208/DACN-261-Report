@@ -32,21 +32,30 @@ Mỗi gói tin đều mang một byte định danh đầu tiên (\texttt{Broadca
     \footnotesize
     \caption{Danh mục các bản tin nhị phân trong giao thức OnlineDataBroadcastNetwork}
     \label{tab:network_protocol}
-    \begin{tabularx}{\textwidth}{C{0.7cm} L{4.3cm} L{4.5cm} Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|C{0.7cm}|L{4.3cm}|L{4.5cm}|Y|}
+        \hline
         \textbf{ID} & \textbf{Mã bản tin (\texttt{byte[0]})} & \textbf{Lớp xử lý tương ứng} & \textbf{Cấu trúc payload và chức năng} \\
-        \midrule
+        \hline
         1 & \texttt{MSG\_SLOTS\_UPDATE} & \texttt{BroadcastSlotsUpdate...} & Danh sách \texttt{PlayerRef} của Trắng, Đen, Khán giả và trạng thái Ready từ Host. \\
+        \hline
         2 & \texttt{MSG\_START\_MATCH} & \textit{Dự phòng (chưa dùng)} & Định danh giữ chỗ trong enum; luồng hiện tại chuyển cảnh trực tiếp qua \texttt{MSG\_MATCH\_INIT}. \\
+        \hline
         3 & \texttt{MSG\_READY\_UPDATE} & \texttt{BroadcastReadyUpdate...} & Trạng thái sẵn sàng (\texttt{bool}) kèm dữ liệu đội hình \texttt{SquadData}. \\
+        \hline
         4 & \texttt{MSG\_MATCH\_INIT} & \texttt{BroadcastMatchInit...} & Hạt giống \texttt{MatchSeed}, đội hình Trắng/Đen, mảng vật cản và kích hoạt tải \texttt{PvPOnlScene}. \\
+        \hline
         5 & \texttt{MSG\_MOVE} & \texttt{BroadcastMoveDataHandler} & Gói cố định \textbf{4 bytes}: \texttt{[5, FromTile, ToTile, PlayerId]}. \\
+        \hline
         6 & \texttt{MSG\_SURRENDER} & \texttt{BroadcastSurrender...} & Gói cố định \textbf{2 bytes}: \texttt{[6, ResigningPlayerId]} (đã có tầng truyền/nhận, chờ nối nút UI và dispatch \texttt{GameOverEvent} ở Giai đoạn 2). \\
+        \hline
         7 & \texttt{MSG\_REQUEST\_SLOT\_CHANGE} & \texttt{BroadcastRequestSlotChange...} & Yêu cầu của Client chuyển sang vị trí Trắng, Đen hoặc Khán giả. \\
+        \hline
         8 & \texttt{MSG\_MAP\_PLAYER\_NAME} & \texttt{BroadcastMapPlayerName...} & Ánh xạ \texttt{PlayerRef.RawEncoded} sang chuỗi tên hiển thị người chơi. \\
+        \hline
         9 & \texttt{MSG\_SQUAD\_UPDATE} & \texttt{BroadcastSquadUpdate...} & Cập nhật đội hình (\texttt{SquadData}) của từng người chơi ngay trong Lobby. \\
+        \hline
         10 & \texttt{MSG\_REQUEST\_SLOT\_SYNC} & \texttt{BroadcastRequestSlotSync...} & Yêu cầu Host gửi lại trạng thái phòng hiện hành khi Client mới kết nối. \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -59,15 +68,18 @@ Mỗi gói tin đều mang một byte định danh đầu tiên (\texttt{Broadca
     \centering
     \caption{So sánh kiến trúc giữa Fusion Network Object và Fusion Reliable Data trong Convergence Chess}
     \label{tab:fusion_compare}
-    \begin{tabularx}{\textwidth}{L{2.8cm} Y Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{2.8cm}|Y|Y|}
+        \hline
         \textbf{Tiêu chí đánh giá} & \textbf{Fusion Network Object (RPC / State Sync)} & \textbf{Fusion Reliable Data (Custom Binary Stream)} \\
-        \midrule
+        \hline
         Phương thức đồng bộ & Đồng bộ trạng thái từng \texttt{GameObject} liên tục theo tick thời gian thực. & Chỉ truyền nhận gói tin nhị phân gọn nhẹ tại thời điểm phát sinh sự kiện (chọn slot, đi cờ). \\
+        \hline
         Băng thông tiêu thụ & Cao; mỗi gói tin phải kèm header định tuyến RPC và định danh \texttt{NetworkObject} để tới đúng đối tượng đích. & Rất thấp; chỉ chứa đúng dữ liệu cần thiết (ví dụ 4 bytes cho một nước đi hoàn chỉnh). \\
+        \hline
         Mức độ phụ thuộc kiến trúc (Coupling) & Cao; buộc phải gắn \texttt{NetworkObject}/\texttt{NetworkBehaviour} lên toàn bộ quân cờ và phá vỡ cấu trúc tách biệt Core/View. & Thấp; các quân cờ và \texttt{GameState} hoàn toàn tách rời mạng, chỉ nối biên với Core qua giao diện \texttt{IMoveInputProvider}. \\
+        \hline
         Đặc tính độ trễ và ứng dụng phù hợp & Tốc độ truyền phản hồi nhanh; tối ưu cho game hành động thời gian thực (FPS, RTS). & Độ trễ RTT lớn hơn do cơ chế đảm bảo tin cậy phân mảnh của Fusion; rất phù hợp với game chiến thuật theo lượt. \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -77,13 +89,14 @@ Kết quả đo đạc thực nghiệm qua 10 lần thăm dò (Hình \ref{fig:be
     \centering
     \caption{Tổng hợp kết quả đo benchmark mạng qua 10 lần probe giữa hai phương pháp trên Photon Fusion}
     \label{tab:fusion_bench}
-    \begin{tabular}{L{4.5cm} C{4.2cm} C{4.2cm}}
-        \toprule
+    \begin{tabular}{|L{4.5cm}|C{4.2cm}|C{4.2cm}|}
+        \hline
         \textbf{Chỉ số đo lường (10 probes)} & \textbf{Fusion Network Object} & \textbf{Fusion Reliable Data} \\
-        \midrule
+        \hline
         Tổng băng thông tiêu thụ & 320 bytes & \textbf{70 bytes} (-78.1\%) \\
+        \hline
         Độ trễ trung bình (Average RTT) & \textbf{194.6 ms} & 728.8 ms \\
-        \bottomrule
+        \hline
     \end{tabular}
 \end{table}
 
