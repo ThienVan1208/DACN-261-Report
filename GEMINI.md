@@ -14,6 +14,9 @@
 ## Phạm vi tác nhân AI (Agent bot) trong báo cáo
 
 - Về phần tác nhân AI (Agent bot), báo cáo chỉ sử dụng hai hướng tác nhân chính là **Hybrid Bot** và **LLM Bot** (không trình bày dàn trải các lớp bot nội bộ hay tác nhân thử nghiệm rời rạc ngoài hai hướng này).
+- Không trình bày Behavioral Cloning, DAgger, NeuralMinimax và NNUE chuẩn; về mạng đánh giá nhanh chỉ dùng **Residual NNUE**.
+- Phần thực nghiệm AI trình bày theo khung nghiên cứu cắt bỏ từng thành phần (mạng chính sách thuần, Minimax, Minimax kết hợp Residual NNUE, Hybrid Bot, LLM Bot), trong đó mạng tự quyết định nước đi và Minimax thuần là các mốc đối chứng truyền thống.
+- Số liệu thực nghiệm phải lấy từ kết quả đo thực tế, ghi rõ số trận và khoảng tin cậy; không khẳng định vượt trội khi số liệu không chứng minh được (ví dụ không nêu LLM Bot hay Hybrid Bot mạnh hơn nhau khi chưa đối đầu trực tiếp).
 
 ## Phạm vi phụ trách và vùng bất khả xâm phạm (Multiplayer)
 
@@ -22,6 +25,7 @@
 
 ## Định hướng thương mại hóa cho phân hệ Smart Customization (SC)
 
-- Mục tiêu của dự án là hướng tới sản phẩm có thể thương mại hóa, do đó trong phân hệ **Smart Customization**, hệ thống chính thức **tắt và không sử dụng các mô hình/thành phần phi thương mại** (như **HRN**, **IC-Light**).
-- Luồng sản phẩm chính thức chỉ sử dụng quy trình Smart Customization do nhóm tự xây dựng (tái tạo hình học khuôn mặt 25 thông số độc lập, chiếu ngược kết cấu và khử bóng đối xứng tự cài đặt, vật liệu mắt và hệ thống 6 kiểu tóc 3D).
+- Mục tiêu của dự án là hướng tới sản phẩm có thể thương mại hóa, do đó ở bản phát hành (khi chạy thực tế) phân hệ **Smart Customization** **không sử dụng các mô hình/thành phần phi thương mại**: **IC-Light** bị loại bỏ hoàn toàn; **HRN** không được gọi khi chạy.
+- **HRN** chỉ được dùng ngoại tuyến làm giáo viên sinh nhãn huấn luyện cho mạng học sinh ở giai đoạn nghiên cứu. Báo cáo phải trình bày minh bạch điều này, kèm rủi ro pháp lý (dùng đầu ra của mô hình phi thương mại để huấn luyện) và kế hoạch thay bằng nguồn dữ liệu sạch bản quyền ở Giai đoạn 2; tuyệt đối không viết như thể quy trình không hề phụ thuộc HRN.
+- Luồng sản phẩm chính thức chỉ sử dụng quy trình Smart Customization do nhóm tự xây dựng (mạng học sinh hai nhánh dự đoán 60 thông số hình thái 3D, chiếu ngược kết cấu và khử bóng đối xứng tự cài đặt, vật liệu mắt và hệ thống 14 kiểu tóc 3D dùng chung cho hai giới).
 - Các công trình nghiên cứu như **MeInGame**, **HRN**, **IC-Light** chỉ được trình bày ở vai trò **phương pháp tham khảo ngoài thực tế / nghiên cứu liên quan** hoặc các phương án đã khảo sát và loại bỏ vì ràng buộc bản quyền phi thương mại.

@@ -5,7 +5,7 @@ Từ phân tích bài toán đồng bộ hiển thị ở Mục 3.6, tầng hi�
 \subsubsection{Thiết kế hàng đợi diễn hoạt bất đồng bộ}
 Để chuỗi hệ quả nhiều bước trong một nước đi (như di chuyển, hợp thể, vỡ khiên hộ mệnh, tiêu diệt quân và cập nhật AP) diễn ra đúng trình tự nhân quả mà không làm đóng băng lõi xử lý, tầng hiển thị sử dụng cơ chế hàng đợi trực quan gồm hai lớp:
 \begin{itemize}
-    \item \textbf{Bộ điều phối hàng đợi sự kiện:} Tiếp nhận từng đợt sự kiện từ lõi trò chơi và cho phát tuần tự theo cơ chế bất đồng bộ (kèm cơ chế tự hủy an toàn khi người chơi thoát trận hoặc chuyển màn chơi). Giai đoạn 1 đã hoàn thiện diễn hoạt cho $8$ nhóm sự kiện trọng tâm: khởi tạo trận đấu, di chuyển quân, vỡ khiên hộ mệnh, tiêu diệt quân, hợp thể quân, tiêu hao AP, chuyển lượt và kết thúc trận (hiệu ứng riêng cho phong cấp Tốt và kích hoạt đòn bồi Surge được quy hoạch bổ sung ở Giai đoạn 2).
+    \item \textbf{Bộ điều phối hàng đợi sự kiện:} Tiếp nhận từng đợt sự kiện từ lõi trò chơi và cho phát tuần tự theo cơ chế bất đồng bộ (kèm cơ chế tự hủy an toàn khi người chơi thoát trận hoặc chuyển màn chơi). Giai đoạn 1 đã hoàn thiện diễn hoạt cho $10$ loại sự kiện gồm: khởi tạo trận đấu, di chuyển quân, vỡ khiên hộ mệnh, tiêu diệt quân, hợp thể quân, bỏ lượt, phong cấp Tốt (kèm hiệu ứng riêng), tiêu hao AP, chuyển lượt và kết thúc trận đấu; riêng sự kiện kích hoạt đòn bồi Surge chưa có hiệu ứng riêng và được quy hoạch bổ sung ở Giai đoạn 2.
     \item \textbf{Chuỗi bước diễn hoạt độc lập:} Cho phép ghép nối tuần tự hoặc chạy song song từng đơn vị hiệu ứng riêng lẻ như di chuyển quân kèm vệt bóng mờ, lao vào tấn công tạo phản hồi va chạm, phóng cận cảnh góc quay khi tiêu diệt quân, rung góc quay và xoay bàn cờ $180^\circ$ trong chế độ đấu hai người trên cùng máy.
 \end{itemize}
 
@@ -30,7 +30,7 @@ Toàn bộ giao diện trò chơi được thiết lập tự co giãn theo đ�
     \item \textbf{Quản lý màn hình và hộp thoại tập trung:} Toàn bộ màn hình chính và hộp thoại bật lên được quản lý qua một bảng ánh xạ duy nhất lập chỉ mục ngay khi khởi động, giúp bật/tắt bất đồng bộ các màn hình và xếp chồng hộp thoại gọn gàng mà không chồng chéo giao diện.
     \item \textbf{Màn hình xây dựng đội hình:} Gồm bảng thẻ quân cờ, lưới $12$ ô sân nhà và hình bóng kéo thả trực quan; tự động đọc hạn mức ngân sách $12$ điểm, khóa các quân vượt ngân sách hoặc đang khóa mua trước trận và tự động phản chiếu đúng hướng bàn cờ cho cả hai phe.
     \item \textbf{Màn hình sảnh chờ trực tuyến (\texttt{UIPopupLobby}):} Cho phép chọn khu vực máy chủ Photon, tạo hoặc vào phòng theo mã, hiển thị danh sách người chơi ở 3 nhóm Trắng -- Đen -- Khán giả, đổi vị trí và bật trạng thái sẵn sàng.
-    \item \textbf{Bảng thông số trong trận:} Hiển thị thanh điểm hành động hiện tại cùng lượng điểm dự kiến hồi ở lượt kế tiếp cho cả hai phe, nút bỏ lượt kèm số lượt bỏ còn lại, thẻ xem nhanh kỹ năng của quân cờ đang chọn và danh sách quân cờ đã bị tiêu diệt. Bối cảnh sàn đấu đồng thời được hoàn thiện ánh sáng, bầu trời 3D và hiệu ứng chuyển cảnh mờ.
+    \item \textbf{Bảng thông số trong trận:} Hiển thị thanh điểm hành động hiện tại cùng lượng điểm dự kiến hồi ở lượt kế tiếp cho cả hai phe, nút bỏ lượt kèm số lượt bỏ còn lại, thẻ xem nhanh kỹ năng của quân cờ đang chọn, danh sách lịch sử nước đi cho phép xem lại thế cờ trước đó, danh sách quân cờ đã bị tiêu diệt và bảng thông báo khi kết thúc trận. Bối cảnh sàn đấu đồng thời được hoàn thiện ánh sáng, bầu trời 3D và hiệu ứng chuyển cảnh mờ.
 \end{itemize}
 
 \subsubsection{Đánh giá ưu và nhược điểm của tầng hiển thị hướng sự kiện}

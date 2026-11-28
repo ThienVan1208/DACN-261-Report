@@ -1,53 +1,64 @@
 \section{Kết quả thực nghiệm và đánh giá giai đoạn 1}
 
-Đúng với tính chất của Đồ án chuyên ngành (Giai đoạn 1), thay vì chỉ trình bày giao diện tĩnh, nhóm tập trung chạy các bộ thực nghiệm định lượng tự động trên hệ thống thực tế để kiểm chứng tính khả thi kỹ thuật của ba trụ cột cốt lõi: (i) sức mạnh và tốc độ phản hồi của hệ thống AI (tập trung vào quá trình xây dựng các thành phần nền tảng cho \textbf{Hybrid Bot} và kiểm định \textbf{LLM Bot}); (ii) hiệu quả băng thông và độ trễ của kiến trúc Multiplayer; và (iii) độ chính xác tái tạo khuôn mặt cùng tóc 3D của Smart Customization.
+Đúng với tính chất của Đồ án chuyên ngành (Giai đoạn 1), thay vì chỉ trình bày giao diện tĩnh, nhóm tập trung chạy các bộ thực nghiệm định lượng tự động trên hệ thống thực tế để kiểm chứng tính khả thi kỹ thuật của ba trụ cột cốt lõi: (i) sức mạnh và tốc độ phản hồi của hệ thống AI, được đánh giá theo hướng cắt bỏ từng thành phần so với các mốc truyền thống; (ii) hiệu quả băng thông và độ trễ của kiến trúc Multiplayer; và (iii) độ chính xác tái tạo khuôn mặt cùng tóc 3D của Smart Customization.
 
 \subsection{Thực nghiệm đối kháng và đánh giá hệ thống AI}
-\subsubsection{Thiết lập đo đạc và kết quả định lượng}
-Toàn bộ phép đo đối kháng AI được thực thi tự động ở chế độ mô phỏng không hiển thị đồ họa nhằm bảo đảm tốc độ và tính khách quan. Mỗi cặp đấu chạy từ $100$ đến $1{,}000$ ván đầy đủ, ghi nhận tự động tỷ lệ thắng, hòa, thua và thời gian suy nghĩ trung bình mỗi nước đi. Bảng \ref{tab:ai_benchmark_full} và Hình \ref{fig:chart_ai_bench} tổng hợp kết quả thực nghiệm qua các mốc phát triển thành phần tạo nên \textbf{Hybrid Bot} (từ học bắt chước, học tăng cường PPO đến kết hợp tìm kiếm Minimax và mạng đánh giá NNUE/Residual NNUE).
+\subsubsection{Phương pháp đánh giá}
+Toàn bộ phép đo đối kháng AI được thực thi tự động ở chế độ mô phỏng không hiển thị đồ họa nhằm bảo đảm tốc độ và tính khách quan, ghi nhận tỷ lệ thắng, hòa, thua và thời gian suy nghĩ trung bình mỗi nước đi. Đối thủ chuẩn là \textbf{Minimax thuần} (không dùng mạng nơ-ron) ở các độ sâu khác nhau. Để làm rõ đóng góp của từng thành phần, nhóm đối chiếu bốn cấu hình với hai mốc truyền thống: mạng chính sách thuần (mạng tự quyết định nước đi, không tìm kiếm) và Minimax thuần.
+
+Cần lưu ý về độ tin cậy: với $100$ trận, khoảng tin cậy $95\%$ của một tỷ lệ thắng xấp xỉ $\pm 10$ điểm phần trăm, còn với $20$ trận khoảng này xấp xỉ $\pm 22$ điểm; do đó chênh lệch vài điểm phần trăm giữa hai cấu hình không có ý nghĩa thống kê. Thời gian mỗi nước đi được ghi nhận ở các đợt chạy khác nhau nên chỉ mang tính tham khảo.
 
 \begin{table}[H]
     \centering
     \footnotesize
-    \caption{Tổng hợp kết quả thực nghiệm đối kháng tự động giữa các mốc phát triển AI của Convergence Chess}
+    \caption{Kết quả đối kháng của các cấu hình AI trước Minimax thuần}
     \label{tab:ai_benchmark_full}
-    \begin{tabularx}{\textwidth}{L{4.1cm} L{2.8cm} C{0.9cm} C{1.1cm} C{1.0cm} C{1.1cm} Y}
+    \begin{tabularx}{\textwidth}{L{4.6cm} L{2.8cm} C{0.9cm} C{1.1cm} C{1.0cm} C{1.1cm} Y}
         \toprule
-        \textbf{Mô hình thử nghiệm (P1)} & \textbf{Đối thủ chuẩn (P2)} & \textbf{Số trận} & \textbf{P1 thắng} & \textbf{Hòa} & \textbf{P2 thắng} & \textbf{Thời gian/nước (P1 vs P2)} \\
+        \textbf{Cấu hình thử nghiệm (P1)} & \textbf{Đối thủ chuẩn (P2)} & \textbf{Số trận} & \textbf{P1 thắng} & \textbf{Hòa} & \textbf{P2 thắng} & \textbf{Thời gian/nước (P1 vs P2)} \\
         \midrule
-        Học bắt chước cơ sở & Minimax độ sâu 2 & 100 & 1.00\% & 3.00\% & 96.00\% & -- \\
-        Học bắt chước cải tiến & Minimax độ sâu 2 & 100 & 12.00\% & 11.00\% & 77.00\% & -- \\
-        Học bắt chước cải tiến & Minimax độ sâu 4 & 100 & 18.00\% & 4.00\% & 78.00\% & -- \\
-        PPO tự đấu (27 triệu bước) & Học bắt chước cơ sở & 100 & 87.00\% & 5.00\% & 8.00\% & -- \\
-        PPO tự đấu (27 triệu bước) & Minimax độ sâu 2 & 100 & 15.00\% & 6.00\% & 79.00\% & -- \\
-        PPO có hàm giá trị & Minimax độ sâu 2 & 1,000 & 23.90\% & 18.70\% & 57.40\% & 16 ms vs 11 ms \\
-        PPO định hình phần thưởng & Minimax độ sâu 2 & 400 & 47.00\% & 26.25\% & 26.75\% & -- \\
-        PPO thế hệ mới & PPO thế hệ trước & 500 & 44.80\% & 27.20\% & 28.00\% & 21 ms vs 21 ms \\
-        Tìm kiếm lai mạng chính sách & Minimax độ sâu 2 & 100 & \textbf{52.00\%} & 36.00\% & 12.00\% & 33 ms vs 6 ms \\
-        Tìm kiếm lai mạng chính sách & Minimax độ sâu 3 & 100 & \textbf{51.00\%} & 24.00\% & 25.00\% & 41 ms vs 10 ms \\
-        Tìm kiếm lai mạng chính sách & Minimax độ sâu 4 & 100 & 37.00\% & 30.00\% & 33.00\% & 38 ms vs 28 ms \\
-        NNUE chuẩn (thế hệ 7, độ sâu 4) & Minimax độ sâu 4 & 100 & 23.00\% & 49.00\% & 28.00\% & 238 ms vs 21 ms \\
-        Hybrid Bot thế hệ 7 (NNUE + PPO) & Hybrid Bot thế hệ 3 & 100 & 33.00\% & 47.00\% & 20.00\% & 210 ms vs 218 ms \\
-        \textbf{Residual NNUE (thế hệ 7, độ sâu 4)} & \textbf{Minimax độ sâu 4} & \textbf{100} & \textbf{51.00\%} & \textbf{28.00\%} & \textbf{21.00\%} & \textbf{66 ms vs 4 ms} \\
-        Minimax độ sâu 1 & Minimax độ sâu 6 & 100 & 12.00\% & 10.00\% & 78.00\% & 6 ms vs 536 ms \\
+        Mạng chính sách thuần, thế hệ 7 (không tìm kiếm) & Minimax độ sâu 3 & 100 & 9.00\% & 9.00\% & 82.00\% & 21 ms vs 11 ms \\
+        Minimax kết hợp Residual NNUE, thế hệ 7 (độ sâu 4) & Minimax độ sâu 4 & 100 & \textbf{51.00\%} & 28.00\% & 21.00\% & 66 ms vs 4 ms \\
+        Hybrid Bot, thế hệ 8 (chính sách + Residual NNUE, độ sâu 4) & Minimax độ sâu 4 & 100 & 45.00\% & 27.00\% & 28.00\% & 202 ms vs 11 ms \\
+        LLM Bot, 4 mô-đun (độ sâu 4) & Minimax độ sâu 4 & 100 & 42.00\% & 34.00\% & 24.00\% & 13 ms vs 10 ms \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
+Ghi chú: nhóm chưa đo mạng chính sách thuần ở độ sâu 4 và chưa tổ chức đối đầu trực tiếp giữa LLM Bot và Hybrid Bot; hai phép đo này nằm trong kế hoạch Giai đoạn 2.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Diagrams/images/chart_ai_benchmark.png}
-    \caption{Biểu đồ tiến triển tỷ lệ thắng của các mốc phát triển AI trước Minimax độ sâu 2 và độ sâu 4}
+    \includegraphics[width=\textwidth]{Diagrams/images/chart_ai_ablation.png}
+    \caption{So sánh các cấu hình AI trước Minimax thuần và đối đầu trực tiếp giữa Hybrid Bot với Residual NNUE thuần theo độ sâu}
     \label{fig:chart_ai_bench}
 \end{figure}
 
-\subsubsection{Bàn luận ý nghĩa thực nghiệm đối với hai hướng AI}
-Từ kết quả định lượng tại Bảng \ref{tab:ai_benchmark_full} và Hình \ref{fig:chart_ai_bench}, nhóm rút ra bốn nhận định làm cơ sở định hình \textbf{Hybrid Bot} và \textbf{LLM Bot} sang Giai đoạn 2:
+Để kiểm tra riêng phần đóng góp của mạng chính sách, nhóm cho Hybrid Bot thế hệ 8 đấu trực tiếp với cấu hình chỉ gồm Minimax và Residual NNUE thế hệ 8 ở cùng độ sâu (Bảng \ref{tab:ai_depth_compare}).
+
+\begin{table}[H]
+    \centering
+    \footnotesize
+    \caption{Hybrid Bot thế hệ 8 đối đầu trực tiếp với Minimax kết hợp Residual NNUE thế hệ 8}
+    \label{tab:ai_depth_compare}
+    \begin{tabularx}{\textwidth}{C{2.0cm} C{1.4cm} C{2.2cm} C{1.4cm} C{2.6cm} Y}
+        \toprule
+        \textbf{Độ sâu} & \textbf{Số trận} & \textbf{Hybrid Bot thắng} & \textbf{Hòa} & \textbf{Residual NNUE thuần thắng} & \textbf{Thời gian/nước (Hybrid vs thuần)} \\
+        \midrule
+        4 & 100 & 31.00\% & 26.00\% & 43.00\% & 206 ms vs 204 ms \\
+        5 & 20 & 20.00\% & 35.00\% & 45.00\% & 377 ms vs 368 ms \\
+        6 & 20 & 15.00\% & 45.00\% & 40.00\% & 1.90 s vs 1.70 s \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsubsection{Nhận xét}
+Từ Bảng \ref{tab:ai_benchmark_full}, Bảng \ref{tab:ai_depth_compare} và Hình \ref{fig:chart_ai_bench}, nhóm rút ra bốn nhận xét:
 \begin{enumerate}
-    \item \textbf{Giới hạn của mạng chính sách thuần túy không có tìm kiếm cây:} Dù mô hình học tăng cường PPO tự đấu áp đảo bản học bắt chước khởi tạo ($87.0\%$ so với $8.0\%$) và phản hồi rất nhanh (khoảng $16$--$21$ mili-giây mỗi nước), mạng chỉ nhìn một nước đi vẫn dễ mắc sai lầm chiến thuật ngắn hạn trước cây tìm kiếm Minimax do luật hợp thể và Surge tạo ra chuỗi ăn quân nhiều bước. Khi bổ sung định hình phần thưởng, tỷ lệ thắng trước Minimax độ sâu 2 tăng mạnh từ $15.0\%$ lên $47.0\%$ (vượt xa tỷ lệ thua $26.75\%$).
-    \item \textbf{Hiệu quả rõ rệt của kiến trúc lai tìm kiếm và học sâu:} Khi dùng xác suất ưu tiên nước đi từ mạng chính sách dẫn đường cho cây tìm kiếm Minimax, tác nhân áp đảo cả Minimax độ sâu 2 ($52\%$ thắng -- $12\%$ thua) lẫn độ sâu 3 ($51\%$ thắng -- $25\%$ thua) và nhỉnh hơn độ sâu 4 ($37\%$ -- $33\%$) chỉ với thời gian suy nghĩ $38$ mili-giây mỗi nước.
-    \item \textbf{Bước đột phá của mạng đánh giá NNUE dạng dư trong Hybrid Bot:} So với mạng NNUE chuẩn cùng thế hệ dữ liệu thứ 7 ($23\%$ thắng, $238$ mili-giây mỗi nước), biến thể \textbf{NNUE dạng dư (Residual NNUE)} nâng tỷ lệ thắng trước Minimax độ sâu 4 lên tới \textbf{51.00\%} (chỉ thua $21.00\%$) đồng thời giảm thời gian suy nghĩ xuống còn \textbf{66 mili-giây mỗi nước} (nhanh hơn $3.6$ lần nhờ thứ tự đánh giá nút lá chính xác giúp cắt tỉa Alpha-Beta hiệu quả hơn).
-    \item \textbf{Hiệu quả vòng lặp đồng huấn luyện đa thế hệ và kiểm định LLM Bot:} Phiên bản \textbf{Hybrid Bot thế hệ 7} đánh bại thế hệ 3 với tỷ số $33\%$ thắng -- $20\%$ thua ($47\%$ hòa), khẳng định hiệu quả của cơ chế tự sinh dữ liệu qua nhiều thế hệ. Song song đó, quy trình tiến hóa \textbf{LLM Bot} đã sàng lọc thành công $5$ mô-đun quy tắc chiến thuật vượt qua đủ $4$ cổng kiểm định tự động về tính an toàn, tốc độ, tính đối xứng và hiệu quả đối kháng cặp.
+    \item \textbf{Mạng tự quyết định nước đi không đủ mạnh khi đứng một mình:} Mạng chính sách thuần chỉ thắng $9.00\%$ và thua $82.00\%$ trước Minimax độ sâu 3 dù phản hồi nhanh (khoảng $21$ mili-giây). Nguyên nhân phù hợp với phân tích ở Chương 3: mạng chỉ nhìn một nước đi nên dễ mắc sai lầm trước các chuỗi ăn quân nhiều bước do luật hợp thể và Surge tạo ra. Kết quả này khẳng định cần có tìm kiếm cây đi kèm.
+    \item \textbf{Đóng góp rõ rệt nhất là Residual NNUE kết hợp tìm kiếm:} Cấu hình Minimax cùng Residual NNUE thế hệ 7 thắng $51.00\%$ và chỉ thua $21.00\%$ trước Minimax độ sâu 4 với khoảng $66$ mili-giây mỗi nước. Ở các đợt đo riêng, Residual NNUE thế hệ 8 thắng thế hệ 7 với tỷ số $43\%$ so với $33\%$ ($100$ trận, độ sâu 4, hòa $24\%$), cho thấy dữ liệu nhiều thế hệ giúp mạng đánh giá tiếp tục cải thiện.
+    \item \textbf{Mạng chính sách trong Hybrid Bot hiện chưa chứng minh được lợi ích:} Hybrid Bot thế hệ 8 thắng $45.00\%$ trước Minimax độ sâu 4 nhưng khi đấu trực tiếp với cấu hình Minimax cùng Residual NNUE thuần ở cùng độ sâu và thời gian suy nghĩ gần bằng nhau, Hybrid Bot thua ở cả độ sâu 4, 5 và 6 (Bảng \ref{tab:ai_depth_compare}; hai độ sâu sau chỉ có $20$ trận nên chưa đủ chắc chắn). Nhóm ghi nhận đây là kết quả thực nghiệm trung thực và là hướng cải thiện trọng tâm của Hybrid Bot ở Giai đoạn 2, ví dụ điều chỉnh cách mạng chính sách giảm độ sâu thăm dò.
+    \item \textbf{LLM Bot cho hiệu quả cao trên mỗi đơn vị thời gian:} LLM Bot với $4$ mô-đun thắng $42.00\%$ và thua $24.00\%$ trước Minimax độ sâu 4 chỉ với khoảng $13$ mili-giây mỗi nước, trong khi tri thức đánh giá nằm ở dạng luật đọc hiểu được. Chênh lệch $3$ điểm phần trăm so với Hybrid Bot ($45\%$) nằm trong sai số của $100$ trận nên không thể kết luận hơn kém; việc so sánh này cần đối đầu trực tiếp giữa hai hướng ở Giai đoạn 2.
 \end{enumerate}
 
 \subsection{Đánh giá thực nghiệm hệ thống Multiplayer (Photon Fusion)}
@@ -61,11 +72,11 @@ Hình \ref{fig:chart_net_bench} trực quan hóa sự đánh đổi giữa băng
 \end{figure}
 
 \subsection{Đánh giá thực nghiệm phân hệ tùy biến nhân vật 3D (Smart Customization)}
-Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nhớ đồ họa 6 GB), quy trình tùy biến nhân vật 3D tự xây dựng (đã tắt hoàn toàn các mô hình phi thương mại HRN và IC-Light để bảo đảm khả năng thương mại hóa) đã đạt được các kết quả kiểm chứng thực tế sau:
+Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nhớ đồ họa 6 GB), quy trình tùy biến nhân vật 3D tự xây dựng (bản phát hành không gọi HRN và IC-Light) đã đạt được các kết quả kiểm chứng thực tế sau:
 \begin{itemize}
-    \item \textbf{Độ chính xác hình học khuôn mặt:} Sau khi tinh gọn về $25$ thông số hình thái độc lập và kiểm soát góc chụp khi sinh $24{,}000$ mẫu tổng hợp ($12{,}000$ Nam và $12{,}000$ Nữ), sai số tuyệt đối trung bình trên tập kiểm định sau $80$ chu kỳ huấn luyện giảm từ $0.0749$ ở phiên bản đầu xuống còn \textbf{0.0621} đối với mẫu Nam và \textbf{0.0616} đối với mẫu Nữ.
-    \item \textbf{Chất lượng bề mặt da, khử bóng đối xứng và thời gian xử lý:} Kết hợp chiếu ngược tam giác tự cài đặt trên PyTorch3D (tham khảo ý tưởng MeInGame \cite{meingame}), khử bóng đối xứng hai bên trong không gian màu Lab, tách vùng hốc mắt, lọc bỏ vệt men răng và hòa trộn biên đa tầng (vùng chuyển tiếp $64$ điểm ảnh) giúp loại bỏ viền ghép gò má -- cổ và tránh hiện tượng bề mặt da bị bệt mờ như tượng sáp. Tổng thời gian xử lý toàn trình cho một ảnh chân dung đạt khoảng \textbf{5.9 giây} trên máy tính cục bộ.
-    \item \textbf{Hiệu quả hiển thị 3D trong Unity 6:} Hệ thống $6$ kiểu tóc 3D khớp chính xác vào da đầu và vật liệu mắt tạo đốm sáng tự nhiên trên giác mạc hiển thị ổn định trong trò chơi như minh họa tại Hình \ref{fig:sc_results}.
+    \item \textbf{Độ chính xác hình học khuôn mặt:} Mạng học sinh hai nhánh dự đoán $60$ thông số hình thái 3D, huấn luyện $40$ chu kỳ trên $5{,}000$ ảnh chân dung thật (FairFace), đạt sai số hình học 3D trên tập kiểm định khoảng \textbf{1.52 mm} đối với mẫu Nam và \textbf{1.39 mm} đối với mẫu Nữ. Cần lưu ý đây là sai số so với nhãn của giáo viên HRN chứ chưa phải so với số liệu thật độc lập.
+    \item \textbf{Chất lượng bề mặt da, khử bóng đối xứng và thời gian xử lý:} Kết hợp chiếu ngược tam giác tự cài đặt trên PyTorch3D (tham khảo ý tưởng MeInGame \cite{meingame}), khử bóng đối xứng hai bên trong không gian màu Lab, tách vùng hốc mắt, lọc bỏ vệt men răng và hòa trộn biên đa tầng (vùng chuyển tiếp $64$ điểm ảnh) giúp loại bỏ viền ghép gò má -- cổ và tránh hiện tượng bề mặt da bị bệt mờ như tượng sáp. Tổng thời gian xử lý toàn trình cho một ảnh chân dung khoảng \textbf{5 giây} trên máy tính cục bộ (lần đo gần nhất $4.999$ mili-giây).
+    \item \textbf{Hiệu quả hiển thị 3D trong Unity 6:} Hệ thống $14$ kiểu tóc 3D cùng chế độ không tóc và vật liệu mắt tạo đốm sáng tự nhiên trên giác mạc hiển thị ổn định trong trò chơi như minh họa tại Hình \ref{fig:sc_results}.
 \end{itemize}
 
 \begin{figure}[H]
@@ -73,7 +84,7 @@ Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nh�
     \begin{subfigure}[b]{0.31\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Content/Thực nghiệm và đánh giá/images/sc_hair_male_short01.png}
-        \caption{Mẫu Nam kèm tóc ngắn kiểu 1}
+        \caption{Mẫu Nam kèm tóc ngắn}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.31\textwidth}
@@ -87,22 +98,24 @@ Trên máy trạm có cạc đồ họa NVIDIA GeForce RTX 4050 Laptop (bộ nh�
         \includegraphics[width=\textwidth]{Content/Thực nghiệm và đánh giá/images/sc_hair_test_obama.png}
         \caption{Kiểm chứng tái tạo từ ảnh chân dung thực tế}
     \end{subfigure}
-    \caption{Kết quả thực nghiệm tái tạo khuôn mặt, khử bóng da, vật liệu mắt và gắn tóc 3D trong Unity 6}
+    \caption{Kết quả thực nghiệm tái tạo khuôn mặt, khử bóng da, vật liệu mắt và gắn tóc 3D trong Unity 6 (ảnh minh họa từ phiên bản trước khi nâng cấp mạng hình học)}
     \label{fig:sc_results}
 \end{figure}
 
 \begin{notebox}{Các hướng tiếp cận đã khảo sát và loại bỏ khỏi luồng sản phẩm}
 Một giá trị thực nghiệm quan trọng của giai đoạn Đồ án chuyên ngành là sớm phát hiện và loại bỏ các phương án kém hiệu quả hoặc không phù hợp mục tiêu thương mại hóa để tránh lãng phí nguồn lực ở Giai đoạn 2:
 \begin{enumerate}
-    \item \textbf{Dùng trực tiếp chiều sâu ước lượng từ MediaPipe:} Gây sai số trung bình bình phương tới $0.1415$ theo khoảng cách hai mắt (gấp $2.5$ lần sai số chiều ngang), buộc phải chuyển sang phương pháp sinh dữ liệu phối cảnh tổng hợp trực tiếp từ mô hình 3D gốc.
+    \item \textbf{Dùng trực tiếp chiều sâu ước lượng từ MediaPipe:} Gây sai số trung bình bình phương tới $0.1415$ theo khoảng cách hai mắt (gấp $2.5$ lần sai số chiều ngang), nên không dùng chiều sâu này làm đầu vào hình học.
+    \item \textbf{Mạng hình học thế hệ đầu ($25$ thông số, huấn luyện từ ảnh tổng hợp):} Đã được thay bằng mạng hai nhánh chưng cất từ ảnh chân dung thật để mở rộng lên $60$ thông số 3D và bám sát phân bố khuôn mặt thực.
     \item \textbf{Huấn luyện mạng sinh kết cấu da trên dữ liệu tổng hợp:} Gây hiện tượng loang màu hồng nhân tạo quanh miệng và làm bề mặt da bệt mờ như tượng sáp; đã loại bỏ khỏi quy trình chính.
-    \item \textbf{Tắt mô hình khử bóng khuếch tán IC-Light \cite{iclight} và mô hình tái tạo chi tiết HRN \cite{hrn} vì ràng buộc phi thương mại:} Dù các mô hình nghiên cứu này hỗ trợ khử bóng và tăng chi tiết nếp nhăn tốt ở giai đoạn khảo sát, cả hai đều có ràng buộc giấy phép phi thương mại (và IC-Light còn tiềm ẩn nguy cơ làm biến đổi nét chân dung gốc). Để bảo đảm sản phẩm có thể thương mại hóa, nhóm quyết định tắt hoàn toàn HRN và IC-Light khỏi luồng chính thức, chỉ giữ lại làm phương pháp tham khảo nghiên cứu và sử dụng trọn vẹn quy trình tự xây dựng.
-    \item \textbf{Gắn trực tiếp mô hình tóc rời bằng khung xương mặc định hoặc dịch tọa độ thủ công:} Gây lệch tư thế gốc khiến tóc bị rơi xuống thấp hoặc chìm $4$--$5$ cm vào trong hộp sọ; đã chuẩn hóa hoàn toàn bằng công cụ định vị da đầu của MPFB v2.
+    \item \textbf{Khử bóng bằng mô hình khuếch tán IC-Light \cite{iclight}:} Loại bỏ hoàn toàn vì phụ thuộc trọng số nặng, có nguy cơ làm biến đổi nét chân dung gốc và có ràng buộc giấy phép phi thương mại.
+    \item \textbf{Dùng HRN \cite{hrn} khi chạy thực tế:} Không đưa vào bản phát hành vì ràng buộc phi thương mại; HRN chỉ còn vai trò giáo viên ngoại tuyến sinh nhãn huấn luyện và sẽ được thay thế ở Giai đoạn 2.
+    \item \textbf{Gắn trực tiếp mô hình tóc rời bằng khung xương mặc định hoặc dịch tọa độ thủ công:} Gây lệch tư thế gốc khiến tóc bị rơi xuống thấp hoặc chìm vào trong hộp sọ; đã chuẩn hóa bằng cách gắn tóc theo từng giới tính trực tiếp vào đầu nhân vật.
 \end{enumerate}
 \end{notebox}
 
-\subsection{Kết quả giao diện nguyên mẫu các màn hình trò chơi}
-Bên cạnh các kết quả định lượng về AI, mạng và Smart Customization, nguyên mẫu chơi thử đã kết nối hoàn chỉnh các màn hình điều hướng chính trong Unity 6, bao gồm màn hình chính và xây dựng đội hình (Hình \ref{fig:ui_squad_placeholder}), sảnh chờ trực tuyến (Hình \ref{fig:ui_lobby_placeholder}) và bàn cờ 3D $6 \times 6$ trong trận đấu (Hình \ref{fig:ui_ingame_placeholder}). Ba khung hình dưới đây đánh dấu các góc chụp giao diện thực tế từ bản dựng hiện tại để nhóm chèn ảnh chụp màn hình trước khi in nộp:
+\subsection{Kết quả giao diện bản thử nghiệm các màn hình trò chơi}
+Bên cạnh các kết quả định lượng về AI, mạng và Smart Customization, bản thử nghiệm đã kết nối hoàn chỉnh các màn hình điều hướng chính trong Unity 6, bao gồm màn hình chính và xây dựng đội hình (Hình \ref{fig:ui_squad_placeholder}), sảnh chờ trực tuyến (Hình \ref{fig:ui_lobby_placeholder}) và bàn cờ 3D $6 \times 6$ trong trận đấu (Hình \ref{fig:ui_ingame_placeholder}). Ba khung hình dưới đây đánh dấu các góc chụp giao diện thực tế từ bản dựng hiện tại để nhóm chèn ảnh chụp màn hình trước khi in nộp:
 
 \begin{figure}[H]
     \centering

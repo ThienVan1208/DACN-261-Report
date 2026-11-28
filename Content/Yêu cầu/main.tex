@@ -6,7 +6,7 @@
     \item \textbf{Người chơi:} Đối tượng trực tiếp xây dựng đội hình, trải nghiệm các chế độ đấu với máy, đấu hai người trên cùng máy, đấu trực tuyến và tùy biến nhân vật 3D.
     \item \textbf{Khán giả:} Người tham gia phòng trực tuyến ở vai trò quan sát trực tiếp diễn biến ván đấu của hai người chơi chính mà không can thiệp vào luồng điều khiển.
     \item \textbf{Nhóm phát triển và nghiên cứu AI:} Sử dụng chính lõi trò chơi ở chế độ mô phỏng không hiển thị đồ họa để chạy hàng nghìn ván đấu tự động, huấn luyện các thành phần của Hybrid Bot và LLM Bot cũng như thu thập số liệu đánh giá.
-    \item \textbf{Giảng viên hướng dẫn và Hội đồng đánh giá:} Đánh giá tính đúng đắn của kiến trúc, mức độ hoàn thiện của nguyên mẫu giai đoạn 1 và độ tin cậy của các kết quả thực nghiệm.
+    \item \textbf{Giảng viên hướng dẫn và Hội đồng đánh giá:} Đánh giá tính đúng đắn của kiến trúc, mức độ hoàn thiện của bản thử nghiệm giai đoạn 1 và độ tin cậy của các kết quả thực nghiệm.
 \end{itemize}
 
 Bảng \ref{tab:user_stories} tổng hợp các câu chuyện người dùng cốt lõi làm đầu vào cho việc đặc tả yêu cầu chức năng và lược đồ ca sử dụng (Use-case) ở Chương 4.
@@ -15,20 +15,28 @@ Bảng \ref{tab:user_stories} tổng hợp các câu chuyện người dùng c�
     \centering
     \caption{Danh sách câu chuyện người dùng cốt lõi của hệ thống Convergence Chess}
     \label{tab:user_stories}
-    \begin{tabularx}{\textwidth}{C{1.3cm} L{2.4cm} Y C{2.0cm}}
-        \toprule
+    \begin{tabularx}{\textwidth}{|C{1.3cm}|L{2.4cm}|Y|C{2.0cm}|}
+        \hline
         \textbf{Mã} & \textbf{Vai trò} & \textbf{Nội dung nhu cầu người dùng} & \textbf{Ưu tiên} \\
-        \midrule
+        \hline
         US-01 & Người chơi & Tôi muốn tự chọn và sắp xếp quân cờ trong ngân sách 12 điểm đội hình tại màn hình chính và lưu lại để sử dụng ngay khi vào trận. & Cao \\
+        \hline
         US-02 & Người chơi & Tôi muốn khi chọn một quân cờ trên bàn $6 \times 6$, hệ thống tự động tô sáng rõ các ô di chuyển, tấn công và hợp thể hợp lệ kèm bảng thông tin quân cờ. & Cao \\
+        \hline
         US-03 & Người chơi & Tôi muốn thực hiện hợp thể hai quân cờ khác loại để thức tỉnh kỹ năng đặc biệt mới và tung đòn bồi trong giai đoạn Surge nếu còn đủ điểm hành động. & Cao \\
+        \hline
         US-04 & Người chơi & Tôi muốn đấu với máy thông qua các tác nhân AI có chiều sâu chiến thuật (Hybrid Bot và LLM Bot) để luyện tập. & Cao \\
+        \hline
         US-05 & Người chơi & Tôi muốn đấu PvP Offline với bạn bè trên cùng một máy và bàn cờ tự xoay góc nhìn sau mỗi lượt chơi. & Trung bình \\
+        \hline
         US-06 & Người chơi & Tôi muốn chọn khu vực máy chủ (Region), tạo phòng Online bằng mã phòng, đồng bộ đội hình với đối thủ và thi đấu trực tuyến ổn định. & Cao \\
+        \hline
         US-07 & Khán giả & Tôi muốn tham gia phòng Online ở vị trí Spectator để theo dõi diễn biến từng nước đi theo thời gian thực mà không làm ảnh hưởng đến trận đấu. & Trung bình \\
+        \hline
         US-08 & Người chơi & Tôi muốn tải lên ảnh chân dung 2D để hệ thống tự tái tạo hình học khuôn mặt, màu da, màu mắt và cho phép thay đổi kiểu tóc 3D trong trò chơi. & Trung bình \\
+        \hline
         US-09 & Nhà nghiên cứu & Tôi muốn khởi chạy nhiều bàn cờ song song ở chế độ không hiển thị đồ họa và tự động ghi nhận tỷ lệ thắng cùng thời gian suy nghĩ của các mô hình AI để phân tích. & Cao \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -45,8 +53,8 @@ Các yêu cầu chức năng được phân tách thành năm nhóm lớn tươn
 
 \subsubsection{Nhóm chức năng trí tuệ nhân tạo và đánh giá đối kháng}
 \begin{itemize}
-    \item \textbf{FR-05 (Hỗ trợ hai dòng tác nhân AI chính):} Cho phép gắn linh hoạt hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (kết hợp tìm kiếm cây trò chơi, học tăng cường PPO và mạng đánh giá nhanh NNUE) và \textbf{LLM Bot} (đánh giá thế cờ bằng tập luật biểu tượng tiến hóa từ Mô hình Ngôn ngữ Lớn) vào vị trí Người chơi 1 hoặc Người chơi 2 thông qua cùng một giao diện nhận nước đi thống nhất.
-    \item \textbf{FR-06 (Hạ tầng huấn luyện và đối kháng tự động):} Cung cấp môi trường mô phỏng chuyên biệt phục vụ thu thập dữ liệu chuyên gia, huấn luyện tự đấu đa bàn cờ song song và tự động ghi nhận kết quả đối kháng (tỷ lệ thắng, thua, hòa và thời gian trung bình mỗi nước đi).
+    \item \textbf{FR-05 (Hỗ trợ hai dòng tác nhân AI chính):} Cho phép gắn linh hoạt hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (kết hợp tìm kiếm cây trò chơi, học tăng cường PPO và mạng đánh giá nhanh dạng dư Residual NNUE) và \textbf{LLM Bot} (đánh giá thế cờ bằng tập luật biểu tượng tiến hóa từ Mô hình Ngôn ngữ Lớn) vào vị trí Người chơi 1 hoặc Người chơi 2 thông qua cùng một giao diện nhận nước đi thống nhất.
+    \item \textbf{FR-06 (Hạ tầng huấn luyện và đối kháng tự động):} Cung cấp môi trường mô phỏng chuyên biệt phục vụ thu thập dữ liệu tự đấu, huấn luyện đa bàn cờ song song và tự động ghi nhận kết quả đối kháng (tỷ lệ thắng, thua, hòa và thời gian trung bình mỗi nước đi).
 \end{itemize}
 
 \subsubsection{Nhóm chức năng nhiều người chơi (PvP Offline và PvP Online)}
@@ -64,13 +72,13 @@ Các yêu cầu chức năng được phân tách thành năm nhóm lớn tươn
 
 \subsubsection{Nhóm chức năng mở rộng tùy biến nhân vật 3D (Smart Customization)}
 \begin{itemize}
-    \item \textbf{FR-12 (Tái tạo khuôn mặt và tóc 3D từ ảnh 2D theo định hướng thương mại hóa):} Cho phép người dùng chọn ảnh chân dung 2D và giới tính (Nam/Nữ) trực tiếp trên giao diện trong game; hệ thống gọi mô-đun xử lý tự xây dựng cục bộ để phân tích ảnh (không phụ thuộc các mô hình nghiên cứu phi thương mại), sau đó tự động áp $25$ thông số hình thái khuôn mặt, kết cấu da đã khử bóng đối xứng, màu mắt và màu tóc lên nhân vật 3D; đồng thời hỗ trợ người chơi tinh chỉnh thủ công bằng thanh trượt và chuyển đổi giữa 7 lựa chọn kiểu tóc 3D (6 mẫu tóc 3D và chế độ không tóc).
+    \item \textbf{FR-12 (Tái tạo khuôn mặt và tóc 3D từ ảnh 2D theo định hướng thương mại hóa):} Cho phép người dùng chọn ảnh chân dung 2D và giới tính (Nam/Nữ) trực tiếp trên giao diện trong game; hệ thống gọi mô-đun xử lý tự xây dựng cục bộ để phân tích ảnh (không phụ thuộc các mô hình nghiên cứu phi thương mại), sau đó tự động áp $60$ thông số hình thái khuôn mặt, kết cấu da đã khử bóng đối xứng, màu mắt và màu tóc lên nhân vật 3D; đồng thời hỗ trợ người chơi tinh chỉnh thủ công bằng thanh trượt và chuyển đổi giữa 15 lựa chọn kiểu tóc 3D (14 kiểu tóc và chế độ không tóc).
 \end{itemize}
 
 \subsection{Yêu cầu phi chức năng}
 \begin{itemize}
     \item \textbf{Tính tách biệt và khả năng bảo trì:} Phần lõi quy tắc và trạng thái bàn cờ phải tách hoàn toàn khỏi đồ họa 3D, chỉ đọc tham số cân bằng từ nguồn cấu hình tập trung, bảo đảm cùng một trạng thái bàn cờ và cùng một nước đi luôn cho ra kết quả giống hệt nhau trên mọi máy người chơi cũng như trong môi trường huấn luyện AI.
-    \item \textbf{Tính sẵn sàng thương mại hóa cho Smart Customization:} Quy trình tạo nhân vật 3D chính thức phải tự chủ về thuật toán và không tích hợp các mô hình có giấy phép phi thương mại (như HRN hoặc IC-Light), bảo đảm an toàn pháp lý khi phát hành sản phẩm công khai.
+    \item \textbf{Tính sẵn sàng thương mại hóa cho Smart Customization:} Quy trình tạo nhân vật 3D của bản phát hành phải tự chủ về thuật toán khi chạy và không tích hợp các mô hình có giấy phép phi thương mại (như HRN hoặc IC-Light), bảo đảm an toàn pháp lý khi phát hành sản phẩm công khai. Riêng mô hình nghiên cứu HRN chỉ được dùng ngoại tuyến để sinh nhãn huấn luyện ở giai đoạn nghiên cứu và phải được thay bằng nguồn dữ liệu sạch bản quyền trước khi phát hành.
     \item \textbf{Hiệu năng tính toán:}
     \begin{itemize}
         \item Chế độ chơi thực tế duy trì tốc độ khung hình ổn định từ $60$ khung hình/giây trở lên trên máy tính cá nhân tầm trung (cạc đồ họa RTX 4050 Laptop).
@@ -78,7 +86,7 @@ Các yêu cầu chức năng được phân tách thành năm nhóm lớn tươn
         \item Chế độ mô phỏng không hiển thị đồ họa cho phép chạy hàng trăm ván đấu trong vài chục giây mà không gây rò rỉ bộ nhớ.
     \end{itemize}
     \item \textbf{Hiệu quả băng thông mạng (Network Efficiency):} Tối ưu kích thước gói tin đồng bộ nước đi xuống mức tối thiểu (dưới $100$ bytes cho chuỗi 10 lần thăm dò) để bảo đảm tính ổn định kể cả trên đường truyền mạng thông thường.
-    \item \textbf{Thời gian xử lý tùy biến nhân vật 3D:} Toàn bộ quy trình phân tích ảnh chân dung 2D, giải hình học khuôn mặt, chiếu kết cấu và khử bóng da trên máy tính cục bộ cần hoàn tất trong vài giây (thực tế đo được khoảng $5.9$ giây mỗi ảnh) để người chơi xem trước thuận tiện ngay trong game.
+    \item \textbf{Thời gian xử lý tùy biến nhân vật 3D:} Toàn bộ quy trình phân tích ảnh chân dung 2D, giải hình học khuôn mặt, chiếu kết cấu và khử bóng da trên máy tính cục bộ cần hoàn tất trong vài giây (thực tế đo được khoảng $5$ giây mỗi ảnh) để người chơi xem trước thuận tiện ngay trong game.
 \end{itemize}
 
 \subsection{Yêu cầu kỹ thuật và trải nghiệm người dùng}

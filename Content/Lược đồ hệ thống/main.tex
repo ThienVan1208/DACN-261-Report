@@ -13,25 +13,25 @@ Hình \ref{fig:usecase_overview} mô tả tổng thể các tác nhân tham gia 
 \end{figure}
 
 {\small
-\begin{longtable}{L{2.5cm} L{2.4cm} L{5.3cm} L{4.7cm}}
+\begin{longtable}{|L{2.5cm}|L{2.4cm}|L{5.3cm}|L{4.7cm}|}
     \caption{Đặc tả kịch bản cho các ca sử dụng trọng tâm của hệ thống}
     \label{tab:usecase_specs} \\
-    \toprule
+    \hline
     \textbf{Ca sử dụng} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
-    \midrule
+    \hline
     \endfirsthead
-    \toprule
+    \hline
     \textbf{Ca sử dụng} & \textbf{Tác nhân và tiền điều kiện} & \textbf{Luồng sự kiện chính} & \textbf{Luồng ngoại lệ và ràng buộc} \\
-    \midrule
+    \hline
     \endhead
-    \bottomrule
+    \hline
     \endfoot
         UC01: Xây dựng và lưu đội hình & Người chơi chính; đang ở màn hình chính. & (1) Mở màn hình xây dựng đội hình; (2) Kéo thả quân cờ vào 12 ô sân nhà (ngoại trừ ô Vua cố định); (3) Hệ thống tự động tính tổng điểm đội hình theo thời gian thực trong hạn mức $12$ điểm; (4) Nhấn Lưu để lưu cấu hình đội hình xuống bộ nhớ máy. & Nếu tổng điểm vượt quá hạn mức $12$, chọn quân đang bị khóa mua trước trận (Hậu) hoặc đặt vào ô đã có quân/Vua, thao tác sẽ bị chặn kèm thông báo rõ ràng. \\
-        \midrule
-        UC03: Tùy biến nhân vật 3D từ ảnh chân dung & Người chơi chính; bộ xử lý ảnh cục bộ tự xây dựng đã sẵn sàng. & (1) Mở giao diện tùy biến nhân vật, chọn giới tính (Nam/Nữ) và ảnh chân dung 2D; (2) Trò chơi gọi bộ xử lý cục bộ thực hiện phân tích 25 thông số hình học khuôn mặt, chiếu ngược kết cấu và khử bóng đối xứng; (3) Nạp dữ liệu hình thái và ảnh da trả về; (4) Tự động áp 25 thông số khuôn mặt, màu mắt, màu tóc và cho phép tinh chỉnh thủ công hoặc đổi giữa 7 lựa chọn kiểu tóc 3D. & Nếu ảnh đầu vào không phát hiện được khuôn mặt hoặc quá trình phân tích gặp sự cố, hệ thống giữ nguyên nhân vật mặc định và hiển thị thông báo lỗi mà không gây treo ứng dụng. \\
-        \midrule
+        \hline
+        UC03: Tùy biến nhân vật 3D từ ảnh chân dung & Người chơi chính; bộ xử lý ảnh cục bộ tự xây dựng đã sẵn sàng. & (1) Mở giao diện tùy biến nhân vật, chọn giới tính (Nam/Nữ) và ảnh chân dung 2D; (2) Trò chơi gọi bộ xử lý cục bộ suy luận 60 thông số hình học khuôn mặt, chiếu ngược kết cấu và khử bóng đối xứng; (3) Nạp dữ liệu hình thái và ảnh da trả về; (4) Tự động áp 60 thông số khuôn mặt, màu mắt, màu tóc và cho phép tinh chỉnh thủ công hoặc đổi giữa 15 lựa chọn kiểu tóc 3D. & Nếu ảnh đầu vào không phát hiện được khuôn mặt hoặc quá trình phân tích gặp sự cố, hệ thống giữ nguyên nhân vật mặc định và hiển thị thông báo lỗi mà không gây treo ứng dụng. \\
+        \hline
         UC05--UC06: Tạo/Vào phòng Online, phân vai và Sẵn sàng & Người chơi chính, Đối thủ Online, Khán giả; có kết nối Internet. & (1) Chọn Photon Region và nhập Room ID tại \texttt{UIPopupLobby}; (2) Host mở phòng ở chế độ \texttt{GameMode.Shared} và chiếm vị trí Trắng; (3) Client tham gia, gửi tên người chơi (\texttt{MSG\_MAP\_PLAYER\_NAME}) và yêu cầu đồng bộ slot (\texttt{MSG\_REQUEST\_SLOT\_SYNC}); (4) Chọn vị trí Trắng/Đen/Khán giả, chọn Squad và bật Ready; (5) Khi cả Trắng và Đen sẵn sàng, Host sinh \texttt{MatchSeed} + vật cản và phát \texttt{MSG\_MATCH\_INIT} để đồng loạt tải \texttt{PvPOnlScene}. & Nếu phòng đầy 2 người chơi chính, người vào sau tự động xếp vào danh sách Khán giả (\texttt{Spectator}). Nếu mất kết nối Photon Cloud, hiển thị trạng thái lỗi trên \texttt{OnConnectionStatusChanged}. \\
-        \midrule
+        \hline
         UC10--UC11: Thực hiện nước đi, hợp thể và đòn bồi Surge & Người chơi đang tới lượt hoặc Tác nhân AI; trận đấu đang ở trạng thái chờ nước đi. & (1) Chọn quân đồng minh, hệ thống tô sáng các ô di chuyển, tấn công và hợp thể hợp lệ; (2) Chọn ô đích để thực hiện hành động; (3) Lõi luật chơi thẩm định tính hợp lệ, cập nhật trạng thái bàn cờ và phát đợt sự kiện cho tầng hiển thị; (4) Nếu vừa hợp thể và còn đủ AP, mở giai đoạn đòn bồi Surge cho phép đi thêm hoặc kết thúc lượt giữ AP; (5) Chuyển lượt. & Không đủ AP, đi xuyên vật cản với quân trượt, hợp thể hai quân cùng loại hoặc hợp thể quân đã từng hợp thể đều bị từ chối. Hành động bỏ lượt bị chặn khi đã dùng hết lượt cho phép; nếu không còn nước đi hợp lệ nào, phe tới lượt bị xử thua. \\
 \end{longtable}
 }
@@ -111,7 +111,7 @@ Hình \ref{fig:state_machine} tổng hợp hai máy trạng thái quan trọng n
 \end{figure}
 
 \subsection{Sơ đồ quy trình huấn luyện AI và tùy biến nhân vật 3D}
-Hình \ref{fig:pipeline_ai} khái quát hóa chuỗi quy trình huấn luyện và đánh giá AI trong dự án, thể hiện vòng lặp đồng huấn luyện giữa học tăng cường PPO và mạng đánh giá nhanh NNUE/Residual NNUE để xây dựng \textbf{Hybrid Bot}, song song với nhánh tiến hóa tập luật biểu tượng cho \textbf{LLM Bot}.
+Hình \ref{fig:pipeline_ai} khái quát hóa chuỗi quy trình huấn luyện và đánh giá AI trong dự án, thể hiện vòng lặp đồng huấn luyện giữa học tăng cường PPO và mạng đánh giá nhanh Residual NNUE để xây dựng \textbf{Hybrid Bot}, song song với nhánh tiến hóa tập luật biểu tượng cho \textbf{LLM Bot}.
 
 \begin{figure}[H]
     \centering
@@ -120,7 +120,7 @@ Hình \ref{fig:pipeline_ai} khái quát hóa chuỗi quy trình huấn luyện v
     \label{fig:pipeline_ai}
 \end{figure}
 
-Hình \ref{fig:pipeline_sc} trình bày kiến trúc tích hợp cục bộ giữa ứng dụng Unity 6 và bộ xử lý ảnh Python tự xây dựng (đã tắt các mô hình phi thương mại như HRN và IC-Light để hướng tới sản phẩm thương mại hóa), thực hiện song song hai nhánh: tái tạo hình học khuôn mặt 3D ($25$ thông số hình thái độc lập) và chiếu kết cấu bề mặt da kết hợp khử bóng đối xứng cùng hòa trộn đa tầng.
+Hình \ref{fig:pipeline_sc} trình bày kiến trúc tích hợp cục bộ giữa ứng dụng Unity 6 và bộ xử lý ảnh Python tự xây dựng (đã tắt các mô hình phi thương mại như HRN và IC-Light để hướng tới sản phẩm thương mại hóa), thực hiện song song hai nhánh: tái tạo hình học khuôn mặt 3D ($60$ thông số hình thái) và chiếu kết cấu bề mặt da kết hợp khử bóng đối xứng cùng hòa trộn đa tầng.
 
 \begin{figure}[H]
     \centering

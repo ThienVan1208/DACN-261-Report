@@ -1,11 +1,11 @@
 \section{Giới thiệu đề tài}
 
 \subsection{Bối cảnh và vấn đề đặt ra}
-Trong lĩnh vực trò chơi điện tử chiến thuật theo lượt, cờ vua truyền thống từ lâu đã được xem là chuẩn mực kinh điển về chiều sâu tư duy logic và tính cân bằng. Tuy nhiên, đối với nhóm người chơi hiện đại, cờ vua cổ điển tồn tại hai rào cản đáng kể: (i) thời lượng ván đấu kéo dài với nhiều khai cuộc mang tính học thuộc, làm giảm yếu tố bất ngờ; và (ii) cấu trúc luật cố định, thiếu các cơ chế tùy biến đội hình trước trận hoặc nâng cấp sức mạnh quân cờ trong trận như các trò chơi chiến thuật hiện đại.
+Trong lĩnh vực trò chơi điện tử chiến thuật theo lượt, cờ vua truyền thống từ lâu đã được xem là chuẩn mực kinh điển về chiều sâu tư duy logic và tính cân bằng. Tuy nhiên, đối với nhóm người chơi hiện đại, cờ vua cổ điển tồn tại hai rào cản đáng kể: thời lượng ván đấu kéo dài với nhiều khai cuộc mang tính học thuộc, làm giảm yếu tố bất ngờ; và cấu trúc luật cố định, thiếu các cơ chế tùy biến đội hình trước trận hoặc nâng cấp sức mạnh quân cờ trong trận như các trò chơi chiến thuật hiện đại.
 
 Ở chiều ngược lại, các biến thể cờ chiến thuật mới nổi thường thiên về yếu tố may rủi hoặc đồ họa bắt mắt mà ít chú trọng đến thiết kế kiến trúc tách biệt giữa luật chơi và phần hiển thị. Điều này gây khó khăn khi vừa cần vận hành mượt mà ở chế độ nhiều người chơi trực tuyến (Online Multiplayer), vừa cần mô phỏng tốc độ cao để huấn luyện Trí tuệ nhân tạo (AI). Bên cạnh đó, nhu cầu cá nhân hóa danh tính người chơi trong không gian 3D (như tạo hình đại diện từ ảnh chân dung thực tế) ngày càng được quan tâm nhưng vẫn còn nhiều thách thức về thời gian xử lý, độ chính xác hình học khuôn mặt 3D và xử lý ánh sáng bề mặt da.
 
-Xuất phát từ các nhận định trên, nhóm thực hiện đề tài \textbf{Phát triển game ``Convergence Chess''} -- một trò chơi cờ chiến thuật 3D trên nền tảng Unity 6 \cite{unity6}, kết hợp cấu trúc di chuyển của cờ vua với cơ chế kinh tế điểm hành động tích lũy (AP), vật cản sinh ngẫu nhiên và đặc biệt là cơ chế \textbf{hợp thể quân cờ} kèm trạng thái đòn bồi (\textbf{Surge}). Dự án đồng thời xây dựng hai hướng tác nhân AI chính là \textbf{Hybrid Bot} (kết hợp tìm kiếm Minimax, học tăng cường PPO \cite{mlagents} và mạng đánh giá nhanh NNUE \cite{nnue}) và \textbf{LLM Bot} (tiến hóa luật đánh giá bằng Mô hình Ngôn ngữ Lớn theo hướng FunSearch \cite{funsearch}), tích hợp chế độ đối kháng trực tuyến qua Photon Fusion 2 \cite{photon_fusion} cùng phân hệ mở rộng tùy biến nhân vật 3D từ ảnh chân dung (Smart Customization).
+Xuất phát từ các nhận định trên, nhóm thực hiện đề tài \textbf{Phát triển game ``Convergence Chess''} -- một trò chơi cờ chiến thuật 3D trên nền tảng Unity 6, kết hợp cấu trúc di chuyển của cờ vua với cơ chế kinh tế điểm hành động tích lũy (Action Point - AP), vật cản sinh ngẫu nhiên và đặc biệt là cơ chế \textbf{hợp thể quân cờ} kèm trạng thái đòn bồi (\textbf{Surge}). Dự án đồng thời xây dựng hai hướng tác nhân AI chính là \textbf{Hybrid Bot} (kết hợp tìm kiếm Minimax, học tăng cường PPO và mạng đánh giá nhanh dạng dư Residual NNUE) và \textbf{LLM Bot} (tiến hóa luật đánh giá bằng Mô hình Ngôn ngữ Lớn), tích hợp chế độ đối kháng trực tuyến qua Photon Fusion 2 cùng phân hệ mở rộng tùy biến nhân vật 3D từ ảnh chân dung (Smart Customization).
 
 \subsection{Tổng quan luật chơi và cơ chế cốt lõi của Convergence Chess}
 Khác với bàn cờ $8 \times 8$ truyền thống, \textit{Convergence Chess} được thiết kế tinh gọn trên bàn cờ $6 \times 6$ nhằm đẩy nhanh nhịp độ giao tranh và tăng mật độ tính toán chiến thuật trong từng lượt đi (minh họa không gian chiến thuật và tạo hình quân cờ tại Hình \ref{fig:intro_concept}).
@@ -30,17 +30,22 @@ Bàn cờ gồm $36$ ô được đánh chỉ số từ $0$ đến $35$ theo cô
     \centering
     \caption{Bảng chi phí điểm đội hình, kỹ năng di chuyển gốc và kỹ năng thức tỉnh khi hợp thể}
     \label{tab:piece_roster}
-    \begin{tabularx}{\textwidth}{L{2.2cm} C{1.6cm} L{2.8cm} L{2.7cm} Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{2.2cm}|C{1.6cm}|L{2.8cm}|L{2.7cm}|Y|}
+        \hline
         \textbf{Quân cờ} & \textbf{Chi phí (điểm)} & \textbf{Chi phí AP di chuyển} & \textbf{Kỹ năng di chuyển gốc} & \textbf{Kỹ năng thức tỉnh khi làm quân nguồn hợp thể} \\
-        \midrule
+        \hline
         Tốt & 1 & 1 AP mỗi bước tiến hoặc ăn chéo & Không có & Cộng thêm AP: tự động hồi thêm $+1$ AP ở đầu mỗi lượt chơi. \\
+        \hline
         Mã & 3 & 2 AP cố định mỗi nước nhảy & Nhảy chữ L vượt vật cản và quân chắn & Phá khiên: xuyên thủng và phá hủy trực tiếp lớp khiên hộ mệnh. \\
+        \hline
         Tượng & 4 & 1 AP mỗi ô trượt chéo & Trượt tự do theo 4 đường chéo & Hút năng lượng chiến đấu: hoàn trả $+1$ AP ngay khi tiêu diệt 1 quân địch. \\
+        \hline
         Xe & 5 & 1 AP mỗi ô trượt ngang/dọc & Trượt tự do theo hàng ngang và cột dọc & Khiên hộ mệnh: tạo 1 lớp khiên chặn đòn tiêu diệt đầu tiên và đẩy lùi kẻ tấn công. \\
+        \hline
         Hậu & 6 (khóa mua trước trận) & 1 AP mỗi ô trượt 8 hướng & Trượt tự do theo cả 8 hướng & Rút điểm hành động: trừ $-1$ AP của đối thủ khi tiêu diệt 1 quân địch. Hiện chỉ đạt được thông qua phong cấp Tốt trong trận. \\
+        \hline
         Vua & Cố định & 1 AP (di chuyển 1 ô theo 8 hướng) & Không có & Không được phép tham gia hợp thể; mất Vua là thua trận. \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -61,13 +66,13 @@ Thay vì cho phép mọi quân cờ di chuyển miễn phí với cự ly bất 
     \item \textbf{Phong cấp Tốt:} Khi quân Tốt tiến tới hàng cuối cùng bên sân đối phương (hàng 5 với Người chơi 1, hàng 0 với Người chơi 2), quân này lập tức tiến hóa thành Hậu, nhận thêm kỹ năng trượt 8 hướng và kỹ năng rút AP đối thủ trong khi vẫn bảo lưu các kỹ năng sẵn có.
 \end{enumerate}
 
-\subsection{Mục tiêu và phạm vi thực hiện của giai đoạn 1 (DACN)}
-Đề tài được triển khai xuyên suốt hai học kỳ gồm \textbf{Giai đoạn 1 -- Đồ án chuyên ngành (DACN)} và \textbf{Giai đoạn 2 -- Đồ án tốt nghiệp (DATN)}. Trong phạm vi \textbf{DACN (Giai đoạn 1)}, mục tiêu không phải phát hành ngay bản thương mại hoàn chỉnh, mà tập trung chứng minh tính khả thi kiến trúc, khảo sát công nghệ, xây dựng nguyên mẫu chơi thử thực tế và thu thập số liệu thực nghiệm làm nền tảng cho DATN:
+\subsection{Mục tiêu và phạm vi thực hiện}
+Từ những bối cảnh và cơ chế cốt lõi nêu trên, đề tài hướng tới các mục tiêu chính sau:
 \begin{itemize}
     \item \textbf{Kiến trúc phần mềm:} Xây dựng phần lõi xử lý luật chơi tách rời hoàn toàn khỏi đồ họa 3D, cho phép tái sử dụng nguyên vẹn trên cả 3 chế độ chơi (đấu với máy, đấu 2 người trên cùng máy, đấu trực tuyến) và chạy mô phỏng không hiển thị đồ họa ở tốc độ cao để phục vụ huấn luyện AI.
-    \item \textbf{Khảo sát và thực nghiệm AI:} Tập trung xây dựng và đánh giá định lượng hai hướng tác nhân AI chủ lực là \textbf{Hybrid Bot} (phát triển qua chuỗi thành phần nền tảng gồm tìm kiếm Minimax Alpha-Beta, học bắt chước, học tăng cường PPO \cite{mlagents} và mạng đánh giá nhanh NNUE \cite{nnue}) và \textbf{LLM Bot} (tiến hóa hàm đánh giá biểu tượng bằng Mô hình Ngôn ngữ Lớn theo hướng FunSearch \cite{funsearch}).
-    \item \textbf{Khảo sát và nguyên mẫu Multiplayer:} Đánh giá các giải pháp mạng, đo đạc thực nghiệm giữa cơ chế đồng bộ đối tượng (\texttt{Fusion Network Object}) và luồng dữ liệu tin cậy (\texttt{Fusion Reliable Data Stream}), hoàn thiện nguyên mẫu phòng chơi Lobby trên \texttt{GameMode.Shared} (tạo/vào phòng, chọn region, phân vai Trắng/Đen/Khán giả, đồng bộ đội hình và nước đi 4 bytes).
-    \item \textbf{Khảo sát và nguyên mẫu tùy biến nhân vật 3D (Smart Customization):} Khảo sát các phương pháp tái tạo khuôn mặt 3D từ ảnh chân dung hiện có và tự xây dựng trọn vẹn quy trình sẵn sàng thương mại hóa (loại bỏ các mô hình phi thương mại), gồm nhánh tái tạo hình học khuôn mặt 25 thông số độc lập và nhánh xử lý bề mặt da, khử bóng đối xứng, vật liệu mắt cùng 6 kiểu tóc 3D tích hợp trực tiếp vào Unity 6.
+    \item \textbf{Khảo sát và thực nghiệm AI:} Tập trung xây dựng và đánh giá định lượng hai hướng tác nhân AI là \textbf{Hybrid Bot} (kết hợp tìm kiếm Minimax Alpha-Beta, học tăng cường PPO và mạng đánh giá nhanh dạng dư Residual NNUE) và \textbf{LLM Bot} (tiến hóa hàm đánh giá biểu tượng bằng Mô hình Ngôn ngữ Lớn). Hai hướng này được đối chiếu với các mốc truyền thống (mạng tự quyết định nước đi và Minimax thuần) thông qua thực nghiệm cắt bỏ từng thành phần ở Chương 6.
+    \item \textbf{Khảo sát và bản thử nghiệm Multiplayer:} Đánh giá các giải pháp mạng, đo đạc thực nghiệm giữa cơ chế đồng bộ đối tượng (\texttt{Fusion Network Object}) và luồng dữ liệu tin cậy (\texttt{Fusion Reliable Data Stream}), hoàn thiện bản thử nghiệm phòng chơi Lobby trên \texttt{GameMode.Shared} (tạo/vào phòng, chọn region, phân vai Trắng/Đen/Khán giả, đồng bộ đội hình và nước đi 4 bytes).
+    \item \textbf{Khảo sát và bản thử nghiệm tùy biến nhân vật 3D (Smart Customization):} Khảo sát các phương pháp tái tạo khuôn mặt 3D từ ảnh chân dung hiện có và tự xây dựng trọn vẹn quy trình sẵn sàng thương mại hóa (loại bỏ các mô hình phi thương mại), gồm nhánh tái tạo hình học khuôn mặt bằng mạng hai nhánh dự đoán 60 thông số hình thái (huấn luyện bằng chưng cất từ ảnh chân dung thật) và nhánh xử lý bề mặt da, khử bóng đối xứng, vật liệu mắt cùng 14 kiểu tóc 3D tích hợp trực tiếp vào Unity 6. Bản phát hành không gọi các mô hình phi thương mại (IC-Light, HRN); HRN chỉ đóng vai trò giáo viên ngoại tuyến ở giai đoạn nghiên cứu và sẽ được thay bằng nguồn dữ liệu sạch bản quyền ở Giai đoạn 2.
     \item \textbf{Hoàn thiện bản chơi thử:} Kết nối toàn bộ luồng trải nghiệm từ màn hình chính, màn hình xây dựng đội hình, chọn chế độ chơi đến bàn cờ 3D $6 \times 6$ với bộ quân cờ phong cách Trung cổ, hoạt họa, hiệu ứng hình ảnh và âm thanh cơ bản.
 \end{itemize}
 
@@ -80,16 +85,20 @@ Bảng \ref{tab:market_comparison} đối chiếu \textit{Convergence Chess} v�
     \centering
     \caption{So sánh Convergence Chess với các trò chơi chiến thuật cờ tương tự}
     \label{tab:market_comparison}
-    \begin{tabularx}{\textwidth}{L{2.8cm} Y Y Y Y}
-        \toprule
+    \begin{tabularx}{\textwidth}{|L{2.8cm}|Y|Y|Y|Y|}
+        \hline
         \textbf{Tiêu chí} & \textbf{Cờ vua truyền thống (Chess.com / Lichess)} & \textbf{Shotgun King / Pawnbarian} & \textbf{Teamfight Tactics} & \textbf{Convergence Chess} \\
-        \midrule
+        \hline
         Kích thước và địa hình & Bàn $8 \times 8$ phẳng, cố định & Bàn $8 \times 8$ hoặc lưới nhỏ biến đổi theo màn & Bàn lưới lục giác, không vật cản địa hình & Bàn $6 \times 6$ kèm $1$--$2$ ô vật cản sinh ngẫu nhiên ở trung tuyến \\
+        \hline
         Cơ chế tài nguyên & Không có điểm hành động; mỗi lượt đi 1 quân & Tài nguyên đạn hoặc thẻ bài theo lượt & Kinh tế vàng mua tướng & Kinh tế điểm hành động tích lũy ($+2$/lượt, tối đa $5$), giới hạn số lần bỏ lượt \\
+        \hline
         Tùy biến đội hình và nâng cấp & Đội hình 16 quân cố định, chỉ phong Tốt & Nâng cấp ngẫu nhiên giữa các màn & Ghép 3 tướng giống nhau tăng cấp & Tự xây dựng đội hình (12 điểm) và hợp thể quân khác loại để thức tỉnh kỹ năng kèm đòn bồi Surge \\
+        \hline
         Chế độ chơi và AI & Đấu trực tuyến kèm máy đánh cờ Stockfish/Leela & Chủ yếu chơi đơn với máy & Đấu trực tuyến 8 người & Đấu với máy (Hybrid Bot và LLM Bot), đấu 2 người cùng máy và đấu trực tuyến \\
+        \hline
         Cá nhân hóa 3D & Bộ cờ 2D/3D có sẵn & Đồ họa điểm ảnh 2D & Linh thú bán sẵn & Thử nghiệm tạo nhân vật 3D từ ảnh chân dung (Smart Customization) \\
-        \bottomrule
+        \hline
     \end{tabularx}
 \end{table}
 
@@ -102,6 +111,6 @@ Bên cạnh giá trị khác biệt, thiết kế lối chơi của \textit{Conv
 \subsection{Phân công trách nhiệm trong nhóm thực hiện}
 Dự án được thực hiện bởi 2 thành viên với ranh giới phân hệ rõ ràng, kết nối với nhau qua các giao diện trao đổi dữ liệu thống nhất:
 \begin{itemize}
-    \item \textbf{Thành viên 1 (Chủ trì Lõi luật chơi, AI và Smart Customization):} Thiết kế kiến trúc tổng thể tách biệt lõi và giao diện; xây dựng toàn bộ lõi luật chơi $6 \times 6$ (trạng thái bàn cờ, kiểm định nước đi, điều phối vòng lặp trận đấu và cấu hình cân bằng); xây dựng hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (cùng chuỗi thành phần Minimax, học bắt chước, học tăng cường PPO, mạng đánh giá NNUE) và \textbf{LLM Bot}; phát triển quy trình tạo nhân vật 3D từ ảnh chân dung (Smart Customization) và cơ chế đồng bộ sự kiện hoạt họa quân cờ.
+    \item \textbf{Thành viên 1 (Chủ trì Lõi luật chơi, AI và Smart Customization):} Thiết kế kiến trúc tổng thể tách biệt lõi và giao diện; xây dựng toàn bộ lõi luật chơi $6 \times 6$ (trạng thái bàn cờ, kiểm định nước đi, điều phối vòng lặp trận đấu và cấu hình cân bằng); xây dựng hai dòng tác nhân AI chính là \textbf{Hybrid Bot} (cùng chuỗi thành phần Minimax, học tăng cường PPO, mạng đánh giá Residual NNUE) và \textbf{LLM Bot}; phát triển quy trình tạo nhân vật 3D từ ảnh chân dung (Smart Customization) và cơ chế đồng bộ sự kiện hoạt họa quân cờ.
     \item \textbf{Thành viên 2 -- Đăng (Chủ trì Multiplayer và View Layer):} Khảo sát và hiện thực hệ thống Multiplayer trên nền tảng Photon Fusion (\texttt{OnlineSessionManager}, \texttt{OnlineDataBroadcastNetwork}, \texttt{NetworkController}, \texttt{PvPOnlModeBootstrapper}, đo benchmark mạng), chế độ PvP Offline (\texttt{BoardRotator}), tầng hiển thị bàn cờ và quân cờ 3D, toàn bộ hệ thống giao diện người dùng (màn hình chính, xây dựng đội hình, sảnh chờ trực tuyến, bảng thông số trong trận) và tích hợp hiệu ứng hình ảnh, âm thanh, bối cảnh 3D.
 \end{itemize}
